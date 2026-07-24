@@ -1,0 +1,44 @@
+# PowerShell
+*.ps1xml
+*.pssc
+*.psrc
+
+# Local configuration and secrets
+*.local.yaml
+*.local.yml
+*.local.json
+.env
+.env.*
+!.env.example
+secrets/
+*.key
+*.pem
+*.pfx
+
+# Azure and Terraform
+.azure/
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+
+# Database artifacts
+*.bak
+*.trn
+*.dif
+*.diff
+*.bacpac
+*.dacpac
+
+# Build and test output
+bin/
+obj/
+out/
+dist/
+coverage/
+TestResults/
+
+# Editors and operating systems
+.DS_Store
+.vscode/
+.idea/
