@@ -1,0 +1,47 @@
+---
+title: Project Status
+description: What exists now, what comes next, and how status labels are used.
+---
+
+:::danger[Not yet deployable]
+The repository currently contains architecture, roadmap, and project scaffolding. It does not contain a released PowerShell module or deployable cmdlets.
+:::
+
+## Status labels
+
+| Status | Meaning |
+| --- | --- |
+| <span class="status status-available">Available</span> | Included, documented, and verified in a published release. |
+| <span class="status status-development">In development</span> | Actively being implemented on the current dependency path. |
+| <span class="status status-planned">Planned</span> | Accepted into the roadmap but not available. |
+| <span class="status status-deferred">Deferred</span> | Intentionally held for a later phase. |
+
+No deployment capability is currently marked **Available**. The [pitch deck](../pitch/deck/) presents the roadmap in a meeting-friendly format.
+
+## Current milestone
+
+| Area | Status | Current scope |
+| --- | --- | --- |
+| Architecture and roadmap | <span class="status status-development">In development</span> | Core, provider, engine, lifecycle, testing, and governance decisions |
+| Documentation and pitch | <span class="status status-development">In development</span> | Public design record and community invitation |
+| PowerShell module foundation | <span class="status status-planned">Planned</span> | Module layout, contracts, schema, run state, and command surface |
+| SQL Server on Azure VM | <span class="status status-planned">Planned</span> | First end-to-end provider |
+| Bicep and Terraform | <span class="status status-deferred">Deferred</span> | Additional engines after the PowerShell contract is stable |
+
+## Target order
+
+The order is deliberate. A later target should reuse tested core behavior instead of creating a parallel toolkit.
+
+1. **SQL Server on Azure VM** - first end-to-end implementation and test target.
+2. **Azure SQL Database** - first managed SQL target.
+3. **Azure SQL Managed Instance** - managed instance networking and migration scenarios.
+4. **Microsoft Fabric** - workspace and item creation plus guided target decisions.
+5. **Azure Database for PostgreSQL** - managed PostgreSQL scenarios.
+6. **SQL Server and PostgreSQL on Linux VMs and containers** - portable engine scenarios.
+7. **Kubernetes** - deferred until container and lifecycle contracts are mature.
+
+Azure Databricks, Git providers, storage providers, community tools, and additional data services are tracked as supporting or future providers in the [Roadmap](../roadmap/).
+
+## Release truth
+
+Published releases and their release notes will be the source of truth for available behavior. Architecture documents describe intent; issues and project boards describe planned work; neither is a delivery commitment.

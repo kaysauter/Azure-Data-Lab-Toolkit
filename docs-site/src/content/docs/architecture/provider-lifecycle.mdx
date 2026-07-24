@@ -1,0 +1,39 @@
+---
+title: Provider Lifecycle
+description: The planned lifecycle contract every provider must implement.
+---
+
+<span class="status status-planned">Planned</span>
+
+Providers participate in a common lifecycle so validation, previews, execution, evidence, and cleanup remain consistent.
+
+| Stage | Purpose | Changes resources? |
+| --- | --- | --- |
+| `ResolveDefaults` | Return target-aware defaults and explain their source | No |
+| `ValidateConfig` | Check schema, policy, prerequisites, permissions, quota, and compatibility | No |
+| `Assess` | Collect facts and recommendations relevant to target selection | No |
+| `Plan` | Produce normalized resources, actions, dependencies, risks, and outputs | No |
+| `Deploy` | Apply the approved plan through the selected engine | Yes |
+| `Probe` | Verify reachability, configuration, data, software, and expected behavior | Read-only where possible |
+| `ExportBicep` | Export an equivalent Bicep representation when supported | No Azure change |
+| `ExportTerraform` | Export an equivalent Terraform representation when supported | No Azure change |
+| `TeardownPreview` | Show exactly what would be removed, retained, or remain unknown | No |
+| `Teardown` | Remove the confirmed scope and record cleanup evidence | Yes |
+
+## Contract requirements
+
+Each lifecycle response should be structured, versioned, and safe to serialize. Errors should identify the provider, operation, resource or action, severity, suggested resolution, and whether retry is safe.
+
+## Idempotency and recovery
+
+Deployment and teardown should be resumable. A run interrupted after partial success must be able to:
+
+- compare recorded state with Azure state;
+- distinguish complete, pending, drifted, and unknown actions;
+- avoid duplicating completed work;
+- require confirmation before replacing or deleting unexpected resources;
+- preserve enough evidence for troubleshooting.
+
+## Human checkpoints
+
+Confirmation is required after summaries for destructive operations and for choices involving sensitive data, untrusted artifacts, license acceptance, or explicit secret display. CI/CD paths must express the same decisions through auditable configuration rather than bypassing them.

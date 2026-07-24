@@ -1,0 +1,60 @@
+---
+title: Core
+description: Responsibilities and boundaries of the engine-neutral toolkit core.
+---
+
+<span class="status status-planned">Planned</span>
+
+The core turns user intent into a normalized, reviewable plan. It should behave the same whether the plan is executed with PowerShell or exported for another engine.
+
+## Core responsibilities
+
+| Capability | Responsibility |
+| --- | --- |
+| Configuration | Load YAML, apply template inheritance, validate schema versions, and record flag overrides |
+| Defaults and policy | Resolve secure defaults, organization policy, regions, naming, tags, and environment constraints |
+| Assessment | Coordinate source discovery and target recommendations without treating migration as assessment |
+| Planning | Build a deterministic resource and action graph with dependencies |
+| Cost | Estimate separately on request and include assumptions, uncertainty, and recurring costs |
+| Catalogs | Resolve approved data sources, software, solution packs, licenses, versions, and checksums |
+| State | Persist run identity, inputs, outputs, provider versions, deployed resources, and cleanup evidence |
+| Reporting | Produce human-readable terminal output, machine-readable records, and HTML reports |
+| Lifecycle | Coordinate deployment, shutdown, resume, teardown preview, confirmation, and removal |
+
+## Configuration precedence
+
+The intended precedence is:
+
+```text
+Schema defaults < selected template < YAML values < explicit command-line flags
+```
+
+The resolved result must be recorded. A reviewer should never need to infer whether a value came from a default, template, file, or flag.
+
+## Operation model
+
+The command surface is not final, but the architecture distinguishes operations such as:
+
+- `Validate`
+- `Assess`
+- `Plan`
+- `EstimateCost`
+- `Deploy`
+- `Probe`
+- `ExportHtml`
+- `Shutdown`
+- `Resume`
+- `TeardownPreview`
+- `Teardown`
+
+Destructive actions require a summary and explicit confirmation. Non-interactive execution will need a separately auditable confirmation mechanism.
+
+## Run state
+
+Run state must not become a secret store. It may hold secret references, hashes, resource identifiers, timestamps, versions, decisions, and probe results. Secret values belong in an approved secret-management system such as Azure Key Vault.
+
+## Durable orchestration
+
+Long-running deployment, validation, and teardown work should survive a terminal or agent session ending. A later session must resume from the recorded run ID and compare recorded state with actual provider state before acting.
+
+Webhooks, schedules, CI jobs, or AI-assisted tasks may request continuation in a future design. A trigger must carry an authenticated identity and idempotency context; it cannot bypass plan review, sensitive-data acknowledgement, secret controls, or destructive-action confirmation.

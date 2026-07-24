@@ -1,0 +1,42 @@
+---
+title: Roadmap
+description: Dependency-ordered delivery path from architecture to multi-platform data labs.
+---
+
+The roadmap is a plan, not a statement of shipped behavior or a delivery commitment.
+
+The authoritative backlog is [FEATURE_REQUESTS.md](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/FEATURE_REQUESTS.md). Work is tracked through [GitHub issues](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/issues) and the public [Azure Data Lab Toolkit Roadmap](https://github.com/users/kaysauter/projects/6/views/1).
+
+## Critical path
+
+```text
+Architecture
+  -> PowerShell module, YAML, flags, and provider contracts
+  -> deterministic planning and run state
+  -> assessment, security, cost, catalogs, CI/CD, and validation
+  -> SQL Server on Azure VM reference provider
+  -> storage, data onboarding, and software delivery
+  -> Azure SQL Database
+  -> Azure SQL Managed Instance
+  -> Microsoft Fabric
+  -> Azure Database for PostgreSQL
+  -> Linux VMs and containers
+  -> Kubernetes
+```
+
+## Phases
+
+| Phase | Main outcome | Status |
+| --- | --- | --- |
+| Foundation | Decision-complete architecture and reusable contracts | <span class="status status-development">In development</span> |
+| SQL VM | First complete, tested lab lifecycle | <span class="status status-planned">Planned</span> |
+| Azure SQL | Managed SQL Database and Managed Instance providers | <span class="status status-planned">Planned</span> |
+| Fabric and PostgreSQL | Guided Fabric lifecycle and managed PostgreSQL | <span class="status status-planned">Planned</span> |
+| Ecosystem | Databricks, additional Git providers, and solution packs | <span class="status status-planned">Planned</span> |
+| Engines and platforms | Bicep, Terraform, Linux, containers, and later Kubernetes | <span class="status status-deferred">Deferred</span> |
+
+## First proof point
+
+Success for the first implementation is not merely creating a VM. It is a complete, repeatable path from YAML through plan, deployment, probes, HTML evidence, and confirmed teardown with cleanup proof.
+
+The backlog currently names Data Migration Assistant in one assessment epic. Current Microsoft-supported assessment paths are being reviewed before implementation; the architecture decision will supersede that planning note.

@@ -1,0 +1,54 @@
+---
+title: Microsoft Fabric Guidance
+description: Planned guidance for Fabric targets, workspaces, items, shortcuts, and CI/CD.
+---
+
+<span class="status status-planned">Planned</span>
+
+The Fabric provider is intended to guide target selection and create understandable workspace and item structures, not merely call provisioning APIs.
+
+## Choosing an item
+
+| Need | Likely starting point | Questions to resolve |
+| --- | --- | --- |
+| Transactional relational application | SQL database in Fabric | Transaction semantics, compatibility, scale, connectivity |
+| Governed relational analytics | Warehouse | Dimensional model, SQL access, loading, concurrency |
+| Spark, open formats, or mixed data | Lakehouse | Delta layout, notebooks, medallion design, data engineering skills |
+
+This is orientation, not an automatic verdict. Assessment evidence and current [Microsoft Fabric documentation](https://learn.microsoft.com/en-us/fabric/fundamentals/microsoft-fabric-overview) remain essential.
+
+## Workspaces and items
+
+The planned provider will guide and validate:
+
+- tenant and capacity prerequisites;
+- workspace purpose, naming, roles, domains, and capacity assignment;
+- item creation and dependencies;
+- environment-specific parameters and connections;
+- test and teardown behavior;
+- what can and cannot be recovered.
+
+## OneLake shortcuts
+
+A shortcut is a reference to data in OneLake or an external store; it is not automatically a copied dataset. Guidance must explain:
+
+- where the data physically remains;
+- which identity and credential are used;
+- how permissions and network access are evaluated;
+- whether source changes are immediately visible;
+- what deleting the shortcut does and does not delete.
+
+See Microsoft's [OneLake shortcuts overview](https://learn.microsoft.com/en-us/fabric/onelake/onelake-shortcuts).
+
+## Fabric CI/CD
+
+Microsoft Fabric currently supports [Git integration and deployment pipelines](https://learn.microsoft.com/en-us/fabric/cicd/cicd-overview), with support and limitations varying by item type. The toolkit should:
+
+- validate Git and deployment-pipeline support for selected items;
+- separate metadata deployment from data movement;
+- support GitHub first while respecting Fabric's supported-provider matrix;
+- preserve environment parameters and access controls;
+- test promoted items after deployment;
+- record unsupported or preview behavior in the plan.
+
+Planned demonstrations include [FUAM](https://github.com/microsoft/fabric-toolbox/tree/main/monitoring/fabric-unified-admin-monitoring), [Rayfin](https://github.com/microsoft/rayfin), and [TMDL](https://learn.microsoft.com/en-us/analysis-services/tmdl/tmdl-overview).

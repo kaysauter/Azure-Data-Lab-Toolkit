@@ -1,0 +1,36 @@
+---
+title: Assessment
+description: Planned source discovery, target-fit guidance, and migration-readiness assessment.
+---
+
+<span class="status status-planned">Planned</span>
+
+Assessment answers **what exists, what it needs, and where it could fit**. It is separate from deployment and migration.
+
+## Assessment dimensions
+
+The planned assessment model covers:
+
+- source inventory, versions, editions, features, dependencies, and data size;
+- compatibility and blockers for candidate targets;
+- workload shape, performance, availability, and recovery needs;
+- identity, network, encryption, sensitive-data, and compliance constraints;
+- licensing and cost implications;
+- migration readiness, downtime tolerance, and validation requirements;
+- confidence, evidence source, and unresolved questions.
+
+The result should compare viable targets rather than force a single recommendation without showing trade-offs.
+
+## SQL Server direction
+
+[SQL Server enabled by Azure Arc](https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/overview) is the preferred first integration point for inventory, best-practices assessment, and migration assessment where its prerequisites and data-collection model are acceptable.
+
+Microsoft's supported SQL assessment path is evolving. The repository backlog still contains older Data Migration Assistant wording; that choice is under review and will not be treated as final architecture.
+
+## Migration is a later operation
+
+BACPAC can be useful for particular import and export scenarios, but it is not an assessment strategy. Migration orchestration, including BACPAC-based flows, is intentionally deferred until target providers, validation, evidence, and rollback expectations are mature.
+
+## Fabric and FUAM
+
+Fabric assessment should validate tenant, capacity, workspace, item, security, and lifecycle prerequisites. When an existing [Fabric Unified Admin Monitoring](https://github.com/microsoft/fabric-toolbox/tree/main/monitoring/fabric-unified-admin-monitoring) deployment is detected, the toolkit should offer to validate and preserve it before proposing repair or replacement. No destructive action should follow from detection alone.

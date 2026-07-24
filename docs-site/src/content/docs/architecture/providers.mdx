@@ -1,0 +1,50 @@
+---
+title: Providers And Targets
+description: The provider contract and the planned target sequence.
+---
+
+<span class="status status-planned">Planned</span>
+
+A provider is a target-specific adapter behind a stable lifecycle contract. Providers may represent deployment targets, storage, software catalogs, Git services, or assessment capabilities.
+
+## Provider contract
+
+Each provider is expected to:
+
+- declare supported capabilities and engine compatibility;
+- validate configuration, prerequisites, permissions, regions, quotas, and policy;
+- contribute normalized plan nodes and dependencies;
+- expose cost inputs and material caveats;
+- deploy or export only through an approved engine path;
+- probe the resulting state;
+- preview and perform cleanup;
+- emit structured evidence.
+
+The detailed sequence is defined in [Provider Lifecycle](../provider-lifecycle/).
+
+## Deployment targets
+
+| Target | Status | Role in the roadmap |
+| --- | --- | --- |
+| SQL Server on Azure VM | <span class="status status-planned">Planned</span> | First provider and proving ground |
+| Azure SQL Database | <span class="status status-planned">Planned</span> | First managed SQL service |
+| Azure SQL Managed Instance | <span class="status status-planned">Planned</span> | Managed instance and network-heavy scenarios |
+| Microsoft Fabric | <span class="status status-planned">Planned</span> | Guided workspace and item scenarios |
+| Azure Database for PostgreSQL | <span class="status status-planned">Planned</span> | Managed PostgreSQL |
+| Linux VMs and containers | <span class="status status-deferred">Deferred</span> | SQL Server and PostgreSQL portability |
+| Kubernetes | <span class="status status-deferred">Deferred</span> | Later orchestration target |
+
+## Supporting providers
+
+Planned supporting providers include:
+
+- Azure Storage, including ADLS Gen2 and Azure Files;
+- GitHub first, with Azure DevOps, GitLab, Gitea, and Forgejo in the backlog;
+- software and solution-pack catalogs;
+- sample, generated, private, local, and URL-based data sources;
+- assessment and migration tooling;
+- Azure Databricks and future data-service providers.
+
+## Capability negotiation
+
+The core should ask providers what they support instead of relying on target-name conditionals. Engine support, private networking, stop/start semantics, cost-estimate quality, data-loading methods, and teardown behavior should all be declared capabilities.

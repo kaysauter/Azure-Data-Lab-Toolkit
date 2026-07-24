@@ -1,0 +1,52 @@
+---
+title: Testing Strategy
+description: Planned automated verification from unit tests through live Azure cleanup proof.
+---
+
+<span class="status status-planned">Planned</span>
+
+Testing must prove both creation and cleanup. A successful deployment with leaked resources is a failed lab run.
+
+## Test layers
+
+| Layer | Runs | Focus |
+| --- | --- | --- |
+| Static and schema | Every PR | YAML schemas, examples, formatting, PowerShell analysis, generated docs |
+| Unit | Every PR | Pure core logic, redaction, precedence, naming, planning, cost calculations |
+| Provider contract | Every PR | Lifecycle shape, capabilities, normalized actions, errors, and teardown preview |
+| Fixture and snapshot | Every PR | Deterministic plans and reports without Azure changes |
+| What-if | Approved PRs or scheduled | Azure validation and resource intent without deployment |
+| Live smoke | Protected, narrow | One representative deploy, probe, report, and teardown |
+| Nightly matrix | Scheduled | Providers, engines, regions, versions, images, and failure recovery |
+| Release | Tagged candidate | Packaging, install, upgrade, compatibility, security, and end-to-end evidence |
+
+## SQL VM reference test
+
+The first complete acceptance path is:
+
+```text
+YAML
+  -> validated and normalized plan
+  -> cost and security review
+  -> deployed SQL Server on Azure VM lab
+  -> data/tool setup
+  -> provider probes and HTML report
+  -> confirmed teardown
+  -> Azure cleanup proof
+```
+
+## Failure-path coverage
+
+Tests should inject failures after resource creation, guest setup, data transfer, and probe execution. Recovery must resume safely, avoid duplicate actions, and preserve evidence.
+
+## Cost control
+
+Live tests require unique tags, constrained SKUs, approved regions, a short TTL, budget alerts, concurrency limits, and cleanup that runs even when tests fail. A scheduled sweeper should report expired resources but must not delete unknown resources without policy and confirmation.
+
+## Security and vulnerability verification
+
+CI should combine Pester, PowerShell analysis, secret scanning, dependency review, Dependabot, CodeQL, Checkov when infrastructure code exists, and maintained filesystem/container vulnerability scanning. Release evidence should record tool versions and scan results.
+
+## Test data
+
+PR tests use synthetic or redistributable fixtures. Real or sensitive databases belong only in explicitly approved environments with redacted reports and verified deletion.

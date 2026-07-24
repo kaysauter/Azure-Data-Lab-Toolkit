@@ -1,0 +1,50 @@
+---
+title: Cost And Lifecycle
+description: Planned cost estimates, budgets, shutdown controls, and teardown evidence.
+---
+
+<span class="status status-planned">Planned</span>
+
+A disposable lab is only useful when its likely cost and lifetime are visible before deployment.
+
+## Explicit cost estimation
+
+Cost estimation will be its own operation and explicit flag. It will accept the same YAML input as planning and deployment, then produce:
+
+- a terminal summary;
+- machine-readable values and assumptions;
+- an HTML report suitable for review or CI artifacts;
+- one-time and recurring cost categories;
+- known omissions and uncertainty;
+- the price timestamp, currency, region, SKU, and source.
+
+An estimate is not a quote. Azure prices, discounts, reservations, taxes, data transfer, licenses, and organization agreements can change the actual charge.
+
+## Budget guardrails
+
+The planned model supports:
+
+- an expected lab budget;
+- a warning threshold;
+- an optional Azure budget resource where supported;
+- required tags for owner, purpose, expiry, and cost allocation;
+- policy checks when estimated cost exceeds the declared limit.
+
+Budget alerts are notifications, not hard spending caps. The report must explain this.
+
+## Lifecycle controls
+
+| Control | Intended behavior |
+| --- | --- |
+| Time to live | Record an expiry time and surface overdue resources |
+| Shutdown | Stop targets that support it on demand or on an approved schedule |
+| Resume | Revalidate state and dependencies before restarting |
+| Teardown preview | List resources to remove, retain, or treat as unknown |
+| Confirmation | Require approval after the deletion summary |
+| Cleanup proof | Requery Azure and record what was removed or remains |
+
+The toolkit should never claim that stopping a resource makes the entire lab free. Disks, snapshots, public IPs, Bastion, storage, Fabric capacity, logging, and other services may continue to incur charges.
+
+## Failure and recovery
+
+Interrupted deployments and teardowns must be resumable. The run record should distinguish completed, pending, failed, drifted, and unknown actions. Unexpected resources require review rather than automatic deletion.

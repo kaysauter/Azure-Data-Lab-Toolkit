@@ -1,0 +1,62 @@
+---
+title: Architecture Overview
+description: The Core, Providers, and Engines model for Azure Data Lab Toolkit.
+---
+
+<span class="status status-development">In development</span>
+
+Azure Data Lab Toolkit separates **what a lab should become** from **how a specific service is deployed**. This keeps validation, security, cost, evidence, and lifecycle behavior consistent as new targets are added.
+
+![Azure Data Lab Toolkit architecture showing inputs, the three architecture layers, targets, and outputs](/Azure-Data-Lab-Toolkit/data-lab-architecture.svg)
+
+## Three layers
+
+| Layer | Owns | Must not own |
+| --- | --- | --- |
+| [Core](./core/) | Schema, defaults, validation, assessment orchestration, planning, policy, catalogs, run state, reports, lifecycle | Azure-service implementation details |
+| [Providers](./providers/) | Target capabilities, constraints, deployment resources, probes, and teardown behavior | A competing configuration or state model |
+| [Engines](./engines/) | Applying or exporting a normalized plan through PowerShell, Bicep, or Terraform | Target-specific business rules already owned by providers |
+
+## Architectural flow
+
+```text
+YAML + explicit flags + selected template
+                  |
+                  v
+       Resolve -> Validate -> Assess
+                  |
+                  v
+          Normalize -> Plan -> Estimate
+                  |
+                  v
+           Confirm -> Execute/Export
+                  |
+                  v
+             Probe -> Report
+                  |
+                  v
+      Shutdown/Resume/Teardown Preview
+```
+
+Every run should produce evidence that can answer:
+
+- Which input, template, schema, and toolkit version were used?
+- Which defaults and policies changed the requested configuration?
+- Which resources and artifacts were planned?
+- Which identity performed each action?
+- What did the operation cost or estimate?
+- Which probes passed, failed, or were skipped?
+- What remains after teardown?
+
+## Design rules
+
+- PowerShell is the first execution route, not the only future route.
+- YAML is the durable declarative input.
+- Flags override only explicitly supported settings and remain visible in the resolved plan.
+- Providers declare capabilities; the core does not guess them.
+- Assessment is distinct from migration and deployment.
+- Planning, cost estimation, and teardown preview remain useful without making changes.
+- Secrets, sensitive data, licenses, and external artifacts are explicit governed inputs.
+- The same plan and evidence contracts support local use and CI/CD.
+
+The root [architecture document](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/architecture/README.md) is the repository-level decision record.

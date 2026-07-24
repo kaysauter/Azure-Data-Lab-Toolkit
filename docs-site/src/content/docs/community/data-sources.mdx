@@ -1,0 +1,45 @@
+---
+title: Sample And Data Sources
+description: Planned catalog for sample, community, generated, private, local, and URL-based data.
+---
+
+<span class="status status-planned">Planned candidates</span>
+
+The data catalog will treat ownership, license, provenance, sensitivity, compatibility, size, and restore method as first-class metadata.
+
+## Candidate public sources
+
+| Source | Owner or steward | Intended targets |
+| --- | --- | --- |
+| [Microsoft SQL Server samples](https://github.com/microsoft/sql-server-samples) | Microsoft and contributors | SQL Server and Azure SQL |
+| [AdventureWorks](https://github.com/microsoft/sql-server-samples/tree/master/samples/databases/adventure-works) | Microsoft | SQL Server and compatible Azure SQL scenarios |
+| [Wide World Importers](https://github.com/microsoft/sql-server-samples/tree/master/samples/databases/wide-world-importers) | Microsoft sample team and named authors | SQL Server and analytics scenarios |
+| [Northwind and pubs](https://github.com/Microsoft/sql-server-samples/tree/master/samples/databases/northwind-pubs) | Microsoft | Legacy teaching scenarios |
+| [SQL Sunday downloads](https://sqlsunday.com/downloads/) | Daniel Hutmacher and underlying data providers | SQL Server demonstrations |
+| [Stack Overflow SQL Server database](https://www.brentozar.com/archive/2015/10/how-to-download-the-stack-overflow-database-via-bittorrent/) | Stack Exchange authors; packaged for SQL Server by Brent Ozar | Larger SQL Server workloads |
+| [Contoso Data Generator](https://www.sqlbi.com/tools/contoso-data-generator/) | SQLBI | Tabular and Fabric learning scenarios |
+| [PostgreSQL sample database index](https://wiki.postgresql.org/wiki/Sample_Databases) | PostgreSQL community | PostgreSQL |
+| [Pagila](https://github.com/devrimgunduz/pagila) | Devrim Gündüz and contributors; derived from Sakila | PostgreSQL |
+| [Chinook](https://github.com/lerocha/chinook-database) | Luis Rocha and contributors | Multiple database platforms |
+| [Northwind for PostgreSQL](https://github.com/pthom/northwind_psql) | Pascal Thomet and contributors | PostgreSQL |
+
+These are candidates, not bundled datasets. Each integration needs a license and redistribution review. A database package and the underlying data can have different owners and terms.
+
+## User-provided data
+
+Planned source types include:
+
+- local files and directories;
+- approved HTTPS URLs;
+- Azure Blob Storage, ADLS Gen2, and Azure Files;
+- existing databases or backups;
+- generated and synthetic data;
+- private catalog entries.
+
+Real data must require an explicit sensitive-data acknowledgement and policy validation. Credentials belong in Key Vault or an equivalent approved secret store, not in YAML.
+
+## Restore and import
+
+Restore methods depend on the target and artifact: native backup restore, URL restore, scripts, bulk load, logical dump, import APIs, shortcuts, or generated data. The catalog must preserve checksums and source-relative metadata so evidence can show exactly what was loaded.
+
+Migration mechanisms such as BACPAC are deferred and must not be described as assessment.

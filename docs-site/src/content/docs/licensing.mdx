@@ -1,0 +1,42 @@
+---
+title: Licensing
+description: Toolkit licensing and the responsibilities attached to Microsoft and third-party software.
+---
+
+:::danger[Do not assume SQL Server is free]
+The toolkit does not grant SQL Server use rights. Microsoft licenses SQL Server Developer editions for development, testing, and demonstration, not production. SQL Server Express has separate no-cost rights and technical limits. Paid editions, Azure services, Windows, and third-party software can add license and usage obligations. Microsoft's current Product Terms and your agreements are definitive.
+:::
+
+Azure Data Lab Toolkit is licensed under the [MIT License](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/LICENSE). That license covers this repository only.
+
+## Authoritative Microsoft sources
+
+- [SQL Server licensing guidance](https://www.microsoft.com/licensing/guidance/SQL)
+- [Microsoft Product Terms](https://www.microsoft.com/licensing/terms/)
+- [SQL Server on Azure VM pricing guidance](https://learn.microsoft.com/en-us/azure/azure-sql/virtual-machines/windows/pricing-guidance)
+- [SQL Server editions and supported features](https://learn.microsoft.com/en-us/sql/sql-server/editions-and-components-of-sql-server-2025)
+- [Azure SQL pricing](https://azure.microsoft.com/pricing/details/azure-sql-database/)
+- [Microsoft Fabric pricing](https://azure.microsoft.com/pricing/details/microsoft-fabric/)
+
+Microsoft's pages, license terms, and the user's own commercial agreement take precedence over this documentation. This page is an awareness aid, not legal advice.
+
+## Catalog responsibilities
+
+Before a tool or data source can be automated, its catalog record should identify:
+
+- owner and contributors;
+- official project and source links;
+- license or commercial terms;
+- whether redistribution is permitted;
+- whether installation requires acceptance or a separate purchase;
+- required attribution;
+- version, checksum, and provenance;
+- any restrictions on sample or real data.
+
+Open source, source-available, freeware, free tiers, trials, commercial products, public data, and redistributable data are different categories. The UI and reports should preserve those distinctions.
+
+## Candidate versus distributed dependency
+
+A project listed in the roadmap or community catalog is a **candidate**. It becomes a distributed or downloaded dependency only when an implementation explicitly integrates it. Release-specific [Third-party Notices](../third-party-notices/) will record that difference.
+
+The older Azure SQLVM Toolkit has its own [third-party notices](https://kaysauter.github.io/azure-sqlvm-toolkit/third-party-notices/). Those notices do not describe dependencies of this new repository.

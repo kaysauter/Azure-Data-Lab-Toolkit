@@ -1,0 +1,44 @@
+---
+title: Development
+description: Repository boundaries, contribution flow, and architecture governance.
+---
+
+:::note[Current state]
+The repository is an architecture scaffold. Development instructions will grow with the module; there is no installable toolkit to build or publish yet.
+:::
+
+## Planned repository boundaries
+
+| Path | Responsibility |
+| --- | --- |
+| `architecture/` | System design, provider contracts, decision records, and trust boundaries |
+| `src/` | PowerShell module, core services, providers, and deployment engines |
+| `tests/` | Unit, contract, integration, live deployment, and teardown tests |
+| `docs-site/` | Astro/Starlight documentation and Slidev pitch deck |
+| `.github/workflows/` | Pull-request, security, release, documentation, and deployment-test workflows |
+
+## Contribution sequence
+
+1. Link the change to a feature request and GitHub issue.
+2. Record a decision when the change affects public contracts, security, cost, state, or provider boundaries.
+3. Implement the smallest provider-independent contract first.
+4. Add focused tests and failure-path evidence.
+5. Update documentation with an honest status label.
+6. Run security, dependency, vulnerability, build, and link checks.
+7. Use a reviewed pull request; protect live Azure environments.
+
+## Compatibility
+
+The new module is named `AzureDataLabToolkit`. No legacy aliases from Azure SQLVM Toolkit are planned. When public cmdlets and schemas exist, breaking changes will require explicit versioning and migration guidance.
+
+## Architecture governance
+
+The [repository architecture document](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/architecture/README.md) defines the current layer model. Future architecture decision records should capture:
+
+- context and decision;
+- alternatives considered;
+- security, identity, network, cost, license, and data implications;
+- compatibility and migration consequences;
+- test and rollback strategy.
+
+See [Testing Strategy](../testing/) and [Roadmap](../roadmap/).

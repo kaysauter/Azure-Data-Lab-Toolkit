@@ -1,0 +1,48 @@
+---
+title: Git And CI/CD
+description: Planned Git providers and automated quality, security, deployment, and cleanup workflows.
+---
+
+<span class="status status-planned">Planned</span>
+
+GitHub is the first repository and CI/CD provider. Azure DevOps, GitLab, Gitea, and Forgejo remain in the provider backlog.
+
+## Pull-request checks
+
+The planned GitHub workflow includes:
+
+| Gate | Purpose |
+| --- | --- |
+| Schema and examples | Validate every shipped template and configuration example |
+| Pester | Test the module, provider contracts, planners, redaction, and failure paths |
+| PowerShell analysis | Enforce style and catch common PowerShell defects |
+| Dependency Review and Dependabot | Identify vulnerable or outdated dependencies and actions |
+| CodeQL | Analyze supported source languages for security issues |
+| Secret scanning | Prevent credentials from entering history |
+| Checkov | Scan Bicep, Terraform, workflow, and related infrastructure policy when those files exist |
+| Vulnerability scan | Scan repository, filesystem, containers, and generated artifacts with a maintained scanner |
+| Docs build and link check | Keep architecture, references, and the pitch deployable |
+
+These tools reduce risk; none proves that a deployment is secure.
+
+## Live deployment tests
+
+PRs should stay fast and avoid uncontrolled Azure cost. Live tests belong in protected environments with:
+
+- OpenID Connect federation and least-privilege identities;
+- explicit subscription, region, quota, and budget allowlists;
+- unique naming and tags;
+- short TTLs and scheduled cleanup;
+- probes that validate the deployed outcome;
+- teardown in failure paths;
+- a final cleanup query and retained evidence report.
+
+Small smoke tests may run on approved changes. Broader provider, target, region, and engine matrices should run on a schedule.
+
+## Fabric CI/CD
+
+Fabric automation must use Fabric's supported Git integration, REST APIs, and deployment pipelines according to item capability. Git may track metadata while leaving tables and files untouched; the plan and test report must make that boundary visible.
+
+## Self-hosted Git
+
+Gitea and Forgejo on Azure containers are possible future lab targets, but they introduce persistent storage, upgrades, backups, identity, ingress, certificate, vulnerability, and teardown responsibilities. They should not be treated as a small variation of hosted GitHub.

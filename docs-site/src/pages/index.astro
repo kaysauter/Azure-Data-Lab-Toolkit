@@ -1,0 +1,551 @@
+---
+const base = '/Azure-Data-Lab-Toolkit';
+const links = {
+	docs: `${base}/overview/`,
+	deck: `${base}/pitch/deck/`,
+	roadmap: `${base}/roadmap/`,
+	suggest: `${base}/community/suggest-a-project/`,
+	github: 'https://github.com/kaysauter/Azure-Data-Lab-Toolkit',
+};
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="dark light" />
+		<title>Azure Data Lab Toolkit</title>
+		<meta
+			name="description"
+			content="Architecture and roadmap for repeatable, security-minded, cost-aware data labs across Azure and self-managed data platforms."
+		/>
+		<script is:inline>
+			const savedTheme = localStorage.getItem('starlight-theme');
+			document.documentElement.dataset.theme = savedTheme === 'light' ? 'light' : 'dark';
+		</script>
+		<style>
+			:root {
+				color-scheme: dark;
+				--page: #0b1317;
+				--surface: #121e24;
+				--surface-2: #17262d;
+				--text: #f4f8fb;
+				--muted: #aab9c3;
+				--line: #34464f;
+				--accent: #53c9da;
+				--accent-strong: #78d9e7;
+				--accent-text: #061619;
+				--warning: #f1bd55;
+				--danger: #ff7373;
+				--danger-surface: #37191d;
+				font-family:
+					Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+					sans-serif;
+				background: var(--page);
+				color: var(--text);
+			}
+
+			:root[data-theme='light'] {
+				color-scheme: light;
+				--page: #f7fafb;
+				--surface: #ffffff;
+				--surface-2: #edf3f4;
+				--text: #142026;
+				--muted: #506169;
+				--line: #c5d1d5;
+				--accent: #087f8c;
+				--accent-strong: #076d78;
+				--accent-text: #ffffff;
+				--warning: #795800;
+				--danger: #a6202a;
+				--danger-surface: #ffecee;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			html {
+				scroll-behavior: smooth;
+			}
+
+			body {
+				margin: 0;
+				background: var(--page);
+			}
+
+			a {
+				color: inherit;
+			}
+
+			.site-header {
+				position: sticky;
+				top: 0;
+				z-index: 20;
+				border-bottom: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+				background: color-mix(in srgb, var(--page) 94%, transparent);
+				backdrop-filter: blur(12px);
+			}
+
+			.header-inner,
+			.content {
+				width: min(1180px, calc(100% - 40px));
+				margin: 0 auto;
+			}
+
+			.header-inner {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				min-height: 64px;
+				gap: 20px;
+			}
+
+			.brand {
+				font-size: 0.92rem;
+				font-weight: 800;
+				text-decoration: none;
+			}
+
+			.header-actions,
+			.theme-control,
+			.actions {
+				display: flex;
+				align-items: center;
+			}
+
+			.header-actions {
+				gap: 18px;
+			}
+
+			.header-link {
+				color: var(--muted);
+				font-size: 0.86rem;
+				font-weight: 650;
+				text-decoration: none;
+			}
+
+			.header-link:hover {
+				color: var(--text);
+			}
+
+			.theme-control {
+				border: 1px solid var(--line);
+				border-radius: 6px;
+				padding: 2px;
+				background: var(--surface);
+			}
+
+			.theme-control button {
+				min-height: 30px;
+				border: 0;
+				border-radius: 4px;
+				padding: 4px 9px;
+				background: transparent;
+				color: var(--muted);
+				font: inherit;
+				font-size: 0.75rem;
+				font-weight: 700;
+				cursor: pointer;
+			}
+
+			.theme-control button[aria-pressed='true'] {
+				background: var(--surface-2);
+				color: var(--text);
+			}
+
+			main {
+				overflow: hidden;
+			}
+
+			.hero {
+				display: grid;
+				grid-template-columns: minmax(0, 0.92fr) minmax(480px, 1.08fr);
+				align-items: center;
+				gap: 56px;
+				min-height: calc(100svh - 154px);
+				padding: 64px 0 54px;
+			}
+
+			.kicker {
+				margin: 0 0 14px;
+				color: var(--accent-strong);
+				font-size: 0.78rem;
+				font-weight: 800;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+			}
+
+			h1,
+			h2,
+			h3,
+			p {
+				margin-top: 0;
+			}
+
+			h1 {
+				margin-bottom: 20px;
+				max-width: 12ch;
+				font-size: 4.2rem;
+				line-height: 0.98;
+				letter-spacing: 0;
+			}
+
+			.lede {
+				max-width: 58ch;
+				margin-bottom: 22px;
+				color: var(--muted);
+				font-size: 1.12rem;
+				line-height: 1.65;
+			}
+
+			.status-warning {
+				max-width: 64ch;
+				border-left: 4px solid var(--danger);
+				padding: 10px 14px;
+				background: var(--danger-surface);
+				color: var(--text);
+				font-size: 0.9rem;
+				line-height: 1.5;
+			}
+
+			.status-warning strong {
+				color: var(--danger);
+			}
+
+			.actions {
+				flex-wrap: wrap;
+				gap: 10px;
+				margin-top: 24px;
+			}
+
+			.button {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				min-height: 44px;
+				border: 1px solid var(--line);
+				border-radius: 6px;
+				padding: 9px 15px;
+				background: var(--surface);
+				color: var(--text);
+				font-size: 0.9rem;
+				font-weight: 750;
+				text-decoration: none;
+			}
+
+			.button:hover {
+				border-color: var(--accent);
+			}
+
+			.button.primary {
+				border-color: var(--accent);
+				background: var(--accent);
+				color: var(--accent-text);
+			}
+
+			.architecture-visual {
+				margin: 0;
+			}
+
+			.architecture-visual img {
+				display: block;
+				width: 100%;
+				height: auto;
+				border: 1px solid var(--line);
+				border-radius: 8px;
+				box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+			}
+
+			.architecture-visual figcaption {
+				margin-top: 10px;
+				color: var(--muted);
+				font-size: 0.78rem;
+				line-height: 1.4;
+			}
+
+			.section-band {
+				border-top: 1px solid var(--line);
+				padding: 58px 0 64px;
+			}
+
+			.section-heading {
+				display: grid;
+				grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+				gap: 40px;
+				align-items: start;
+			}
+
+			h2 {
+				font-size: 2rem;
+				line-height: 1.15;
+				letter-spacing: 0;
+			}
+
+			.section-heading > p {
+				max-width: 66ch;
+				color: var(--muted);
+				line-height: 1.65;
+			}
+
+			.capability-grid {
+				display: grid;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				gap: 14px;
+				margin-top: 36px;
+			}
+
+			.capability {
+				min-height: 172px;
+				border: 1px solid var(--line);
+				border-radius: 8px;
+				padding: 20px;
+				background: var(--surface);
+			}
+
+			.capability h3 {
+				margin-bottom: 10px;
+				font-size: 1rem;
+			}
+
+			.capability p {
+				margin-bottom: 0;
+				color: var(--muted);
+				font-size: 0.9rem;
+				line-height: 1.55;
+			}
+
+			.status-label {
+				display: inline-block;
+				margin-bottom: 16px;
+				border: 1px solid color-mix(in srgb, var(--warning) 70%, var(--line));
+				border-radius: 4px;
+				padding: 3px 7px;
+				color: var(--warning);
+				font-size: 0.7rem;
+				font-weight: 800;
+				text-transform: uppercase;
+			}
+
+			.next-step {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 32px;
+			}
+
+			.next-step p {
+				max-width: 70ch;
+				margin-bottom: 0;
+				color: var(--muted);
+				line-height: 1.6;
+			}
+
+			footer {
+				border-top: 1px solid var(--line);
+				padding: 28px 0 34px;
+				color: var(--muted);
+				font-size: 0.78rem;
+			}
+
+			@media (max-width: 920px) {
+				.hero {
+					grid-template-columns: 1fr;
+					gap: 32px;
+					min-height: auto;
+					padding-top: 46px;
+				}
+
+				h1 {
+					font-size: 3.4rem;
+				}
+
+				.architecture-visual {
+					max-width: 760px;
+				}
+
+				.section-heading {
+					grid-template-columns: 1fr;
+					gap: 4px;
+				}
+
+				.capability-grid {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			@media (max-width: 620px) {
+				.header-inner,
+				.content {
+					width: min(100% - 28px, 1180px);
+				}
+
+				.header-actions {
+					gap: 10px;
+				}
+
+				.header-link {
+					display: none;
+				}
+
+				.hero {
+					gap: 26px;
+					padding: 34px 0 42px;
+				}
+
+				h1 {
+					font-size: 2.7rem;
+				}
+
+				.lede {
+					font-size: 1rem;
+				}
+
+				.architecture-visual figcaption {
+					display: none;
+				}
+
+				.architecture-visual {
+					width: min(300px, 100%);
+					margin-right: auto;
+					margin-left: auto;
+				}
+
+				.section-band {
+					padding: 44px 0;
+				}
+
+				.next-step {
+					align-items: flex-start;
+					flex-direction: column;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="header-inner">
+				<a class="brand" href={`${base}/`}>Azure Data Lab Toolkit</a>
+				<div class="header-actions">
+					<a class="header-link" href={links.docs}>Documentation</a>
+					<a class="header-link" href={links.github}>GitHub</a>
+					<div class="theme-control" role="group" aria-label="Color theme">
+						<button type="button" data-theme-choice="dark" aria-pressed="true">Dark</button>
+						<button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		<main>
+			<div class="content">
+				<section class="hero">
+					<div>
+						<p class="kicker">Architecture and roadmap</p>
+						<h1>Azure Data Lab Toolkit</h1>
+						<p class="lede">
+							Define a data lab once, review its security and cost implications, deploy it
+							consistently, prove that it works, and remove it cleanly.
+						</p>
+						<div class="status-warning">
+							<strong>Early architecture scaffold.</strong> No deployable cmdlets exist yet.
+							SQL Server on Azure VM is the first implementation target.
+						</div>
+						<div class="actions">
+							<a class="button primary" href={links.deck}>Open pitch deck</a>
+							<a class="button" href={links.docs}>Read the documentation</a>
+						</div>
+					</div>
+					<figure class="architecture-visual">
+						<img
+							src={`${base}/data-lab-architecture.svg`}
+							alt="YAML and templates flow through the toolkit core, providers, and deployment engines to data targets and evidence outputs"
+						/>
+						<figcaption>
+							One engine-neutral plan, specialized providers, and multiple deployment routes.
+						</figcaption>
+					</figure>
+				</section>
+			</div>
+
+			<section class="section-band">
+				<div class="content">
+					<div class="section-heading">
+						<h2>A lab lifecycle, not a provisioning shortcut</h2>
+						<p>
+							The architecture treats assessment, licensing, identity, data provenance,
+							validation, cost, and teardown as part of the same reviewable system.
+						</p>
+					</div>
+					<div class="capability-grid">
+						<article class="capability">
+							<span class="status-label">First target</span>
+							<h3>SQL Server on Azure VM</h3>
+							<p>
+								The reference provider will exercise networking, Key Vault, Bastion, guest setup,
+								storage, restore, software, probes, and cleanup.
+							</p>
+						</article>
+						<article class="capability">
+							<span class="status-label">Architecture</span>
+							<h3>Core, providers, engines</h3>
+							<p>
+								PowerShell comes first. Bicep and Terraform follow after the normalized plan and
+								provider contracts are proven.
+							</p>
+						</article>
+						<article class="capability">
+							<span class="status-label">Community</span>
+							<h3>Governed catalogs</h3>
+							<p>
+								Sample data and tools retain visible ownership, licensing, provenance, versions,
+								checksums, compatibility, and sensitivity metadata.
+							</p>
+						</article>
+					</div>
+				</div>
+			</section>
+
+			<section class="section-band">
+				<div class="content next-step">
+					<div>
+						<h2>Follow the decisions as they become real</h2>
+						<p>
+							The roadmap starts with a complete SQL VM lifecycle, then extends the tested core to
+							Azure SQL, Microsoft Fabric, PostgreSQL, containers, and later Kubernetes.
+						</p>
+					</div>
+					<div class="actions">
+						<a class="button primary" href={links.roadmap}>View roadmap</a>
+						<a class="button" href={links.suggest}>Suggest a project</a>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<footer>
+			<div class="content">
+				Azure Data Lab Toolkit is an early, open-source project by Kay Sauter.
+			</div>
+		</footer>
+
+		<script>
+			const buttons = document.querySelectorAll<HTMLButtonElement>('[data-theme-choice]');
+			const applyTheme = (theme: 'dark' | 'light') => {
+				document.documentElement.dataset.theme = theme;
+				localStorage.setItem('starlight-theme', theme);
+				for (const button of buttons) {
+					button.setAttribute('aria-pressed', String(button.dataset.themeChoice === theme));
+				}
+			};
+
+			applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+			for (const button of buttons) {
+				button.addEventListener('click', () => {
+					applyTheme(button.dataset.themeChoice === 'light' ? 'light' : 'dark');
+				});
+			}
+		</script>
+	</body>
+</html>

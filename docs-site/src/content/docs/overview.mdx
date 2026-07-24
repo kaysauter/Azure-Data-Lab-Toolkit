@@ -1,0 +1,54 @@
+---
+title: Overview
+description: The goal, scope, and design direction of Azure Data Lab Toolkit.
+---
+
+:::danger[Early architecture scaffold]
+Azure Data Lab Toolkit is in heavy development. There are no deployable cmdlets yet, and the project is not production-ready. These pages describe the intended architecture and dependency-ordered roadmap, not released behavior.
+:::
+
+Azure Data Lab Toolkit is a planned PowerShell module for creating repeatable data labs in Azure. Its purpose is to bring infrastructure, databases, sample data, assessment, community tools, testing, cost controls, and teardown into one understandable workflow.
+
+The first implementation target is **SQL Server on Azure VM**. That target gives the project a demanding proving ground for identity, networking, storage, guest configuration, software installation, testing, and cleanup before the same core is extended to managed data services.
+
+## Intended experience
+
+The planned workflow starts with a schema-validated YAML file:
+
+1. Select a template or describe a lab.
+2. Validate prerequisites, permissions, regions, quotas, and policy.
+3. Assess the source and intended target.
+4. Review a deterministic plan and an explicit cost estimate.
+5. Confirm any sensitive-data or destructive operation.
+6. Deploy through PowerShell initially, with Bicep and Terraform engines planned later.
+7. Load approved sample, community, generated, private, local, or URL-based data.
+8. Install approved software and solution packs.
+9. Probe the environment and export an HTML evidence report.
+10. Shut down, resume, or remove the lab with lifecycle guardrails.
+
+Templates, command-line flags, and a future terminal UI are intended to serve different experience levels without creating different underlying behaviors.
+
+## Architecture at a glance
+
+![Azure Data Lab Toolkit architecture showing YAML input flowing through Core, Providers, and Engines to Azure targets and evidence outputs](/Azure-Data-Lab-Toolkit/data-lab-architecture.svg)
+
+The design separates reusable decisions from target-specific behavior:
+
+- **Core** owns configuration, validation, planning, policy, catalogs, run state, reporting, and lifecycle controls.
+- **Providers** understand a particular target or capability, such as SQL Server on Azure VM, Microsoft Fabric, storage, or Git.
+- **Engines** execute or export the plan through PowerShell, Bicep, or Terraform.
+
+Read [Architecture Overview](../architecture/) for the full model.
+
+## Project relationship
+
+[Azure SQLVM Toolkit](https://github.com/kaysauter/azure-sqlvm-toolkit) remains the current working SQL Server VM project and a source of lessons for the new architecture. Its [published documentation](https://kaysauter.github.io/azure-sqlvm-toolkit/) records the behavior of that project.
+
+Azure Data Lab Toolkit is a new repository and design. Features from the older toolkit are not automatically available here.
+
+## Where to go next
+
+- [Project Status](../status/) separates current work from planned capabilities.
+- [Pitch Deck](../pitch/deck/) presents the idea in a meeting-friendly format.
+- [Roadmap](../roadmap/) shows the dependency path.
+- [Suggest a Project](../community/suggest-a-project/) explains how maintainers can propose tools or data sources.

@@ -1,0 +1,42 @@
+---
+title: Tools And Solution Packs
+description: Planned governed catalog for community and commercial data tools.
+---
+
+<span class="status status-planned">Planned candidates</span>
+
+The toolkit is intended to make useful projects easier to evaluate and demonstrate. Listing a project here gives credit and records interest; it does not mean the toolkit bundles, redistributes, endorses, or has implemented it.
+
+| Candidate | Maintainer or organization | Type | Intended scenario |
+| --- | --- | --- | --- |
+| [dbatools](https://dbatools.io/) | Chrissy LeMaire, core team, and contributors | MIT open source | SQL Server administration, migration, and restore workflows |
+| [First Responder Kit](https://www.brentozar.com/first-aid/) | Brent Ozar Unlimited and contributors | MIT open source | SQL Server health and performance demonstrations |
+| [Tabular Editor](https://tabulareditor.com/) | Daniel Otykier and Tabular Editor | TE2 open source; TE3 commercial | Semantic-model development |
+| [pbi-tools](https://pbi.tools/) | Mathias Thierbach and contributors | AGPLv3 open source | Source control and automation for Power BI artifacts |
+| [TMDL](https://learn.microsoft.com/en-us/analysis-services/tmdl/tmdl-overview) | Microsoft and contributors | Microsoft technology | Text-based semantic-model definitions |
+| [FUAM](https://github.com/microsoft/fabric-toolbox/tree/main/monitoring/fabric-unified-admin-monitoring) | Community accelerator in Microsoft Fabric Toolbox | MIT open source | Fabric administration monitoring |
+| [Rayfin](https://github.com/microsoft/rayfin) | Microsoft | MIT SDK plus managed-service terms | Code-first Fabric backend demonstrations |
+| [Measure Killer](https://measurekiller.com/) | Brunner BI GmbH | Free and paid commercial editions | Semantic-model cleanup and governance |
+| [SQL Server Maintenance Solution](https://ola.hallengren.com/) | Ola Hallengren and contributors | MIT open source | Backup, integrity, index, and statistics maintenance |
+| [SQL Server Management Studio](https://learn.microsoft.com/en-us/ssms/install/install) | Microsoft | Proprietary | SQL Server administration |
+
+## Catalog contract
+
+Every future integration must record:
+
+- canonical project and download sources;
+- owner, license, attribution, and redistribution rules;
+- supported platforms and target providers;
+- pinned version and update policy;
+- checksum or signature, with user-supplied checksum support;
+- required privileges and network access;
+- silent-install capability and arguments;
+- verification and uninstall behavior.
+
+Private or internal software may be supplied through an approved local path or URL. The same checksum, provenance, secret, and report-redaction requirements apply.
+
+## Solution packs
+
+A solution pack will combine data, tools, configuration, probes, and learning outcomes around one reproducible scenario. It must reference catalog records rather than hide ad hoc downloads inside scripts.
+
+Maintainers are invited to propose a showcase scenario through [Suggest A Project](../suggest-a-project/).

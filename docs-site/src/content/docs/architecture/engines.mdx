@@ -1,0 +1,43 @@
+---
+title: Deployment Engines
+description: PowerShell-first execution with later Bicep and Terraform exports.
+---
+
+The architecture keeps deployment engines separate from target providers.
+
+| Engine | Status | Intended role |
+| --- | --- | --- |
+| PowerShell | <span class="status status-planned">Planned</span> | First execution engine and primary module experience |
+| Bicep | <span class="status status-deferred">Deferred</span> | Export or apply Azure-native infrastructure after contracts stabilize |
+| Terraform | <span class="status status-deferred">Deferred</span> | Export or apply portable infrastructure after contracts stabilize |
+
+## PowerShell first
+
+PowerShell remains important for people who want an approachable command surface and for operations that involve validation, assessment, guest configuration, catalogs, or evidence beyond infrastructure deployment.
+
+The planned flags will allow experienced users to select explicit behavior, including engine choice, Key Vault, cost estimation, terminal UI, secret-output opt-in, and sensitive-data acknowledgement. Exact names remain subject to command-design review.
+
+## Shared plan
+
+All engines should consume the same normalized plan:
+
+- stable resource and action identifiers;
+- declared dependencies;
+- provider and schema versions;
+- redacted parameter values;
+- expected outputs and probes;
+- lifecycle and cleanup metadata.
+
+An engine must not silently invent a different architecture. If an engine cannot express a provider capability, validation should fail or produce a clear unsupported-capability result.
+
+## Export and apply
+
+Bicep and Terraform support will begin only after the provider contract and PowerShell path are proven. The design must decide explicitly whether each engine can:
+
+- export files only;
+- apply a generated plan;
+- import existing state;
+- probe non-infrastructure steps;
+- perform teardown with equivalent evidence.
+
+Engine parity is a published support matrix, not an assumption.

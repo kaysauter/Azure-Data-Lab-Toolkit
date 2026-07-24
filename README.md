@@ -4,6 +4,10 @@ Azure Data Lab Toolkit is a planned PowerShell module for building repeatable, s
 
 > **Project status:** This repository is an early architecture scaffold. It does not contain deployable cmdlets yet and is not production ready. SQL Server on Azure VM remains the first implementation target because it provides the foundation for compatibility and deployment testing.
 
+## Documentation
+
+Read the [Azure Data Lab Toolkit documentation](https://kaysauter.github.io/Azure-Data-Lab-Toolkit/) for the project goal, architecture, security and cost guardrails, target roadmap, community catalog, version history, and [pitch deck](https://kaysauter.github.io/Azure-Data-Lab-Toolkit/pitch/deck/).
+
 ## Relationship to Azure SQLVM Toolkit
 
 [Azure SQLVM Toolkit](https://github.com/kaysauter/azure-sqlvm-toolkit) is the current working project for SQL Server on Azure VM. Its [documentation website](https://kaysauter.github.io/azure-sqlvm-toolkit/) remains the reference for that implementation.
@@ -37,7 +41,7 @@ Templates and an optional terminal interface are planned so users can start from
 
 ## Planned Scope
 
-- **Data and assessment:** Microsoft samples, community databases, private files and URLs, checksums, Azure Arc, Data Migration Assistant, and later migration/import paths such as BACPAC.
+- **Data and assessment:** Microsoft samples, community databases, private files and URLs, checksums, Azure Arc, current Microsoft-supported assessment paths, and later migration/import paths such as BACPAC.
 - **Tools:** dbatools, Brent Ozar's First Responder Kit, Tabular Editor, TMDL tooling, Rayfin demonstrations, FUAM, and user-defined packages.
 - **Storage:** Azure Data Lake Storage Gen2, Blob Storage, and Azure Files shares that can be mounted by VMs.
 - **Microsoft Fabric:** workspace and item creation, deployment guidance, CI/CD, SQL databases, warehouses, lakehouses, shortcuts, and FUAM validation or deployment guidance.
@@ -91,7 +95,7 @@ Core produces a validated, engine-neutral plan. Providers describe target-specif
 | Path | Purpose |
 | --- | --- |
 | `architecture/` | System design, provider contracts, decisions, and security boundaries |
-| `docs/` | User documentation, templates, and guidance |
+| `docs-site/` | Astro/Starlight documentation and Slidev pitch deck |
 | `src/` | PowerShell module, core services, providers, and deployment engines |
 | `tests/` | Unit, contract, integration, deployment, and teardown tests |
 | `.github/workflows/` | GitHub Actions checks and deployment-test orchestration |
@@ -99,6 +103,8 @@ Core produces a validated, engine-neutral plan. Providers describe target-specif
 ## Roadmap
 
 The dependency-ordered backlog is maintained in [Feature Requests](FEATURE_REQUESTS.md), tracked through [GitHub issues](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/issues), and organized on the public [Azure Data Lab Toolkit Roadmap](https://github.com/users/kaysauter/projects/6/views/1).
+
+Notable changes are recorded in the [Changelog](CHANGELOG.md).
 
 ## Development
 
