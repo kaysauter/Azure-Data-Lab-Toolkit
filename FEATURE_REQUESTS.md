@@ -4,6 +4,8 @@ This catalog records the planned Azure Data Lab Toolkit feature epics. It is a r
 
 Dependencies list direct prerequisites only. An epic can move to `Ready` when its direct dependencies are complete, its external prerequisites are available, and the documented provider target order is preserved.
 
+Implementation is tracked in [GitHub issues](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/issues) and on the public [Azure Data Lab Toolkit Roadmap](https://github.com/users/kaysauter/projects/6/views/1). The `FR-###` identifiers are stable across this catalog, issue titles, and Project fields.
+
 ## Critical Paths
 
 The table below is authoritative. This diagram highlights the main delivery paths without showing every cross-cutting dependency.

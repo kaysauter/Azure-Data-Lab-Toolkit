@@ -98,7 +98,7 @@ Core produces a validated, engine-neutral plan. Providers describe target-specif
 
 ## Roadmap
 
-The dependency-ordered backlog is maintained in [Feature Requests](FEATURE_REQUESTS.md). GitHub issues and the Project board will mirror those stable feature IDs as the repository is established.
+The dependency-ordered backlog is maintained in [Feature Requests](FEATURE_REQUESTS.md), tracked through [GitHub issues](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/issues), and organized on the public [Azure Data Lab Toolkit Roadmap](https://github.com/users/kaysauter/projects/6/views/1).
 
 ## Development
 
