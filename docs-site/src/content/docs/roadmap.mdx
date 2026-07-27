@@ -3,11 +3,11 @@ title: Roadmap
 description: Dependency-ordered delivery path from architecture to multi-platform data labs.
 ---
 
-The roadmap is a plan, not a statement of shipped behavior or a delivery commitment.
+The roadmap records **Backlog**, **Exploratory**, and **Deferred** work. It is not a statement of shipped behavior or a delivery commitment. Accepted architecture is **Committed design**; only published and verified release functionality is **Available**.
 
 The authoritative backlog is [FEATURE_REQUESTS.md](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/FEATURE_REQUESTS.md). Work is tracked through [GitHub issues](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/issues) and the public [Azure Data Lab Toolkit Roadmap](https://github.com/users/kaysauter/projects/6/views/1).
 
-## Critical path
+## Delivery sequence
 
 ```text
 Architecture
@@ -24,19 +24,28 @@ Architecture
   -> Kubernetes
 ```
 
+This sequence controls delivery focus, not architectural coupling. PostgreSQL follows Fabric in the delivery order but does not depend on Fabric contracts. Bicep and Terraform both wait for stable normalized-plan and provider contracts; Terraform does not technically depend on Bicep.
+
 ## Phases
 
 | Phase | Main outcome | Status |
 | --- | --- | --- |
-| Foundation | Decision-complete architecture and reusable contracts | <span class="status status-development">In development</span> |
-| SQL VM | First complete, tested lab lifecycle | <span class="status status-planned">Planned</span> |
-| Azure SQL | Managed SQL Database and Managed Instance providers | <span class="status status-planned">Planned</span> |
-| Fabric and PostgreSQL | Guided Fabric lifecycle and managed PostgreSQL | <span class="status status-planned">Planned</span> |
-| Ecosystem | Databricks, additional Git providers, and solution packs | <span class="status status-planned">Planned</span> |
-| Engines and platforms | Bicep, Terraform, Linux, containers, and later Kubernetes | <span class="status status-deferred">Deferred</span> |
+| Foundation | Decision-complete architecture and reusable contracts | **Committed design** |
+| SQL VM | First complete, tested lab lifecycle | **Backlog** |
+| Azure SQL | Managed SQL Database and Managed Instance target providers | **Backlog** |
+| Fabric | Guided workspace and item lifecycle | **Backlog**, with IaC aspects **Exploratory** |
+| PostgreSQL | Managed PostgreSQL target provider | **Backlog** |
+| Ecosystem | Databricks, additional Git adapters, and solution packs | **Backlog** |
+| Engines and platforms | Bicep, Terraform, Linux, containers, and later Kubernetes | **Deferred** |
+
+## Plan before execution
+
+The first implementation will distinguish two non-mutating review steps. `-Plan` resolves YAML, defaults, derived values, and intended actions offline. `-WhatIf` compares that plan with live Azure resources after sign-in. Both must produce reviewable evidence before deployment is enabled.
 
 ## First proof point
 
-Success for the first implementation is not merely creating a VM. It is a complete, repeatable path from YAML through plan, deployment, probes, HTML evidence, and confirmed teardown with cleanup proof.
+Success for the first implementation is not merely creating a VM. SQL Server on Azure VM must provide a complete, repeatable path from YAML through `-Plan`, `-WhatIf`, cost review, guarded PowerShell deployment, probes, HTML evidence, and confirmed teardown with cleanup proof.
 
-The backlog currently names Data Migration Assistant in one assessment epic. Current Microsoft-supported assessment paths are being reviewed before implementation; the architecture decision will supersede that planning note.
+Assessment work starts with Azure Arc and the migration component in SQL Server Management Studio. The exact privileges, billing, evidence, and automation boundaries remain to be settled before implementation.
+
+For implementation status, read [Project Status](../status/). The authoritative epic catalog separates technical prerequisites from delivery sequencing in [`FEATURE_REQUESTS.md`](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/FEATURE_REQUESTS.md).

@@ -1,50 +1,84 @@
 ---
-title: Providers And Targets
-description: The provider contract and the planned target sequence.
+title: Target Providers
+description: The target-provider boundary and committed delivery sequence.
 ---
 
-<span class="status status-planned">Planned</span>
+<span class="status status-committed">Committed design</span>
 
-A provider is a target-specific adapter behind a stable lifecycle contract. Providers may represent deployment targets, storage, software catalogs, Git services, or assessment capabilities.
+A target provider describes one deployable data platform. Storage, identity,
+Git, catalogs, assessment adapters, solution packs, and probes are separate
+extension types, even when a target provider depends on them.
 
 ## Provider contract
 
-Each provider is expected to:
+A target provider:
 
-- declare supported capabilities and engine compatibility;
-- validate configuration, prerequisites, permissions, regions, quotas, and policy;
-- contribute normalized plan nodes and dependencies;
-- expose cost inputs and material caveats;
-- deploy or export only through an approved engine path;
-- probe the resulting state;
-- preview and perform cleanup;
-- emit structured evidence.
+- declares its identity, contract version, supported schema range, and
+  capabilities;
+- validates target-specific configuration and offline constraints;
+- contributes resources, actions, dependencies, risks, preconditions,
+  postconditions, ownership expectations, and teardown intent;
+- identifies live facts that `-WhatIf` must reconcile;
+- declares cost quantities and estimation limitations;
+- identifies compatible engines and returns structured capability failures;
+- defines target-specific probe requirements and cleanup expectations.
 
-The detailed sequence is defined in [Provider Lifecycle](../provider-lifecycle/).
+A provider does not execute global orchestration, own run state, render reports,
+implement `ExportBicep` or `ExportTerraform`, or weaken core policy. Engines own
+export and apply.
 
-## Deployment targets
+## Delivery sequence
 
-| Target | Status | Role in the roadmap |
-| --- | --- | --- |
-| SQL Server on Azure VM | <span class="status status-planned">Planned</span> | First provider and proving ground |
-| Azure SQL Database | <span class="status status-planned">Planned</span> | First managed SQL service |
-| Azure SQL Managed Instance | <span class="status status-planned">Planned</span> | Managed instance and network-heavy scenarios |
-| Microsoft Fabric | <span class="status status-planned">Planned</span> | Guided workspace and item scenarios |
-| Azure Database for PostgreSQL | <span class="status status-planned">Planned</span> | Managed PostgreSQL |
-| Linux VMs and containers | <span class="status status-deferred">Deferred</span> | SQL Server and PostgreSQL portability |
-| Kubernetes | <span class="status status-deferred">Deferred</span> | Later orchestration target |
+| Order | Target | Status | Architectural purpose |
+| --- | --- | --- | --- |
+| 1 | SQL Server on Azure VM | Committed design | Prove VM, network, Bastion, Key Vault, storage, guest, restore, tools, probes, and teardown |
+| 2 | Azure SQL Database | Backlog | Prove managed-service differences and database-scoped lifecycle |
+| 3 | Azure SQL Managed Instance | Backlog | Prove network-heavy managed instance planning and longer operations |
+| 4 | Microsoft Fabric | Backlog | Prove workspace, capacity, item, shortcut, and deployment-pipeline guidance |
+| Later | Azure Database for PostgreSQL | Backlog | Add managed PostgreSQL after the first four targets |
+| Later | Azure Databricks, Cosmos DB, and other data services | Backlog | Add only through the same contracts |
+| Later | SQL Server and PostgreSQL on Linux VMs or containers | Deferred | Portability targets after managed paths mature |
+| Later | Kubernetes and AKS | Deferred | Orchestration target after container contracts mature |
 
-## Supporting providers
+Delivery order is not a technical dependency. Azure SQL Database does not depend
+on SQL VM resources, and PostgreSQL does not depend on Fabric. The order only
+controls implementation priority.
 
-Planned supporting providers include:
+Fabric infrastructure-as-code completeness is **exploratory**. The provider may
+initially expose only capabilities that can be planned, executed, and evidenced
+reliably. Unsupported workspace or item operations fail explicitly rather than
+falling back to undocumented behavior.
 
-- Azure Storage, including ADLS Gen2 and Azure Files;
-- GitHub first, with Azure DevOps, GitLab, Gitea, and Forgejo in the backlog;
-- software and solution-pack catalogs;
-- sample, generated, private, local, and URL-based data sources;
-- assessment and migration tooling;
-- Azure Databricks and future data-service providers.
+## Capability declaration
 
-## Capability negotiation
+Capabilities use stable IDs such as `target.compute.stop`,
+`target.database.restore`, or `target.network.private-access`. Each declaration
+includes:
 
-The core should ask providers what they support instead of relying on target-name conditionals. Engine support, private networking, stop/start semantics, cost-estimate quality, data-loading methods, and teardown behavior should all be declared capabilities.
+- contract version;
+- supported operation and engine combinations;
+- required capability modules;
+- required permissions and external facts;
+- preview, apply, probe, and teardown support;
+- known evidence and rollback limits.
+
+Capability absence is a validation result, not a runtime surprise. A plan that
+requires an unsupported capability is invalid unless the schema explicitly
+marks that action optional.
+
+## SQL VM first
+
+The first provider must prove the complete lifecycle before the next provider is
+declared complete. Its acceptance scope includes:
+
+- deterministic offline planning;
+- live `-WhatIf` reconciliation;
+- identity, network, Bastion, Key Vault, storage, and VM resources;
+- SQL and guest configuration boundaries;
+- governed sample, backup, and software acquisition;
+- post-deployment probes;
+- shutdown, resume, teardown preview, teardown, and cleanup proof;
+- test evidence and cost reporting.
+
+The [Provider Lifecycle](../provider-lifecycle/) defines how this provider
+contributes without taking over core orchestration.

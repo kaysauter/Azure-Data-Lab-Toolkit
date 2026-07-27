@@ -1,0 +1,181 @@
+---
+title: Plan And State
+description: Versioned plan, evidence, ownership, and recovery contracts.
+---
+
+<span class="status status-committed">Committed design</span>
+
+The normalized plan is the immutable contract between user intent, extensions,
+policy, deployment engines, and evidence. Run state records what happened to an
+approved plan; it does not replace the plan.
+
+## Normalized plan envelope
+
+The plan uses a versioned JSON-compatible schema. YAML is the authoring format,
+but canonical JSON serialization is used for hashing and interchange.
+
+| Field | Contract |
+| --- | --- |
+| `contractVersion` | Normalized-plan schema version |
+| `runIntentId` | Stable identifier for the requested lab intent |
+| `toolkitVersion` | Toolkit version that resolved the plan |
+| `schemaVersion` | Input YAML schema version |
+| `providerVersions` | Exact target-provider contract and implementation versions |
+| `engine` | Explicit engine ID, adapter version, and tool version requirement |
+| `catalogVersions` | Resolved catalog source revisions |
+| `inputs` | Typed resolved values with provenance and redacted secret references |
+| `resources` | Stable resource IDs, desired properties, ownership, risks, and teardown intent |
+| `actions` | Stable action IDs, dependencies, capability requirements, and idempotency rules |
+| `outputs` | Declared non-secret outputs and secret-reference outputs |
+| `policies` | Findings, required acknowledgements, and denied conditions |
+| `unverifiedFacts` | External facts unavailable during offline planning |
+| `planHash` | Hash of the canonical envelope excluding the hash field itself |
+
+Resource and action IDs are stable across repeated planning when semantic input
+is unchanged. They do not depend on array position, timestamp, machine path, or
+random generation. Their format is
+`<extension-id>/<resource|action>/<logical-key>`, using lowercase
+`a-z`, `0-9`, `.`, `_`, `-`, and `/`. The extension namespace prevents
+collisions; the logical key comes from configuration identity rather than the
+eventual Azure resource ID. Each action declares:
+
+- directed acyclic graph dependencies;
+- preconditions and postconditions;
+- provider and required capability;
+- expected mutation and retry class;
+- risks and policy references;
+- ownership effect and teardown intent;
+- provenance back to resolved inputs and catalog entries;
+- expected evidence and outputs.
+
+The plan is rejected if dependencies contain a cycle, IDs collide, a secret
+value is embedded, ownership is ambiguous, or the selected engine lacks a
+required capability.
+
+## Canonical hash
+
+Canonical serialization uses
+[RFC 8785 JSON Canonicalization Scheme](https://www.rfc-editor.org/rfc/rfc8785.html)
+over UTF-8. Before canonicalization, set-like collections are sorted by stable
+ID; ordered collections preserve declared order. The digest is SHA-256 and is
+written as `sha256:<lowercase-hex>`. Changing the canonicalization or digest
+algorithm requires a new normalized-plan contract version.
+
+Approval, engine exports, state events, and reports bind to `planHash`. Any
+semantic change creates a different hash and invalidates approval.
+
+## Plan and WhatIf
+
+`-Plan`:
+
+- requires no Azure authentication;
+- performs no network call to Azure and no mutation;
+- resolves deterministic names, defaults, dependencies, policies, and actions;
+- marks quotas, resource existence, live prices, permissions, and other external
+  facts as `unverified` when they cannot be proven locally;
+- produces the same canonical plan for the same versioned inputs and extensions.
+
+`-WhatIf`:
+
+- requires Azure authentication;
+- accepts an immutable normalized plan;
+- queries live state but never mutates it;
+- resolves unverified facts where possible;
+- reports every node as `create`, `reuse`, `update`, `replace`, `conflict`,
+  `drift`, or `no-change`;
+- records query time, scope, identity, provider responses, and uncertainty.
+
+`reuse` means desired and observed state can be consumed without ownership
+transfer. `drift` means a previously managed resource differs from recorded
+state. `conflict` means safe intent cannot be established. Engine-native previews
+are attachments, not replacements for this vocabulary.
+
+## Ownership and teardown
+
+Every resource has exactly one ownership class:
+
+| Class | Lifecycle meaning |
+| --- | --- |
+| `owned` | Created by the run; eligible for approved teardown |
+| `adopted` | Existing and explicitly brought under a recorded lifecycle scope |
+| `reused` | Existing and consumed without ownership transfer |
+| `external` | Referenced or observed only |
+
+Deletion requires `owned` or eligible `adopted` status, matching live identity,
+explicit teardown intent, successful teardown preview, and approval bound to the
+teardown-plan hash. `reused`, `external`, ambiguous, and unknown resources are
+never deleted.
+
+## Evidence envelope
+
+Every operation emits a versioned envelope:
+
+- evidence contract version, event ID, run ID, and plan hash;
+- operation, status, start and end times;
+- actor and execution identity references;
+- provider, engine, schema, and catalog versions;
+- affected stable IDs and correlation IDs;
+- findings, risks, approvals, diagnostics, and redacted outputs;
+- integrity hash and references to attachments.
+
+Plan, what-if, cost, deployment, probe, teardown, and cleanup-proof reports are
+typed payloads inside this common envelope. Console, JSON, Markdown, and HTML
+render the same payload. Rendering is backlog work; these formats are not claimed
+as current functionality.
+
+## Local run state
+
+The default backend is a protected per-user local directory keyed by immutable
+run ID:
+
+```text
+Windows:       %LOCALAPPDATA%\AzureDataLabToolkit\runs\<runId>
+macOS/Linux:   ${XDG_STATE_HOME:-$HOME/.local/state}/AzureDataLabToolkit/runs/<runId>
+```
+
+Each run directory contains:
+
+- `plan.json`, the immutable normalized plan;
+- `events.ndjson`, the append-only event log;
+- `snapshot.json`, the latest replaceable projection and source event sequence;
+- `approvals/`, approval records bound to a plan or teardown hash;
+- `evidence/`, operation envelopes and content-addressed attachments;
+- `engine/`, references and receipts from the selected engine;
+- `run.lock`, the lease record and fencing token.
+
+It never stores secret values, access tokens, signed URLs, or private keys.
+The backend requires owner-only access where the operating system supports it
+and refuses mutation when it cannot protect state from other local users.
+
+Terminal runs are retained for 90 days by default. Incomplete runs, runs with
+unknown cleanup state, and runs that still own resources are never
+automatically pruned. A user or organization policy may retain evidence longer.
+Expiration removes local evidence only after required audit export; it does not
+delete Azure resources.
+
+Future external state backends must implement the same append, snapshot, lock,
+integrity, retention, and access-control contract. Backend choice cannot change
+lifecycle meaning.
+
+## Lock, resume, and reconciliation
+
+Only one mutating operation may hold a run lock. The lock has an owner, 60-second
+lease, heartbeat at least every 20 seconds, operation, and monotonically
+increasing fencing token. A contender may take an expired lease only after live
+reconciliation; it cannot rely on elapsed time alone. Read-only operations may
+run concurrently against an immutable snapshot.
+
+Resume:
+
+1. authenticates the requester and acquires the lock;
+2. verifies plan hash, approval scope, versions, and retention state;
+3. compares events, latest snapshot, engine state, and live resources;
+4. classifies each action and resource;
+5. resumes only approved, idempotent work;
+6. stops on unknown state, ownership ambiguity, conflict, replacement, or wider
+   spend.
+
+Snapshots accelerate reads but are reproducible from the event log. Corrupt or
+missing evidence stops mutation. A future schema migration preserves the
+original events and records the migration tool, source version, target version,
+and resulting integrity hash.

@@ -12,8 +12,17 @@ description: Published and unreleased documentation, architecture, module, provi
 - Astro/Starlight documentation site with dark default and light-mode selector.
 - Slidev pitch deck for the vision, architecture, guardrails, and community invitation.
 - GitHub Pages deployment workflow with a production-build internal-link gate.
-- Status vocabulary that distinguishes current, in-development, planned, and deferred behavior.
+- Status vocabulary that distinguishes Current, Committed design, Backlog, Exploratory, Deferred, and Available behavior.
 - Security, licensing, cost, assessment, Fabric, catalogs, testing, and CI/CD architecture guidance.
+- Clear extension boundaries for target providers, capability modules, catalog sources, solution packs, deployment engines, and probes.
+- Separate offline `-Plan` resolution and Azure-aware, non-mutating `-WhatIf` comparison contracts.
+- Roadmap metadata that separates technical prerequisites from delivery sequencing.
+
+### Changed
+
+- Corrected the Azure SQLVM Toolkit description to identify it as an unfinished predecessor and source of lessons.
+- Aligned the assessment direction with Azure Arc and the migration component in SQL Server Management Studio.
+- Clarified that architecture is committed design and roadmap entries are not shipped functionality.
 
 ### Current limitations
 
@@ -21,8 +30,11 @@ description: Published and unreleased documentation, architecture, module, provi
 - No deployable cmdlets.
 - No released providers or deployment engines.
 - No stable YAML schema or public command contract.
+- No implemented `-Plan`, `-WhatIf`, deployment, probe, or teardown workflow.
 - No production security baseline.
 
-Released entries will link to the matching Git tag and GitHub release. Changes will identify whether they affect documentation, schema, module API, provider contracts, engines, or deployment behavior.
+The first implementation proof point is SQL Server on Azure VM from YAML through `-Plan`, `-WhatIf`, cost review, guarded deployment, probes, evidence, and confirmed teardown with cleanup proof.
+
+Released entries will link to the matching Git tag and GitHub release. Published releases and release notes will define **Available** behavior; repository implementation and tests define **Current** behavior; accepted architecture defines **Committed design**; the roadmap records **Backlog**, **Exploratory**, and **Deferred** work.
 
 The repository-level log is maintained in [`CHANGELOG.md`](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/CHANGELOG.md).

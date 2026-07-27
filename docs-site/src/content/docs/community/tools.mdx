@@ -1,42 +1,54 @@
 ---
 title: Tools And Solution Packs
-description: Planned governed catalog for community and commercial data tools.
+description: Candidate catalog of community, Microsoft, and commercial data tools.
 ---
 
-<span class="status status-planned">Planned candidates</span>
+<span class="status status-backlog">Candidate catalog</span>
 
-The toolkit is intended to make useful projects easier to evaluate and demonstrate. Listing a project here gives credit and records interest; it does not mean the toolkit bundles, redistributes, endorses, or has implemented it.
+These projects are being considered for future lab scenarios. None is bundled, installed, or otherwise integrated today. A listing records interest and gives upstream maintainers visible credit; it is not an endorsement and does not transfer ownership, support, or licensing to Azure Data Lab Toolkit.
 
-| Candidate | Maintainer or organization | Type | Intended scenario |
+| Candidate and home | Maintainer or publisher | License or terms | Possible lab use |
 | --- | --- | --- | --- |
-| [dbatools](https://dbatools.io/) | Chrissy LeMaire, core team, and contributors | MIT open source | SQL Server administration, migration, and restore workflows |
-| [First Responder Kit](https://www.brentozar.com/first-aid/) | Brent Ozar Unlimited and contributors | MIT open source | SQL Server health and performance demonstrations |
-| [Tabular Editor](https://tabulareditor.com/) | Daniel Otykier and Tabular Editor | TE2 open source; TE3 commercial | Semantic-model development |
-| [pbi-tools](https://pbi.tools/) | Mathias Thierbach and contributors | AGPLv3 open source | Source control and automation for Power BI artifacts |
-| [TMDL](https://learn.microsoft.com/en-us/analysis-services/tmdl/tmdl-overview) | Microsoft and contributors | Microsoft technology | Text-based semantic-model definitions |
-| [FUAM](https://github.com/microsoft/fabric-toolbox/tree/main/monitoring/fabric-unified-admin-monitoring) | Community accelerator in Microsoft Fabric Toolbox | MIT open source | Fabric administration monitoring |
-| [Rayfin](https://github.com/microsoft/rayfin) | Microsoft | MIT SDK plus managed-service terms | Code-first Fabric backend demonstrations |
-| [Measure Killer](https://measurekiller.com/) | Brunner BI GmbH | Free and paid commercial editions | Semantic-model cleanup and governance |
-| [SQL Server Maintenance Solution](https://ola.hallengren.com/) | Ola Hallengren and contributors | MIT open source | Backup, integrity, index, and statistics maintenance |
-| [SQL Server Management Studio](https://learn.microsoft.com/en-us/ssms/install/install) | Microsoft | Proprietary | SQL Server administration |
+| [dbatools](https://dbatools.io/) ([code](https://github.com/dataplat/dbatools)) | Created by [Chrissy LeMaire](https://dbatools.io/team/); maintained by the dbatools core team and contributors | [MIT](https://github.com/dataplat/dbatools/blob/development/license) | SQL Server administration, migration, and restore exercises |
+| [SQL Server First Responder Kit](https://www.brentozar.com/first-aid/) ([code](https://github.com/BrentOzarULTD/SQL-Server-First-Responder-Kit)) | [Brent Ozar](https://www.brentozar.com/about/), Brent Ozar Unlimited, and contributors | [MIT](https://github.com/BrentOzarULTD/SQL-Server-First-Responder-Kit/blob/main/LICENSE.md) | SQL Server health and performance exercises, including the `sp_Blitz` family |
+| [Tabular Editor](https://tabulareditor.com/) | Created by [Daniel Otykier](https://tabulareditor.com/what-is-tabular-editor) | [Tabular Editor 2 is MIT](https://github.com/TabularEditor/TabularEditor/blob/master/LICENSE); Tabular Editor 3 is a [commercial product](https://tabulareditor.com/pricing) | Semantic-model development |
+| [pbi-tools](https://pbi.tools/) ([code](https://github.com/pbi-tools/pbi-tools)) | Created and maintained by [Mathias Thierbach](https://github.com/mthierba), with contributors | [AGPL-3.0](https://github.com/pbi-tools/pbi-tools/blob/main/LICENSE) | Source control and automation for Power BI artifacts |
+| [Tabular Model Definition Language](https://learn.microsoft.com/en-us/analysis-services/tmdl/tmdl-overview) | Microsoft | TMDL is a Microsoft language and specification, not an installable open-source tool | Text-based semantic-model definitions and source-control exercises |
+| [Fabric Unified Admin Monitoring](https://github.com/microsoft/fabric-toolbox/tree/main/monitoring/fabric-unified-admin-monitoring) | A community accelerator in Microsoft Fabric Toolbox; Gellért Gintli, Kevin Thomas, and other contributors are associated with its development | Fabric Toolbox is [MIT licensed](https://github.com/microsoft/fabric-toolbox/blob/main/LICENSE); its assets are examples supported on a best-effort basis, not an officially supported Microsoft product | Fabric administration and monitoring |
+| [Rayfin](https://github.com/microsoft/rayfin) | Microsoft and contributors | The repository is [MIT licensed](https://github.com/microsoft/rayfin/blob/main/LICENSE); any separate service terms and current service availability still require verification | Code-first Fabric backend demonstrations |
+| [Measure Killer](https://measurekiller.com/) | [Gregor Brunner and Brunner BI](https://measurekiller.com/about/) | Commercial software with [free and paid editions](https://measurekiller.com/pricing); exact terms must be reviewed before automation or redistribution | Semantic-model analysis, cleanup, and governance |
+| [SQL Server Maintenance Solution](https://ola.hallengren.com/) ([code](https://github.com/olahallengren/sql-server-maintenance-solution)) | [Ola Hallengren](https://ola.hallengren.com/) and contributors | [MIT](https://github.com/olahallengren/sql-server-maintenance-solution/blob/main/LICENSE) | Backup, integrity, index, and statistics maintenance |
+| [SQL Server Management Studio](https://learn.microsoft.com/en-us/ssms/install/install) | Microsoft | Proprietary Microsoft software; the current Microsoft download and installer terms are definitive | Windows-based SQL Server administration |
+
+FUAM contributor wording is intentionally cautious: the canonical repository and its history are the authority for authorship. TMDL is listed because it can shape a lab scenario, not because it is a downloadable application.
 
 ## Catalog contract
 
-Every future integration must record:
+A catalog record will not make upstream software a toolkit dependency. It will describe how the toolkit may acquire, verify, run, validate, and remove an independently owned artifact.
 
-- canonical project and download sources;
-- owner, license, attribution, and redistribution rules;
-- supported platforms and target providers;
-- pinned version and update policy;
-- checksum or signature, with user-supplied checksum support;
-- required privileges and network access;
-- silent-install capability and arguments;
-- verification and uninstall behavior.
+Every record must include:
 
-Private or internal software may be supplied through an approved local path or URL. The same checksum, provenance, secret, and report-redaction requirements apply.
+- the canonical project, code, and acquisition sources;
+- upstream owner or maintainer, license or terms, required attribution, and redistribution limits;
+- a pinned, immutable version or digest and an update policy;
+- supported platforms, target providers, and compatibility constraints;
+- checksum or signature details when upstream publishes them;
+- authentication by secret reference, never a credential embedded in a URL;
+- required execution identity, privileges, network access, and expected side effects;
+- installation or invocation arguments, post-install verification, and removal behavior;
+- data-sensitivity classification and report-redaction requirements.
+
+The default policy is deliberately strict:
+
+- A public catalog entry requires known license or usage terms before it can be accepted.
+- An automated download requires an immutable version. When upstream publishes a checksum or signature, the catalog must verify it.
+- A mutable URL such as a `latest` download is not a reproducible source. It may be used only through an explicit policy exception that records the resolved version and integrity evidence.
+- A user-provided private URL may proceed only after explicit provenance acknowledgement. A checksum is optional for this user-controlled route, but an absent checksum must produce a warning and be recorded in the plan and run evidence.
+- URLs must never contain embedded credentials. Private authentication must use Key Vault or another approved secret reference.
+- Downloaded code is not trusted merely because it appears in the catalog. Its execution identity, privilege level, verification, and cleanup must be visible before approval.
 
 ## Solution packs
 
-A solution pack will combine data, tools, configuration, probes, and learning outcomes around one reproducible scenario. It must reference catalog records rather than hide ad hoc downloads inside scripts.
+A future solution pack may combine cataloged data, tools, configuration, probes, and learning outcomes into one reproducible scenario. It must reference catalog records rather than hide downloads or commands inside scripts.
 
-Maintainers are invited to propose a showcase scenario through [Suggest A Project](../suggest-a-project/).
+Open-source maintainers and commercial or private project owners can start with [Suggest A Project](../suggest-a-project/).

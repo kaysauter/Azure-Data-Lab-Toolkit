@@ -28,12 +28,15 @@
 }
 
 .sl-markdown-content table {
-	display: table;
+	display: block;
 	width: 100%;
+	max-width: 100%;
+	overflow-x: auto;
+	overscroll-behavior-inline: contain;
 }
 
 .sl-markdown-content th {
-	white-space: nowrap;
+	white-space: normal;
 }
 
 .sl-markdown-content :is(h2, h3) {
@@ -57,14 +60,24 @@
 	color: #77d7a4;
 }
 
-.status-development {
+.status-current {
+	border-color: #8399a4;
+	color: #dbe4ea;
+}
+
+.status-committed {
+	border-color: #429eb3;
+	color: #7ad9e8;
+}
+
+.status-backlog {
 	border-color: #d5a323;
 	color: #f1ca63;
 }
 
-.status-planned {
-	border-color: #429eb3;
-	color: #7ad9e8;
+.status-exploratory {
+	border-color: #b57ce5;
+	color: #d9b8f5;
 }
 
 .status-deferred {
@@ -76,10 +89,18 @@
 	color: #176c43;
 }
 
-:root[data-theme='light'] .status-development {
+:root[data-theme='light'] .status-current {
+	color: #42535b;
+}
+
+:root[data-theme='light'] .status-committed {
+	color: #086879;
+}
+
+:root[data-theme='light'] .status-backlog {
 	color: #745800;
 }
 
-:root[data-theme='light'] .status-planned {
-	color: #086879;
+:root[data-theme='light'] .status-exploratory {
+	color: #6d2b9d;
 }

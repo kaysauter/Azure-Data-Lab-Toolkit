@@ -1,0 +1,83 @@
+---
+title: Architecture Decisions
+description: Accepted choices, backlog boundaries, and exploratory questions.
+---
+
+This register distinguishes accepted architecture from implementation backlog and
+research. Accepted decisions remain in force until a later record supersedes
+them.
+
+## Accepted
+
+| ID | Decision | Consequence |
+| --- | --- | --- |
+| AD-001 | SQL Server on Azure VM is the first target, followed by Azure SQL Database, SQL MI, then Fabric | Delivery order is explicit and is not a resource dependency |
+| AD-002 | YAML is canonical; precedence is defaults, template, YAML, explicit flags | Every resolved value must carry provenance |
+| AD-003 | The normalized plan is versioned, canonical, hashed, and engine-neutral | Approval and evidence bind to one immutable meaning |
+| AD-004 | `-Plan` is deterministic, offline, unauthenticated, and non-mutating | Unavailable external facts are marked `unverified` |
+| AD-005 | `-WhatIf` is authenticated, Azure-aware, and non-mutating | It reports create, reuse, update, replace, conflict, drift, or no-change |
+| AD-006 | Core, target providers, capability modules, catalog sources, solution packs, probes, and engines are distinct contracts | Providers do not implement Bicep or Terraform export |
+| AD-007 | PowerShell is first; Bicep and Terraform later support export and orchestrated apply | Engine-native previews supplement but do not redefine toolkit WhatIf |
+| AD-008 | Local run state uses append-only events, snapshots, locking, and live reconciliation | Resume is idempotent and stops on ambiguity |
+| AD-009 | Ownership is `owned`, `adopted`, `reused`, or `external` | Unknown, reused, and external resources are never deleted |
+| AD-010 | Assessment, migration, cost estimation, deployment, and teardown are separate operations | One result never implies approval for another |
+| AD-011 | Reports share a versioned evidence envelope | Console, JSON, Markdown, and HTML are renderings of one record |
+| AD-012 | Secrets are references only in plans, state, and reports | Key Vault or another approved secret store holds values |
+| AD-013 | External triggers may request read-only work or resume an approved run by run ID and idempotency key | Automation cannot bypass approval, spend, secret, sensitivity, licensing, adoption, or teardown controls |
+| AD-014 | Catalog and private artifacts use the same provenance, integrity, license, and sensitivity policy | Community content remains optional |
+
+## Current repository state
+
+- The repository contains a scaffold, documentation, and backlog.
+- No deployable Azure Data Lab Toolkit cmdlets are present.
+- The project is not production ready.
+- Azure SQLVM Toolkit is unfinished and is a source of lessons, not a working
+  production baseline.
+
+## Implementation backlog
+
+- Implement the versioned YAML schema and provenance resolver.
+- Implement normalized plan canonicalization, validation, and hashing.
+- Implement local event state, snapshots, locking, and reconciliation.
+- Implement the PowerShell engine and SQL VM provider end to end.
+- Implement evidence renderers and HTML output.
+- Add Azure SQL Database, SQL MI, and Fabric in the committed delivery order.
+- Add governed catalog, solution-pack, probe, cost, CI/CD, and external state
+  adapters against the accepted contracts.
+
+Backlog order does not create technical coupling between target providers.
+
+## Exploratory
+
+- How completely Fabric workspaces, capacities, items, shortcuts, and deployment
+  pipelines can be managed through infrastructure as code.
+- Which Fabric capabilities belong in deployment engines versus authenticated
+  data-plane adapters.
+- Which external run-state backends should follow the local backend.
+- Which pricing sources and confidence model can support reproducible estimates.
+- Which signatures, quarantine, or sandbox controls are practical for each
+  artifact class.
+- Which non-Azure targets should follow managed PostgreSQL.
+
+Exploratory work must not be presented as supported capability.
+
+## Deferred
+
+- Bicep and Terraform engine implementation until the normalized plan, provider,
+  evidence, and state contracts are stable.
+- SQL Server and PostgreSQL on Linux VMs or containers.
+- Kubernetes and AKS target providers.
+- Automatic migration workflows.
+- General autonomous multi-session execution beyond authenticated resume of an
+  already approved run.
+
+## Explicitly outside the baseline
+
+- A deployment engine cannot override core policy or silently alter a plan.
+- A resource name, resource group, or tag alone cannot establish ownership.
+- A trigger, CI identity, or AI session cannot approve its own mutation.
+- Production readiness is not inferred from documentation completeness.
+
+Related guidance: [Roadmap](../../roadmap/), [Testing](../../testing/),
+[Cost and Lifecycle](../../cost-and-lifecycle/), and
+[Git and CI/CD](../../git-and-cicd/).

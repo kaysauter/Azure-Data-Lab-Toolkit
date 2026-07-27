@@ -1,52 +1,65 @@
 ---
 title: Testing Strategy
-description: Planned automated verification from unit tests through live Azure cleanup proof.
+description: Planned verification from deterministic planning through live Azure cleanup proof.
 ---
 
-<span class="status status-planned">Planned</span>
+<span class="status status-committed">Committed strategy, automation backlog</span>
 
-Testing must prove both creation and cleanup. A successful deployment with leaked resources is a failed lab run.
+Testing must prove creation, useful behavior, failure recovery, and cleanup. A deployment that appears successful but leaks resources is a failed lab run.
+
+## Plan and WhatIf are different tests
+
+| Mode | Azure access | Test assertion |
+| --- | --- | --- |
+| `-Plan` | None | The same YAML and catalog versions produce the same normalized actions, derived values, warnings, policy decisions, and report data |
+| `-WhatIf` | Required | The resolved plan is compared with permitted live Azure resources and reports create, reuse, update, replace, conflict, drift, or no-change without mutation |
+
+Plan tests use fixtures and snapshots. WhatIf tests use a protected identity with read and validation permissions appropriate to the provider. A WhatIf test must fail if it mutates Azure or silently treats an unreadable resource as absent.
 
 ## Test layers
 
-| Layer | Runs | Focus |
+| Layer | Typical run | Focus |
 | --- | --- | --- |
-| Static and schema | Every PR | YAML schemas, examples, formatting, PowerShell analysis, generated docs |
-| Unit | Every PR | Pure core logic, redaction, precedence, naming, planning, cost calculations |
-| Provider contract | Every PR | Lifecycle shape, capabilities, normalized actions, errors, and teardown preview |
-| Fixture and snapshot | Every PR | Deterministic plans and reports without Azure changes |
-| What-if | Approved PRs or scheduled | Azure validation and resource intent without deployment |
-| Live smoke | Protected, narrow | One representative deploy, probe, report, and teardown |
-| Nightly matrix | Scheduled | Providers, engines, regions, versions, images, and failure recovery |
-| Release | Tagged candidate | Packaging, install, upgrade, compatibility, security, and end-to-end evidence |
+| Static and schema | Every PR | PowerShell parsing and analysis, YAML schemas, examples, docs |
+| Unit | Every PR | Precedence, naming, redaction, policy, plan, cost, ownership |
+| Contract | Every PR | Provider, engine, catalog, probe, state, and report interfaces |
+| Fixture and snapshot | Every PR | Deterministic plans and output schemas without cloud access |
+| WhatIf | Approved PR or schedule | Azure validation, reuse, drift, and denied-access behavior |
+| Live smoke | Protected and narrow | Deploy, configure, probe, report, teardown, cleanup query |
+| Scheduled matrix | Budgeted schedule | Providers, regions, images, versions, engines, recovery |
+| Release | Candidate tag | Packaging, install, upgrade, compatibility, security evidence |
 
-## SQL VM reference test
-
-The first complete acceptance path is:
+## SQL VM reference path
 
 ```text
 YAML
-  -> validated and normalized plan
-  -> cost and security review
-  -> deployed SQL Server on Azure VM lab
-  -> data/tool setup
-  -> provider probes and HTML report
-  -> confirmed teardown
+  -> validate and normalize
+  -> Plan and cost review
+  -> Azure-aware WhatIf
+  -> approved SQL VM deployment
+  -> data and tool setup
+  -> service, data, security, and software probes
+  -> teardown preview and confirmation
+  -> ownership-aware deletion
   -> Azure cleanup proof
 ```
 
-## Failure-path coverage
+Provider probes will verify reachable services, expected configuration, installed tools, loaded data, identity access, and report evidence. A successful deployment command is not enough.
 
-Tests should inject failures after resource creation, guest setup, data transfer, and probe execution. Recovery must resume safely, avoid duplicate actions, and preserve evidence.
+## Failure injection
 
-## Cost control
+Tests will inject failure after Azure resource creation, identity assignment, guest setup, artifact transfer, data loading, probe execution, state persistence, and partial teardown. Recovery must be idempotent, preserve evidence, avoid duplicate actions, and stop when ownership or state cannot be proven.
 
-Live tests require unique tags, constrained SKUs, approved regions, a short TTL, budget alerts, concurrency limits, and cleanup that runs even when tests fail. A scheduled sweeper should report expired resources but must not delete unknown resources without policy and confirmation.
+Concurrency tests will cover two sessions targeting the same lab, stale locks, interrupted runs, expired credentials, throttling, delayed role assignments, and drift introduced between Plan, WhatIf, and execution.
 
-## Security and vulnerability verification
+## Cost and cleanup protection
 
-CI should combine Pester, PowerShell analysis, secret scanning, dependency review, Dependabot, CodeQL, Checkov when infrastructure code exists, and maintained filesystem/container vulnerability scanning. Release evidence should record tool versions and scan results.
+Live tests require approved subscriptions and regions, constrained SKUs, unique tags, concurrency limits, a short TTL, and [Azure budget alerts](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-acm-create-budgets). Budgets alert; they do not impose a hard spending cap.
 
-## Test data
+Cleanup runs even after test failure, but it can delete only `owned` resources or explicitly eligible `adopted` resources in the approved teardown scope. A scheduled sweeper may report expired, untagged, drifted, or unknown resources. It must not auto-delete unknown resources.
 
-PR tests use synthetic or redistributable fixtures. Real or sensitive databases belong only in explicitly approved environments with redacted reports and verified deletion.
+## Test data and evidence
+
+Pull requests use synthetic or redistributable fixtures. Real or sensitive databases run only in explicitly approved environments with `ContainsSensitiveData`, restricted reports, verified retention, and deletion evidence.
+
+Each live run will retain tool versions, normalized plan hash, WhatIf result, cost assumptions, approvals, probes, teardown summary, and cleanup query. Secrets and sensitive values remain redacted.

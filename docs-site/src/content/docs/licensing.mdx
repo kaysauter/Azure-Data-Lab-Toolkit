@@ -1,42 +1,53 @@
 ---
 title: Licensing
-description: Toolkit licensing and the responsibilities attached to Microsoft and third-party software.
+description: Toolkit, Microsoft, cloud-service, data, and third-party licensing responsibilities.
 ---
 
-:::danger[Do not assume SQL Server is free]
-The toolkit does not grant SQL Server use rights. Microsoft licenses SQL Server Developer editions for development, testing, and demonstration, not production. SQL Server Express has separate no-cost rights and technical limits. Paid editions, Azure services, Windows, and third-party software can add license and usage obligations. Microsoft's current Product Terms and your agreements are definitive.
+:::danger[Toolkit documentation is not definitive]
+Do not use this page to decide whether SQL Server or another product is free for a particular workload. Azure Data Lab Toolkit grants no Microsoft or third-party use rights. Microsoft's current Product Terms, license terms, service terms, and your agreements are definitive. Verify them before deployment.
 :::
 
-Azure Data Lab Toolkit is licensed under the [MIT License](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/LICENSE). That license covers this repository only.
+Azure Data Lab Toolkit is licensed under the repository's [MIT License](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/LICENSE). That license covers this repository only. This page is an awareness aid, not legal advice.
 
-## Authoritative Microsoft sources
+The linked terms describe current external obligations. Automated license checks and catalog enforcement are committed design, not implemented behavior.
 
-- [SQL Server licensing guidance](https://www.microsoft.com/licensing/guidance/SQL)
-- [Microsoft Product Terms](https://www.microsoft.com/licensing/terms/)
-- [SQL Server on Azure VM pricing guidance](https://learn.microsoft.com/en-us/azure/azure-sql/virtual-machines/windows/pricing-guidance)
-- [SQL Server editions and supported features](https://learn.microsoft.com/en-us/sql/sql-server/editions-and-components-of-sql-server-2025)
-- [Azure SQL pricing](https://azure.microsoft.com/pricing/details/azure-sql-database/)
-- [Microsoft Fabric pricing](https://azure.microsoft.com/pricing/details/microsoft-fabric/)
+## SQL Server editions
 
-Microsoft's pages, license terms, and the user's own commercial agreement take precedence over this documentation. This page is an awareness aid, not legal advice.
+The direct [SQL Server 2025 Developer, Express, and Evaluation license terms](https://www.microsoft.com/content/dam/microsoft/usetm/documents/sql-server/sql-server-2025-developer%2C-express%2C-evaluation/retail/SQL_Server_2025_Developer_Express_and_Evaluation_Edition_English.pdf) distinguish the editions:
 
-## Catalog responsibilities
+- **Developer** permits design, development, test, and demonstration use, but not production use.
+- **Express** is a separate no-cost edition with its own use and distribution rights. It is not merely "Developer for production." Its technical capacity and feature limits must be checked in the current [editions and supported-features documentation](https://learn.microsoft.com/en-us/sql/sql-server/editions-and-components-of-sql-server-2025).
+- **Evaluation** is time-limited evaluation software and is not licensed for production.
+- **Standard and Enterprise** deployments require an applicable paid, pay-as-you-go, subscription, or bring-your-own-license route.
 
-Before a tool or data source can be automated, its catalog record should identify:
+Start every SQL licensing decision with [Microsoft Product Terms](https://www.microsoft.com/licensing/terms/) and [SQL Server licensing guidance](https://www.microsoft.com/licensing/guidance/SQL). A label such as "lab," "demo," or `ContainsSensitiveData: false` does not establish licensing rights.
 
-- owner and contributors;
-- official project and source links;
-- license or commercial terms;
-- whether redistribution is permitted;
-- whether installation requires acceptance or a separate purchase;
-- required attribution;
-- version, checksum, and provenance;
-- any restrictions on sample or real data.
+## Azure and Fabric charges
 
-Open source, source-available, freeware, free tiers, trials, commercial products, public data, and redistributable data are different categories. The UI and reports should preserve those distinctions.
+No-cost software rights do not make the surrounding lab free. Compute, Windows, storage, networking, Bastion, monitoring, backup, data transfer, and other services can be chargeable.
 
-## Candidate versus distributed dependency
+Check the current service and agreement terms together with the relevant pricing pages:
 
-A project listed in the roadmap or community catalog is a **candidate**. It becomes a distributed or downloaded dependency only when an implementation explicitly integrates it. Release-specific [Third-party Notices](../third-party-notices/) will record that difference.
+- [SQL Server on Azure Virtual Machines pricing guidance](https://learn.microsoft.com/en-us/azure/azure-sql/virtual-machines/windows/pricing-guidance)
+- [Windows Virtual Machines pricing](https://azure.microsoft.com/en-us/pricing/details/virtual-machines/windows/)
+- [Azure SQL Database pricing](https://azure.microsoft.com/en-us/pricing/details/azure-sql-database/)
+- [Microsoft Fabric pricing](https://azure.microsoft.com/en-us/pricing/details/microsoft-fabric/)
+- [Azure Bastion pricing](https://azure.microsoft.com/en-us/pricing/details/azure-bastion/)
 
-The older Azure SQLVM Toolkit has its own [third-party notices](https://kaysauter.github.io/azure-sqlvm-toolkit/third-party-notices/). Those notices do not describe dependencies of this new repository.
+Azure Hybrid Benefit, Visual Studio subscription benefits, reservations, savings plans, and organization-specific discounts have eligibility rules. The toolkit's future cost report will show assumptions but will not determine entitlement.
+
+## Third-party tools and data
+
+Open source, source-available, freeware, free tiers, trials, commercial products, public data, and redistributable data are different categories. Before the toolkit can automate an item, its catalog record needs:
+
+- owner, contributors, and authoritative project link;
+- license or commercial terms and the applicable version;
+- redistribution and download permissions;
+- purchase, account, or acceptance requirements;
+- attribution and notice requirements;
+- data-source rights and restrictions;
+- version, checksum, provenance, and installed evidence.
+
+A roadmap entry is a candidate, not a bundled dependency and not permission to redistribute it. Release-specific [Third-party Notices](../third-party-notices/) will identify what a release actually downloads, installs, or distributes.
+
+The older Azure SQLVM Toolkit has separate [third-party notices](https://kaysauter.github.io/azure-sqlvm-toolkit/third-party-notices/). They do not grant rights for this repository or its future catalog.

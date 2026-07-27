@@ -11,22 +11,29 @@ The repository currently contains architecture, roadmap, and project scaffolding
 
 | Status | Meaning |
 | --- | --- |
-| <span class="status status-available">Available</span> | Included, documented, and verified in a published release. |
-| <span class="status status-development">In development</span> | Actively being implemented on the current dependency path. |
-| <span class="status status-planned">Planned</span> | Accepted into the roadmap but not available. |
-| <span class="status status-deferred">Deferred</span> | Intentionally held for a later phase. |
+| **Current** | Verified repository or release behavior that exists now. Current does not necessarily mean deployable. |
+| **Committed design** | An accepted architecture decision that is not yet implemented. |
+| **Backlog** | Intended work whose implementation contract is not settled. |
+| **Exploratory** | Research or an unresolved design question; it is not a promise. |
+| **Deferred** | Work explicitly postponed to a later phase. |
+| <span class="status status-available">Available</span> | Released, documented, and verified functionality. This label is reserved for release behavior. |
 
-No deployment capability is currently marked **Available**. The [pitch deck](../pitch/deck/) presents the roadmap in a meeting-friendly format.
+No deployment capability is currently marked **Available**.
 
-## Current milestone
+## Current repository truth
 
 | Area | Status | Current scope |
 | --- | --- | --- |
-| Architecture and roadmap | <span class="status status-development">In development</span> | Core, provider, engine, lifecycle, testing, and governance decisions |
-| Documentation and pitch | <span class="status status-development">In development</span> | Public design record and community invitation |
-| PowerShell module foundation | <span class="status status-planned">Planned</span> | Module layout, contracts, schema, run state, and command surface |
-| SQL Server on Azure VM | <span class="status status-planned">Planned</span> | First end-to-end provider |
-| Bicep and Terraform | <span class="status status-deferred">Deferred</span> | Additional engines after the PowerShell contract is stable |
+| Architecture, documentation, pitch, and backlog | **Current** | Repository artifacts that can be read and built |
+| Core and extension boundaries | **Committed design** | Accepted separation of target providers, capability modules, catalog sources, solution packs, deployment engines, and probes |
+| PowerShell module, YAML schema, `-Plan`, and `-WhatIf` | **Backlog** | No installable module or command implementation exists |
+| SQL Server on Azure VM | **Backlog** | First end-to-end implementation and proof point |
+| Fabric infrastructure as code | **Exploratory** | Practical API and engine boundaries remain under research |
+| Bicep and Terraform engines | **Deferred** | Begin after the normalized plan and provider contracts are stable |
+
+## Plan and WhatIf
+
+The committed design separates offline reasoning from live comparison. `-Plan` will validate configuration and explain resolved and derived values without Azure access. `-WhatIf` will require Azure context, compare that resolved plan with existing resources, and report create, reuse, update, replace, conflict, drift, or no-change without mutation. Neither command is implemented today.
 
 ## Target order
 
@@ -40,8 +47,19 @@ The order is deliberate. A later target should reuse tested core behavior instea
 6. **SQL Server and PostgreSQL on Linux VMs and containers** - portable engine scenarios.
 7. **Kubernetes** - deferred until container and lifecycle contracts are mature.
 
-Azure Databricks, Git providers, storage providers, community tools, and additional data services are tracked as supporting or future providers in the [Roadmap](../roadmap/).
+Azure Databricks and additional data platforms are tracked as future target providers. Git, storage, community tools, and related capabilities use their own extension types in the [Roadmap](../roadmap/).
 
-## Release truth
+## First implementation proof
 
-Published releases and their release notes will be the source of truth for available behavior. Architecture documents describe intent; issues and project boards describe planned work; neither is a delivery commitment.
+SQL Server on Azure VM must prove one complete path: YAML validation, `-Plan`, `-WhatIf`, cost review, guarded PowerShell deployment, probes, evidence output, teardown preview, confirmed deletion, and cleanup proof.
+
+## Source of truth
+
+Use this order when sources differ:
+
+1. Published releases and release notes define **Available** behavior.
+2. The checked-in repository defines **Current** artifacts and verified development behavior.
+3. Accepted architecture decisions define **Committed design**.
+4. [`FEATURE_REQUESTS.md`](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/FEATURE_REQUESTS.md), issues, and the project board describe **Backlog**, **Exploratory**, and **Deferred** work.
+
+The architecture is not proof of implementation, and the roadmap is not a delivery commitment. [Azure SQLVM Toolkit](https://github.com/kaysauter/azure-sqlvm-toolkit) is an unfinished predecessor; its features do not transfer automatically to this repository.

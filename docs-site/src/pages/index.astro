@@ -1,7 +1,11 @@
 ---
 const base = '/Azure-Data-Lab-Toolkit';
+const canonical = 'https://kaysauter.github.io/Azure-Data-Lab-Toolkit/';
+const description =
+	'Architecture and roadmap for repeatable, security-minded, cost-aware data labs across Azure and self-managed data platforms.';
 const links = {
 	docs: `${base}/overview/`,
+	architecture: `${base}/architecture/`,
 	deck: `${base}/pitch/deck/`,
 	roadmap: `${base}/roadmap/`,
 	suggest: `${base}/community/suggest-a-project/`,
@@ -16,10 +20,17 @@ const links = {
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="color-scheme" content="dark light" />
 		<title>Azure Data Lab Toolkit</title>
-		<meta
-			name="description"
-			content="Architecture and roadmap for repeatable, security-minded, cost-aware data labs across Azure and self-managed data platforms."
-		/>
+		<meta name="description" content={description} />
+		<meta name="theme-color" content="#0b1317" />
+		<link rel="canonical" href={canonical} />
+		<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content="Azure Data Lab Toolkit" />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:title" content="Azure Data Lab Toolkit" />
+		<meta name="twitter:description" content={description} />
 		<script is:inline>
 			const savedTheme = localStorage.getItem('starlight-theme');
 			document.documentElement.dataset.theme = savedTheme === 'light' ? 'light' : 'dark';
@@ -453,7 +464,8 @@ const links = {
 							SQL Server on Azure VM is the first implementation target.
 						</div>
 						<div class="actions">
-							<a class="button primary" href={links.deck}>Open pitch deck</a>
+							<a class="button primary" href={links.architecture}>Explore the architecture</a>
+							<a class="button" href={links.deck}>Open pitch deck</a>
 							<a class="button" href={links.docs}>Read the documentation</a>
 						</div>
 					</div>
@@ -463,7 +475,8 @@ const links = {
 							alt="YAML and templates flow through the toolkit core, providers, and deployment engines to data targets and evidence outputs"
 						/>
 						<figcaption>
-							One engine-neutral plan, specialized providers, and multiple deployment routes.
+							Core contracts coordinate distinct extension types without turning storage,
+							Git, data, or software into deployment targets.
 						</figcaption>
 					</figure>
 				</section>
@@ -489,10 +502,10 @@ const links = {
 						</article>
 						<article class="capability">
 							<span class="status-label">Architecture</span>
-							<h3>Core, providers, engines</h3>
+							<h3>Contracts before engines</h3>
 							<p>
-								PowerShell comes first. Bicep and Terraform follow after the normalized plan and
-								provider contracts are proven.
+								Core, target providers, capability modules, catalogs, solution packs, probes, and
+								engines meet through a normalized plan and versioned evidence.
 							</p>
 						</article>
 						<article class="capability">
@@ -517,6 +530,7 @@ const links = {
 						</p>
 					</div>
 					<div class="actions">
+						<a class="button" href={links.architecture}>Read architecture</a>
 						<a class="button primary" href={links.roadmap}>View roadmap</a>
 						<a class="button" href={links.suggest}>Suggest a project</a>
 					</div>

@@ -2,6 +2,9 @@
   "name": "azure-data-lab-toolkit-docs",
   "type": "module",
   "version": "0.0.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -9,6 +12,7 @@
     "build:astro": "astro build",
     "build:slides": "slidev build pitch.md --base /Azure-Data-Lab-Toolkit/pitch/deck/ --out dist/pitch/deck && node scripts/fix-slidev-hash-routes.mjs",
     "check:links": "node scripts/check-internal-links.mjs",
+    "check:docs": "npm run build && npm run check:links",
     "preview": "node scripts/preview-docs.mjs",
     "preview:astro": "astro preview",
     "slides": "slidev pitch.md",

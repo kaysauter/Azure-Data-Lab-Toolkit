@@ -4,7 +4,7 @@ description: The goal, scope, and design direction of Azure Data Lab Toolkit.
 ---
 
 :::danger[Early architecture scaffold]
-Azure Data Lab Toolkit is in heavy development. There are no deployable cmdlets yet, and the project is not production-ready. These pages describe the intended architecture and dependency-ordered roadmap, not released behavior.
+Azure Data Lab Toolkit currently contains architecture documentation, a documentation website, a pitch deck, and a backlog. There are no deployable cmdlets or released providers, and the project is not production-ready.
 :::
 
 Azure Data Lab Toolkit is a planned PowerShell module for creating repeatable data labs in Azure. Its purpose is to bring infrastructure, databases, sample data, assessment, community tools, testing, cost controls, and teardown into one understandable workflow.
@@ -18,7 +18,7 @@ The planned workflow starts with a schema-validated YAML file:
 1. Select a template or describe a lab.
 2. Validate prerequisites, permissions, regions, quotas, and policy.
 3. Assess the source and intended target.
-4. Review a deterministic plan and an explicit cost estimate.
+4. Review a deterministic plan, an Azure-aware comparison, and an explicit cost estimate.
 5. Confirm any sensitive-data or destructive operation.
 6. Deploy through PowerShell initially, with Bicep and Terraform engines planned later.
 7. Load approved sample, community, generated, private, local, or URL-based data.
@@ -28,23 +28,38 @@ The planned workflow starts with a schema-validated YAML file:
 
 Templates, command-line flags, and a future terminal UI are intended to serve different experience levels without creating different underlying behaviors.
 
+### Plan and WhatIf
+
+The committed command design gives `-Plan` and `-WhatIf` different jobs:
+
+- `-Plan` works without Azure access. It validates the YAML and explains defaults, derived values, resources, actions, and guardrails.
+- `-WhatIf` runs after Azure sign-in. It compares the resolved plan with live resources and reports create, reuse, update, replace, conflict, drift, or no-change without making changes.
+
+Neither command exists yet. The first implementation proof point must demonstrate both behaviors for SQL Server on Azure VM before deployment, probes, reporting, and confirmed teardown.
+
 ## Architecture at a glance
 
-![Azure Data Lab Toolkit architecture showing YAML input flowing through Core, Providers, and Engines to Azure targets and evidence outputs](/Azure-Data-Lab-Toolkit/data-lab-architecture.svg)
+![Azure Data Lab Toolkit architecture showing YAML input flowing through Core and extension contracts to data-lab targets and evidence outputs](/Azure-Data-Lab-Toolkit/data-lab-architecture.svg)
 
 The design separates reusable decisions from target-specific behavior:
 
-- **Core** owns configuration, validation, planning, policy, catalogs, run state, reporting, and lifecycle controls.
-- **Providers** understand a particular target or capability, such as SQL Server on Azure VM, Microsoft Fabric, storage, or Git.
-- **Engines** execute or export the plan through PowerShell, Bicep, or Terraform.
+- **Core** owns configuration, validation, planning, policy, run state, reporting, and lifecycle controls.
+- **Target providers** understand deployable platforms such as SQL Server on Azure VM or Microsoft Fabric.
+- **Capability modules** connect supporting services such as storage, Git, identity, assessment, and cost data.
+- **Catalog sources** describe governed data, software, and templates; **solution packs** compose them into scenarios.
+- **Deployment engines** translate approved actions; **probes** verify outcomes and create evidence.
 
 Read [Architecture Overview](../architecture/) for the full model.
 
 ## Project relationship
 
-[Azure SQLVM Toolkit](https://github.com/kaysauter/azure-sqlvm-toolkit) remains the current working SQL Server VM project and a source of lessons for the new architecture. Its [published documentation](https://kaysauter.github.io/azure-sqlvm-toolkit/) records the behavior of that project.
+[Azure SQLVM Toolkit](https://github.com/kaysauter/azure-sqlvm-toolkit) is an unfinished predecessor and a source of lessons for the new architecture. Its [published documentation](https://kaysauter.github.io/azure-sqlvm-toolkit/) remains online as a record of that work.
 
 Azure Data Lab Toolkit is a new repository and design. Features from the older toolkit are not automatically available here.
+
+## Reading status correctly
+
+Published releases and release notes will be authoritative for **Available** behavior. The repository shows current artifacts, the architecture records committed design, and the roadmap records backlog, exploratory, and deferred work. Read [Project Status](../status/) for the full vocabulary.
 
 ## Where to go next
 

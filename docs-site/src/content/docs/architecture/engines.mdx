@@ -1,43 +1,76 @@
 ---
 title: Deployment Engines
-description: PowerShell-first execution with later Bicep and Terraform exports.
+description: PowerShell-first execution with coherent Bicep and Terraform roles.
 ---
 
-The architecture keeps deployment engines separate from target providers.
+<span class="status status-committed">Committed engine roles; implementation deferred</span>
 
-| Engine | Status | Intended role |
+A deployment engine translates an approved normalized plan into engine-specific
+artifacts and applies supported actions through core orchestration. Target
+providers describe intent; engines own export and apply syntax.
+
+| Engine | Status | Long-term role |
 | --- | --- | --- |
-| PowerShell | <span class="status status-planned">Planned</span> | First execution engine and primary module experience |
-| Bicep | <span class="status status-deferred">Deferred</span> | Export or apply Azure-native infrastructure after contracts stabilize |
-| Terraform | <span class="status status-deferred">Deferred</span> | Export or apply portable infrastructure after contracts stabilize |
+| PowerShell | Committed design, first | Export an auditable action package and apply supported actions |
+| Bicep | Deferred implementation | Export Azure-native templates and apply them through orchestration |
+| Terraform | Deferred implementation | Export configuration and apply it through orchestration with an explicit state boundary |
 
-## PowerShell first
+The engine is selected explicitly. The core never guesses from installed tools
+or configuration files.
 
-PowerShell remains important for people who want an approachable command surface and for operations that involve validation, assessment, guest configuration, catalogs, or evidence beyond infrastructure deployment.
+## Engine contract
 
-The planned flags will allow experienced users to select explicit behavior, including engine choice, Key Vault, cost estimation, terminal UI, secret-output opt-in, and sensitive-data acknowledgement. Exact names remain subject to command-design review.
+An engine must:
 
-## Shared plan
+- declare its adapter and tool versions;
+- publish supported plan-node and capability versions;
+- export deterministic artifacts from the approved plan;
+- preserve stable plan IDs in generated artifacts and evidence;
+- preview and apply without changing target-provider meaning;
+- return structured outputs, diagnostics, and partial-failure evidence;
+- expose engine-native state identifiers without treating them as toolkit state;
+- refuse unsupported capabilities before mutation.
 
-All engines should consume the same normalized plan:
-
-- stable resource and action identifiers;
-- declared dependencies;
-- provider and schema versions;
-- redacted parameter values;
-- expected outputs and probes;
-- lifecycle and cleanup metadata.
-
-An engine must not silently invent a different architecture. If an engine cannot express a provider capability, validation should fail or produce a clear unsupported-capability result.
+The exported package contains a manifest tied to the plan hash. Manual edits
+break that binding and require re-planning or an explicit import workflow; the
+toolkit does not silently apply modified output as the approved plan.
 
 ## Export and apply
 
-Bicep and Terraform support will begin only after the provider contract and PowerShell path are proven. The design must decide explicitly whether each engine can:
+Bicep and Terraform are both intended to support export **and** apply. Apply is
+still coordinated by the toolkit so approvals, idempotency, evidence, probes,
+and cleanup rules remain consistent.
 
-- export files only;
-- apply a generated plan;
-- import existing state;
-- probe non-infrastructure steps;
-- perform teardown with equivalent evidence.
+Engine-native preview evidence may supplement toolkit `-WhatIf`:
 
-Engine parity is a published support matrix, not an assumption.
+- PowerShell may show command-level previews;
+- Bicep may attach an Azure deployment what-if result;
+- Terraform may attach a saved plan summary.
+
+Those previews do not redefine `-WhatIf`. Toolkit `-WhatIf` always reconciles the
+normalized plan with live Azure state and uses the common
+`create/reuse/update/replace/conflict/drift/no-change` vocabulary.
+
+## State boundaries
+
+Toolkit run state records orchestration, ownership, approvals, stable IDs,
+events, and evidence. An engine may keep its own deployment state:
+
+- PowerShell records action receipts but has no separate desired-state store.
+- Azure Resource Manager keeps deployment history for Bicep.
+- Terraform keeps engine-native state in a configured backend.
+
+The run state stores only references, versions, and hashes for engine-native
+state. It does not copy credentials or secret values. Reconciliation must compare
+the toolkit plan, toolkit run state, engine state where applicable, and live
+resources before resume or teardown.
+
+## Parity
+
+Parity is capability-based, not all-or-nothing. A support matrix identifies each
+provider capability as `preview`, `export`, `apply`, `probe`, and `teardown` for
+each engine. Missing support is a structured capability failure.
+
+PowerShell must be implemented and proven first. Bicep and Terraform work starts
+only after the normalized plan, provider, evidence, and state contracts are
+stable.

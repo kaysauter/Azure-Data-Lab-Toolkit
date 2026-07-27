@@ -1,62 +1,108 @@
 ---
 title: Architecture Overview
-description: The Core, Providers, and Engines model for Azure Data Lab Toolkit.
+description: The accepted contracts and boundaries for Azure Data Lab Toolkit.
 ---
 
-<span class="status status-development">In development</span>
+<span class="status status-current">Current document; committed design</span>
 
-Azure Data Lab Toolkit separates **what a lab should become** from **how a specific service is deployed**. This keeps validation, security, cost, evidence, and lifecycle behavior consistent as new targets are added.
+Azure Data Lab Toolkit is being designed before its first deployable cmdlet is
+built. The repository currently contains a scaffold, documentation, and a
+backlog. This chapter describes **committed design**, not shipped functionality.
 
-![Azure Data Lab Toolkit architecture showing inputs, the three architecture layers, targets, and outputs](/Azure-Data-Lab-Toolkit/data-lab-architecture.svg)
+The predecessor, Azure SQLVM Toolkit, is unfinished. The new architecture starts
+with SQL Server on Azure VM while leaving deliberate extension points for the
+broader data-lab roadmap.
 
-## Three layers
+## Read status precisely
 
-| Layer | Owns | Must not own |
-| --- | --- | --- |
-| [Core](./core/) | Schema, defaults, validation, assessment orchestration, planning, policy, catalogs, run state, reports, lifecycle | Azure-service implementation details |
-| [Providers](./providers/) | Target capabilities, constraints, deployment resources, probes, and teardown behavior | A competing configuration or state model |
-| [Engines](./engines/) | Applying or exporting a normalized plan through PowerShell, Bicep, or Terraform | Target-specific business rules already owned by providers |
+| Label | Meaning |
+| --- | --- |
+| **Current** | Verified repository or released behavior |
+| **Committed design** | Accepted contract, not necessarily implemented |
+| **Backlog** | Intended work without a settled detailed contract |
+| **Exploratory** | Research or an unresolved design question |
+| **Deferred** | Explicitly postponed |
+| **Rejected or superseded** | Preserved only as decision history |
 
-## Architectural flow
+## System shape
 
-```text
-YAML + explicit flags + selected template
-                  |
-                  v
-       Resolve -> Validate -> Assess
-                  |
-                  v
-          Normalize -> Plan -> Estimate
-                  |
-                  v
-           Confirm -> Execute/Export
-                  |
-                  v
-             Probe -> Report
-                  |
-                  v
-      Shutdown/Resume/Teardown Preview
+```mermaid
+flowchart LR
+    U["Templates, YAML, flags"] --> C["Core"]
+    X["Extension contracts"] --> C
+    C --> P["Versioned normalized plan"]
+    P --> E["Selected deployment engine"]
+    E --> Z["Azure control plane and target data plane"]
+    Z --> Q["Probes"]
+    Q --> V["Reports and run evidence"]
+    V --> C
 ```
 
-Every run should produce evidence that can answer:
+| Part | Owns | Does not own |
+| --- | --- | --- |
+| [Core](./core/) | Resolution, policy, plans, approvals, orchestration, state, reports | Target or engine implementation |
+| [Target providers](./providers/) | Target capabilities, constraints, resources, target-specific validation | Export formats, orchestration, global state |
+| [Other extensions](./extension-model/) | Reusable capabilities, catalogs, solution packs, and probes | A competing plan or state model |
+| [Deployment engines](./engines/) | Exporting and applying an approved plan | Target business rules or policy overrides |
 
-- Which input, template, schema, and toolkit version were used?
-- Which defaults and policies changed the requested configuration?
-- Which resources and artifacts were planned?
-- Which identity performed each action?
-- What did the operation cost or estimate?
-- Which probes passed, failed, or were skipped?
-- What remains after teardown?
+## Fixed design rules
 
-## Design rules
+- YAML is the canonical, source-controllable input.
+- Precedence is `schema defaults < template < YAML < explicit flags`.
+- Every resolved value carries provenance.
+- `-Plan` is deterministic, offline, unauthenticated, and non-mutating.
+- `-WhatIf` is Azure-aware, authenticated, and non-mutating.
+- PowerShell is first; Bicep and Terraform follow as explicit engine choices.
+- Assessment, cost estimation, deployment, migration, and teardown are distinct
+  operations.
+- Secrets are referenced, never embedded in plans, state, or reports.
+- Unknown resources are never deleted.
+- Local and CI execution use the same plan, evidence, and approval contracts.
 
-- PowerShell is the first execution route, not the only future route.
-- YAML is the durable declarative input.
-- Flags override only explicitly supported settings and remain visible in the resolved plan.
-- Providers declare capabilities; the core does not guess them.
-- Assessment is distinct from migration and deployment.
-- Planning, cost estimation, and teardown preview remain useful without making changes.
-- Secrets, sensitive data, licenses, and external artifacts are explicit governed inputs.
-- The same plan and evidence contracts support local use and CI/CD.
+The detailed [plan and state contract](./plan-and-state/) makes these
+rules testable.
 
-The root [architecture document](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/architecture/README.md) is the repository-level decision record.
+## Delivery order
+
+The committed provider sequence is SQL Server on Azure VM, Azure SQL Database,
+Azure SQL Managed Instance, then Microsoft Fabric. PostgreSQL and the other
+targets described in the [roadmap](../roadmap/) follow later. Linux VM and
+container targets, and Kubernetes, are deferred. Fabric infrastructure-as-code
+completeness remains exploratory.
+
+## Lifecycle
+
+```mermaid
+flowchart LR
+    R["Resolve"] --> V["Validate"]
+    V --> A["Assess"]
+    A --> P["Plan"]
+    P --> W["What-if"]
+    P --> C["Estimate cost"]
+    W --> G["Approve"]
+    C --> G
+    G --> D["Deploy"]
+    D --> B["Probe"]
+    B --> O["Report"]
+    O --> T["Teardown preview"]
+    T --> H["Approve teardown"]
+    H --> X["Teardown"]
+    X --> E["Cleanup proof"]
+```
+
+Stages run only when applicable. [Provider lifecycle](./provider-lifecycle/)
+defines contribution boundaries; the core remains the lifecycle coordinator.
+
+## Trust and evidence
+
+The architecture treats the workstation or CI runner, artifact sources, Azure
+control plane, Key Vault, target guest or data plane, and report/state store as
+separate trust zones. See [System Context](./system-context/) for the data flows
+and [Security](../security/) for project guidance.
+
+Every operation emits a versioned evidence envelope. Console, JSON, Markdown,
+and HTML are renderings of the same underlying record, not independent truths.
+The design does not imply that these outputs have been implemented.
+
+The accepted decisions and remaining research boundaries are collected in
+[Architecture Decisions](./decisions/).

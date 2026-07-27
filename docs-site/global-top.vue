@@ -6,6 +6,10 @@
 	<a class="source-footer" href="https://github.com/kaysauter/Azure-Data-Lab-Toolkit">
 		github.com/kaysauter/Azure-Data-Lab-Toolkit
 	</a>
+	<div class="portrait-notice" role="note">
+		Rotate for a readable presentation.
+		<a href="/Azure-Data-Lab-Toolkit/overview/">Read the docs</a>
+	</div>
 </template>
 
 <style scoped>
@@ -48,7 +52,7 @@
 	z-index: 100;
 	border: 1px solid rgba(125, 211, 252, 0.30);
 	border-radius: 6px;
-	max-width: min(28rem, calc(100vw - 2.2rem));
+	max-width: min(22rem, 34vw);
 	overflow: hidden;
 	padding: 0.28rem 0.55rem;
 	background: rgba(15, 23, 42, 0.72);
@@ -67,15 +71,53 @@
 	color: #06111f;
 }
 
+.portrait-notice {
+	display: none;
+}
+
 @media print {
-	.deck-nav {
+	.deck-nav,
+	.source-footer,
+	.portrait-notice {
 		display: none;
 	}
 }
 
-@media (max-width: 700px) {
+@media (max-width: 760px) {
 	.source-footer {
 		display: none;
+	}
+
+	.deck-nav {
+		top: 0.65rem;
+		right: 0.65rem;
+	}
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+	.portrait-notice {
+		position: fixed;
+		right: 1.5rem;
+		bottom: 1.5rem;
+		left: 1.5rem;
+		z-index: 120;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.25rem;
+		border: 3px solid rgba(125, 211, 252, 0.62);
+		border-radius: 6px;
+		padding: 1rem 1.25rem;
+		background: rgba(15, 23, 42, 0.94);
+		color: #e5edf8;
+		font-size: 2.25rem;
+		font-weight: 650;
+		line-height: 1.2;
+	}
+
+	.portrait-notice a {
+		color: #7dd3fc;
+		white-space: nowrap;
 	}
 }
 </style>

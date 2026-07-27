@@ -3,46 +3,55 @@ title: Git And CI/CD
 description: Planned Git providers and automated quality, security, deployment, and cleanup workflows.
 ---
 
-<span class="status status-planned">Planned</span>
+<span class="status status-backlog">GitHub first; other providers are backlog</span>
 
-GitHub is the first repository and CI/CD provider. Azure DevOps, GitLab, Gitea, and Forgejo remain in the provider backlog.
+[GitHub](https://docs.github.com/en/get-started/start-your-journey/what-is-github) and [GitHub Actions](https://docs.github.com/en/actions) are the first repository and pipeline targets. Later provider work may cover [Azure Pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/get-started/what-is-azure-pipelines), [GitLab CI/CD](https://docs.gitlab.com/ci/), [Gitea Actions](https://docs.gitea.com/usage/actions/overview), and [Forgejo Actions](https://forgejo.org/docs/latest/user/actions/reference/).
 
-## Pull-request checks
+Those later providers are architectural backlog. They do not imply support in Microsoft Fabric Git integration.
 
-The planned GitHub workflow includes:
+## CI stages
 
-| Gate | Purpose |
+| Stage | Required outcome |
 | --- | --- |
-| Schema and examples | Validate every shipped template and configuration example |
-| Pester | Test the module, provider contracts, planners, redaction, and failure paths |
-| PowerShell analysis | Enforce style and catch common PowerShell defects |
-| Dependency Review and Dependabot | Identify vulnerable or outdated dependencies and actions |
-| CodeQL | Analyze supported source languages for security issues |
-| Secret scanning | Prevent credentials from entering history |
-| Checkov | Scan Bicep, Terraform, workflow, and related infrastructure policy when those files exist |
-| Vulnerability scan | Scan repository, filesystem, containers, and generated artifacts with a maintained scanner |
-| Docs build and link check | Keep architecture, references, and the pitch deployable |
+| Validate | Parse PowerShell, validate YAML schemas and examples, check generated content |
+| Test | Run unit, contract, fixture, failure-path, redaction, and report tests |
+| Analyze | Run PowerShell, dependency, secret, IaC, and vulnerability checks |
+| Build | Package the module and build docs without uncommitted generation |
+| Plan | Produce deterministic plan and cost artifacts without Azure mutation |
+| Compare | Run Azure-aware `-WhatIf` only in an approved environment |
+| Deploy | Require protected-environment approval and scoped OIDC identity |
+| Probe | Verify the target, data, tools, security posture, and expected outputs |
+| Teardown | Preview, confirm, remove eligible resources, and publish cleanup proof |
 
-These tools reduce risk; none proves that a deployment is secure.
+## Security and quality gates
 
-## Live deployment tests
+| Control | Planned use and boundary |
+| --- | --- |
+| [Dependabot](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain) | Update supported dependency manifests and GitHub Actions; updates still require review and tests |
+| [Dependency review](https://docs.github.com/en/code-security/concepts/supply-chain-security/dependency-review) | Show dependency changes and known vulnerability information in pull requests |
+| [CodeQL](https://codeql.github.com/docs/codeql-overview/supported-languages-and-frameworks/) | Analyze supported languages only; CodeQL does **not** support PowerShell |
+| [PSScriptAnalyzer](https://learn.microsoft.com/en-us/powershell/utility-modules/psscriptanalyzer/overview) | Static analysis for PowerShell style, compatibility, and selected defect patterns |
+| [Pester](https://pester.dev/) | Exercise PowerShell behavior, contracts, negative paths, and redaction |
+| [Checkov](https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html) | Scan supported Bicep, Terraform, GitHub Actions, and related configuration when those files exist |
+| Secret scanning | Detect committed credentials and block supported secret patterns |
+| [Trivy](https://trivy.dev/docs/latest/guide/) | Planned generic scan for repository/filesystem dependencies and container images |
 
-PRs should stay fast and avoid uncontrolled Azure cost. Live tests belong in protected environments with:
+Trivy is the selected generic vulnerability scanner, but it remains backlog until a pinned workflow, severity policy, ignore process, database-update policy, and retained report exist. None of these tools proves that a deployment is secure.
 
-- OpenID Connect federation and least-privilege identities;
-- explicit subscription, region, quota, and budget allowlists;
-- unique naming and tags;
-- short TTLs and scheduled cleanup;
-- probes that validate the deployed outcome;
-- teardown in failure paths;
-- a final cleanup query and retained evidence report.
+## Cloud identity and approvals
 
-Small smoke tests may run on approved changes. Broader provider, target, region, and engine matrices should run on a schedule.
+Live workflows will use [GitHub OIDC federation](https://docs.github.com/en/actions/concepts/security/openid-connect) with least-privilege Azure roles. Trust policies must constrain repository, branch or tag, environment, and workflow context.
 
-## Fabric CI/CD
+Protected environments will control deployment and teardown identities, required reviewers, and environment-specific configuration. Forked or untrusted pull requests will not receive Azure credentials or access to protected secrets.
 
-Fabric automation must use Fabric's supported Git integration, REST APIs, and deployment pipelines according to item capability. Git may track metadata while leaving tables and files untouched; the plan and test report must make that boundary visible.
+## Live test protections
 
-## Self-hosted Git
+Live tests need explicit subscription and region allowlists, quota checks, constrained SKUs, unique ownership tags, concurrency limits, budgets, short TTLs, and cleanup that runs after failure. A final Azure query will record resources that remain.
 
-Gitea and Forgejo on Azure containers are possible future lab targets, but they introduce persistent storage, upgrades, backups, identity, ingress, certificate, vulnerability, and teardown responsibilities. They should not be treated as a small variation of hosted GitHub.
+Small SQL VM smoke tests can run after approval. Wider provider, engine, region, and version matrices belong on scheduled or release workflows. No workflow may delete a resource whose ownership is unknown.
+
+## Fabric CI/CD boundary
+
+Fabric automation will follow the current [Fabric Git integration provider and item matrix](https://learn.microsoft.com/en-us/fabric/cicd/git-integration/intro-to-git-integration) and [Fabric CI/CD guidance](https://learn.microsoft.com/en-us/fabric/fundamentals/understand-best-practices-fabric-cicd). Full Fabric infrastructure-as-code parity remains exploratory.
+
+Gitea and Forgejo can also become self-hosted lab targets, but that adds storage, backup, identity, ingress, certificates, upgrades, scanning, and teardown responsibilities beyond a pipeline adapter.

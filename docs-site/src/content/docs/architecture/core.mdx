@@ -1,60 +1,138 @@
 ---
 title: Core
-description: Responsibilities and boundaries of the engine-neutral toolkit core.
+description: Engine-neutral resolution, policy, orchestration, and evidence contracts.
 ---
 
-<span class="status status-planned">Planned</span>
+<span class="status status-committed">Committed design</span>
 
-The core turns user intent into a normalized, reviewable plan. It should behave the same whether the plan is executed with PowerShell or exported for another engine.
+The core turns user intent and extension contributions into one normalized,
+reviewable plan. It coordinates work but does not contain Azure-service logic or
+deployment-engine syntax.
 
-## Core responsibilities
+## Responsibilities
 
-| Capability | Responsibility |
+| Area | Core responsibility |
 | --- | --- |
-| Configuration | Load YAML, apply template inheritance, validate schema versions, and record flag overrides |
-| Defaults and policy | Resolve secure defaults, organization policy, regions, naming, tags, and environment constraints |
-| Assessment | Coordinate source discovery and target recommendations without treating migration as assessment |
-| Planning | Build a deterministic resource and action graph with dependencies |
-| Cost | Estimate separately on request and include assumptions, uncertainty, and recurring costs |
-| Catalogs | Resolve approved data sources, software, solution packs, licenses, versions, and checksums |
-| State | Persist run identity, inputs, outputs, provider versions, deployed resources, and cleanup evidence |
-| Reporting | Produce human-readable terminal output, machine-readable records, and HTML reports |
-| Lifecycle | Coordinate deployment, shutdown, resume, teardown preview, confirmation, and removal |
+| Configuration | Parse versioned YAML, apply precedence, validate schema, and record provenance |
+| Policy | Evaluate identity, network, secret, spend, licensing, sensitivity, and lifecycle rules |
+| Planning | Merge extension contributions into a stable resource-and-action DAG |
+| Preview | Produce offline `-Plan` and live, non-mutating `-WhatIf` results |
+| Assessment | Coordinate facts and recommendations separately from migration |
+| Cost | Run a distinct estimate using declared quantities, prices, assumptions, and uncertainty |
+| Approval | Bind approval to the plan hash, policy decisions, actor, scope, and expiry |
+| Orchestration | Dispatch approved actions to the selected engine and resumable supporting operations |
+| State | Record append-only events, snapshots, locks, reconciliation, and cleanup evidence |
+| Reporting | Emit versioned evidence that can render to console, JSON, Markdown, or HTML |
 
-## Configuration precedence
+The core does not silently infer unsupported target behavior. An extension either
+declares a capability and contributes valid plan nodes, or returns a structured
+capability failure.
 
-The intended precedence is:
+## Configuration contract
+
+YAML is canonical. Templates make common cases easier, while explicit flags give
+experienced users narrow overrides:
 
 ```text
-Schema defaults < selected template < YAML values < explicit command-line flags
+schema defaults < selected template < YAML < explicit flags
 ```
 
-The resolved result must be recorded. A reviewer should never need to infer whether a value came from a default, template, file, or flag.
+Each resolved field records:
 
-## Operation model
+- final typed value or redacted reference;
+- source layer and source location;
+- derivation rule, when calculated;
+- validator or policy decisions;
+- whether an external fact remains `unverified`;
+- schema version.
 
-The command surface is not final, but the architecture distinguishes operations such as:
+Flags may override only schema-declared fields. Unknown keys, incompatible
+schema versions, conflicting overrides, and ambiguous template inheritance fail
+before a plan is accepted.
 
-- `Validate`
-- `Assess`
-- `Plan`
-- `EstimateCost`
-- `Deploy`
-- `Probe`
-- `ExportHtml`
-- `Shutdown`
-- `Resume`
-- `TeardownPreview`
-- `Teardown`
+## Command-line commitments
 
-Destructive actions require a summary and explicit confirmation. Non-interactive execution will need a separately auditable confirmation mechanism.
+The final cmdlet grouping remains API-design work, but the architecture reserves
+these advanced-user parameters and their meaning:
 
-## Run state
+| Parameter | Contract |
+| --- | --- |
+| `-ConfigFile` | Read the canonical YAML definition |
+| `-Plan` | Resolve and explain the deterministic offline plan |
+| `-WhatIf` | Reconcile that plan with live Azure state without mutation |
+| `-CostEstimate` | Run the separate cost-estimation operation |
+| `-OutputFormat` and `-OutputPath` | Select console, JSON, Markdown, or HTML rendering and its destination |
+| `-DeploymentEngine` | Explicitly select `PowerShell`, and later `Bicep` or `Terraform` when supported |
+| `-TerminalUi` | Opt in to guided YAML creation; never make the terminal UI mandatory |
+| `-KeyVaultName` and `-UseExistingKeyVault` | Select or reuse the approved secret boundary |
+| `-GeneratePassword` and `-ShowPassword` | Independently opt in to generation and shell display |
+| `-ContainsSensitiveData` | Acknowledge restricted data and activate policy checks |
+| `-UseCustomArtifact`, `-CustomArtifactPath`, `-CustomArtifactUrl`, and `-CustomArtifactChecksum` | Select a user-controlled artifact and optional expected digest |
 
-Run state must not become a secret store. It may hold secret references, hashes, resource identifiers, timestamps, versions, decisions, and probe results. Secret values belong in an approved secret-management system such as Azure Key Vault.
+Unsupported combinations fail during validation. A parameter cannot weaken a
+deny policy merely because it was supplied explicitly.
 
-## Durable orchestration
+## Policy and approval
 
-Long-running deployment, validation, and teardown work should survive a terminal or agent session ending. A later session must resume from the recorded run ID and compare recorded state with actual provider state before acting.
+Policy findings have stable codes and one of four outcomes: `allow`, `warn`,
+`require-approval`, or `deny`. A warning does not become consent.
 
-Webhooks, schedules, CI jobs, or AI-assisted tasks may request continuation in a future design. A trigger must carry an authenticated identity and idempotency context; it cannot bypass plan review, sensitive-data acknowledgement, secret controls, or destructive-action confirmation.
+Approval records contain the plan hash, actor, timestamp, expiry, approved
+operations, acknowledged risks, spend boundary, sensitive-data decision, and
+teardown scope. A changed plan requires new approval. Non-interactive approval
+must be supplied through an authenticated, auditable mechanism; a webhook, CI
+job, or AI session cannot approve itself.
+
+The following always remain explicit:
+
+- secret generation or display;
+- use of sensitive data;
+- unverified or unsigned artifacts;
+- license acceptance;
+- spend above the approved boundary;
+- replacement or destructive change;
+- adoption of an existing resource;
+- teardown.
+
+## Operations
+
+| Operation | Purpose | Azure auth | Mutation |
+| --- | --- | --- | --- |
+| Validate | Check schema and locally available inputs | No | No |
+| Assess | Collect and interpret source or target facts | Depends on source | No |
+| Plan | Resolve a deterministic normalized plan | No | No |
+| WhatIf | Reconcile a plan with live Azure state | Yes | No |
+| EstimateCost | Price the declared plan with explicit assumptions | Depends on price source | No |
+| Deploy | Execute an approved plan | Yes | Yes |
+| Probe | Verify declared postconditions | Depends on probe | Read-only where possible |
+| Report | Render existing evidence | No | No |
+| Shutdown/Resume | Change eligible runtime state | Yes | Yes |
+| TeardownPreview | Resolve deletion eligibility and blockers | Yes | No |
+| Teardown | Execute an approved teardown plan | Yes | Yes |
+| CleanupProof | Reconcile expected removals and retained resources | Yes | No |
+
+Assessment can inform target choice, sizing, compatibility, security, and
+migration readiness. It does not move data. Migration is a later, separate
+capability with its own plan and approval.
+
+For the first SQL Server path, the committed assessment integrations are
+[SQL Server enabled by Azure Arc](https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/overview)
+and the
+[migration component in SQL Server Management Studio](https://learn.microsoft.com/en-us/ssms/migrate/migrate-sql-server-azure-sql).
+They contribute assessment evidence; they do not turn assessment into an
+automatic migration.
+
+## External continuation
+
+Authenticated triggers may:
+
+- request validation, planning, reporting, or another non-mutating operation;
+- request resume of an already approved run using its immutable run ID and an
+  idempotency key.
+
+They may not widen approval, increase spend, reveal secrets, acknowledge
+sensitive data, accept a license, adopt resources, or approve teardown. Resume
+begins with state lock acquisition and live reconciliation.
+
+See [Plan and State](../plan-and-state/) for the serialized contracts and
+[Extension Model](../extension-model/) for contribution boundaries.

@@ -1,45 +1,50 @@
 ---
 title: Sample And Data Sources
-description: Planned catalog for sample, community, generated, private, local, and URL-based data.
+description: Candidate catalog for public samples, community databases, generated data, and private sources.
 ---
 
-<span class="status status-planned">Planned candidates</span>
+<span class="status status-backlog">Candidate catalog</span>
 
-The data catalog will treat ownership, license, provenance, sensitivity, compatibility, size, and restore method as first-class metadata.
+No dataset on this page is bundled with Azure Data Lab Toolkit. These are possible future catalog entries, and each remains owned and licensed by its upstream publisher and, where applicable, the creators of the underlying data.
 
-## Candidate public sources
+## Microsoft samples
 
-| Source | Owner or steward | Intended targets |
+| Candidate | Steward and attribution | License or review note |
 | --- | --- | --- |
-| [Microsoft SQL Server samples](https://github.com/microsoft/sql-server-samples) | Microsoft and contributors | SQL Server and Azure SQL |
-| [AdventureWorks](https://github.com/microsoft/sql-server-samples/tree/master/samples/databases/adventure-works) | Microsoft | SQL Server and compatible Azure SQL scenarios |
-| [Wide World Importers](https://github.com/microsoft/sql-server-samples/tree/master/samples/databases/wide-world-importers) | Microsoft sample team and named authors | SQL Server and analytics scenarios |
-| [Northwind and pubs](https://github.com/Microsoft/sql-server-samples/tree/master/samples/databases/northwind-pubs) | Microsoft | Legacy teaching scenarios |
-| [SQL Sunday downloads](https://sqlsunday.com/downloads/) | Daniel Hutmacher and underlying data providers | SQL Server demonstrations |
-| [Stack Overflow SQL Server database](https://www.brentozar.com/archive/2015/10/how-to-download-the-stack-overflow-database-via-bittorrent/) | Stack Exchange authors; packaged for SQL Server by Brent Ozar | Larger SQL Server workloads |
-| [Contoso Data Generator](https://www.sqlbi.com/tools/contoso-data-generator/) | SQLBI | Tabular and Fabric learning scenarios |
-| [PostgreSQL sample database index](https://wiki.postgresql.org/wiki/Sample_Databases) | PostgreSQL community | PostgreSQL |
-| [Pagila](https://github.com/devrimgunduz/pagila) | Devrim Gündüz and contributors; derived from Sakila | PostgreSQL |
-| [Chinook](https://github.com/lerocha/chinook-database) | Luis Rocha and contributors | Multiple database platforms |
-| [Northwind for PostgreSQL](https://github.com/pthom/northwind_psql) | Pascal Thomet and contributors | PostgreSQL |
+| [Microsoft SQL Server samples](https://github.com/microsoft/sql-server-samples) | Microsoft and repository contributors | Repository code and samples use the repository's [MIT license](https://github.com/microsoft/sql-server-samples/blob/master/license.txt); individual folders may add terms that must also be reviewed |
+| [AdventureWorks](https://github.com/microsoft/sql-server-samples/tree/master/samples/databases/adventure-works) | Microsoft | Review the repository license and the selected package before download or redistribution |
+| [WideWorldImporters](https://github.com/microsoft/sql-server-samples/blob/master/samples/databases/wide-world-importers/README.md) | The authoritative README credits [Greg Low](https://greglow.com/), [Denzil Ribeiro](https://www.linkedin.com/in/denzilribeiro), [Jos de Bruijn](https://www.linkedin.com/in/josdebruijn), and [Robert Cain](https://arcanecode.com/info/) as authors | Review the repository [MIT license](https://github.com/microsoft/sql-server-samples/blob/master/license.txt) and package-specific notices |
+| [Northwind and pubs](https://github.com/Microsoft/sql-server-samples/tree/master/samples/databases/northwind-pubs) | Microsoft | Legacy samples; review repository and folder terms before use |
+| [Microsoft Fabric samples](https://github.com/microsoft/fabric-samples) | Microsoft and repository contributors | Review the repository [license](https://github.com/microsoft/fabric-samples/blob/main/LICENSE) and the selected sample's own README and dependencies |
 
-These are candidates, not bundled datasets. Each integration needs a license and redistribution review. A database package and the underlying data can have different owners and terms.
+## Community SQL Server and analytics sources
+
+| Candidate | Steward and attribution | License or review note |
+| --- | --- | --- |
+| [SQL Sunday downloads](https://sqlsunday.com/downloads/) | [Daniel Hutmacher](https://sqlsunday.com/about/) prepares the database packages and identifies underlying public-data sources | Review every database separately. The source data, prepared database, and download method can have different terms; the downloads index alone is not a blanket license |
+| [Stack Overflow database for SQL Server](https://www.brentozar.com/archive/2015/10/how-to-download-the-stack-overflow-database-via-bittorrent/) | [Brent Ozar](https://www.brentozar.com/about/) provides the SQL Server distribution; the posts remain the work of Stack Overflow contributors | The underlying content is governed by the [Stack Overflow content license](https://stackoverflow.com/help/licensing). Distribution terms and attribution must be preserved |
+| [Contoso Data Generator](https://www.sqlbi.com/tools/contoso-data-generator/) | SQLBI, founded by [Alberto Ferrari](https://www.sqlbi.com/author/alberto-ferrari/) and [Marco Russo](https://www.sqlbi.com/author/marco-russo/) | Redistribution rights and the provenance and terms of generated archives require verification before a catalog entry can automate acquisition |
+
+## PostgreSQL sources
+
+The PostgreSQL community [sample database index](https://wiki.postgresql.org/wiki/Sample_Databases) is a useful directory, not a guarantee that each linked database has the same owner or license.
+
+| Candidate | Steward and origin | License or review note |
+| --- | --- | --- |
+| [Pagila](https://github.com/devrimgunduz/pagila) | Maintained by [Devrim Gündüz](https://github.com/devrimgunduz) and contributors; it began as a PostgreSQL port of the Sakila example created by Mike Hillyer and the MySQL documentation team | [PostgreSQL License](https://github.com/devrimgunduz/pagila/blob/master/LICENSE.txt) |
+| [Chinook](https://github.com/lerocha/chinook-database) | Created by [Luis Rocha](https://github.com/lerocha) and maintained with contributors | [MIT](https://github.com/lerocha/chinook-database/blob/master/LICENSE.md) |
+| [Northwind for PostgreSQL](https://github.com/pthom/northwind_psql) | A PostgreSQL adaptation by [Pascal Thomet](https://github.com/pthom) and contributors of Microsoft's Northwind sample | Review the project's [license](https://github.com/pthom/northwind_psql/blob/master/LICENSE) and preserve both adaptation and original-sample attribution |
 
 ## User-provided data
 
-Planned source types include:
+Planned sources include local files and directories, approved HTTPS URLs, Azure Blob Storage, ADLS Gen2, Azure Files, existing databases or backups, and generated data. Public catalog entries remain optional: a company or developer may choose private data or software instead.
 
-- local files and directories;
-- approved HTTPS URLs;
-- Azure Blob Storage, ADLS Gen2, and Azure Files;
-- existing databases or backups;
-- generated and synthetic data;
-- private catalog entries.
+Private data needs the same provenance record as public data, plus stricter access handling:
 
-Real data must require an explicit sensitive-data acknowledgement and policy validation. Credentials belong in Key Vault or an equivalent approved secret store, not in YAML.
+- credentials must be supplied through Key Vault or another approved secret reference, never inside YAML or a URL;
+- an explicit acknowledgement is required when provenance cannot be independently verified;
+- a user-provided checksum is optional, but an absent checksum must be warned about and recorded;
+- sensitive data requires explicit classification, policy validation, least-privilege access, and redacted reports;
+- acquisition, restore or import, validation, retention, and removal must be part of the plan.
 
-## Restore and import
-
-Restore methods depend on the target and artifact: native backup restore, URL restore, scripts, bulk load, logical dump, import APIs, shortcuts, or generated data. The catalog must preserve checksums and source-relative metadata so evidence can show exactly what was loaded.
-
-Migration mechanisms such as BACPAC are deferred and must not be described as assessment.
+The catalog must preserve the resolved source, immutable version when available, checksum or signature evidence, upstream terms, and restore metadata. The plan must show what will be loaded and what code or database commands will run before anything changes.

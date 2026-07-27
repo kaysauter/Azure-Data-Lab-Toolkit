@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const base = '/Azure-Data-Lab-Toolkit';
 const distRoot = resolve(fileURLToPath(new URL('../dist', import.meta.url)));
 const attributePattern = /\b(?:href|src)=["']([^"'<>]+)["']/g;
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const findHtmlFiles = (directory) => {
 	const files = [];
@@ -21,7 +22,6 @@ const findHtmlFiles = (directory) => {
 
 const resolveCandidate = (htmlFile, rawReference) => {
 	if (
-		rawReference.startsWith('#') ||
 		rawReference.startsWith('data:') ||
 		rawReference.startsWith('mailto:') ||
 		rawReference.startsWith('tel:') ||
@@ -31,30 +31,60 @@ const resolveCandidate = (htmlFile, rawReference) => {
 		return null;
 	}
 
-	const reference = decodeURIComponent(rawReference.split('#')[0].split('?')[0]);
-	if (!reference) return null;
+	const hashIndex = rawReference.indexOf('#');
+	const rawPath = hashIndex >= 0 ? rawReference.slice(0, hashIndex) : rawReference;
+	const rawFragment = hashIndex >= 0 ? rawReference.slice(hashIndex + 1) : '';
+	const fragment = decodeURIComponent(rawFragment);
+
+	// Slidev uses hash routes such as #/1 and #/presenter/1, not document anchors.
+	const isSlidevRoute = fragment.startsWith('/');
+	if (!rawPath && (!fragment || isSlidevRoute)) return null;
+
+	const reference = decodeURIComponent(rawPath.split('?')[0]);
 
 	if (reference.startsWith('/') && !reference.startsWith(`${base}/`) && reference !== base) {
 		return { error: `root-relative URL escapes the configured base: ${rawReference}` };
 	}
 
-	const webPath = reference.startsWith(base)
-		? reference.slice(base.length) || '/'
-		: join('/', relative(distRoot, dirname(htmlFile)), reference);
+	const webPath = !reference
+		? `/${relative(distRoot, htmlFile)}`
+		: reference.startsWith(base)
+			? reference.slice(base.length) || '/'
+			: join('/', relative(distRoot, dirname(htmlFile)), reference);
 	const candidate = normalize(join(distRoot, webPath));
 
 	if (!candidate.startsWith(`${distRoot}${sep}`) && candidate !== distRoot) {
 		return { error: `URL resolves outside dist: ${rawReference}` };
 	}
 
-	if (existsSync(candidate) && statSync(candidate).isFile()) return { path: candidate };
-
-	if (!extname(candidate)) {
-		const index = join(candidate, 'index.html');
-		if (existsSync(index) && statSync(index).isFile()) return { path: index };
+	let target = null;
+	if (existsSync(candidate) && statSync(candidate).isFile()) {
+		target = candidate;
 	}
 
-	return { error: `target not found: ${rawReference}` };
+	if (!target && !extname(candidate)) {
+		const index = join(candidate, 'index.html');
+		if (existsSync(index) && statSync(index).isFile()) target = index;
+	}
+
+	if (!target) return { error: `target not found: ${rawReference}` };
+
+	return {
+		path: target,
+		fragment: isSlidevRoute ? '' : fragment,
+		reference: rawReference,
+	};
+};
+
+const hasAnchor = (htmlFile, fragment) => {
+	if (!fragment || !htmlFile.endsWith('.html')) return true;
+	const source = readFileSync(htmlFile, 'utf8');
+	const escaped = escapeRegExp(fragment);
+	const anchorPattern = new RegExp(
+		`(?:\\bid|\\bname)=["']${escaped}["']`,
+		'i',
+	);
+	return anchorPattern.test(source);
 };
 
 if (!existsSync(distRoot)) {
@@ -64,6 +94,7 @@ if (!existsSync(distRoot)) {
 
 const failures = [];
 let checked = 0;
+let checkedAnchors = 0;
 
 for (const htmlFile of findHtmlFiles(distRoot)) {
 	const source = readFileSync(htmlFile, 'utf8');
@@ -73,6 +104,13 @@ for (const htmlFile of findHtmlFiles(distRoot)) {
 		checked += 1;
 		if (result.error) {
 			failures.push(`${relative(distRoot, htmlFile)}: ${result.error}`);
+		} else if (result.fragment) {
+			checkedAnchors += 1;
+			if (!hasAnchor(result.path, result.fragment)) {
+				failures.push(
+					`${relative(distRoot, htmlFile)}: anchor not found in ${relative(distRoot, result.path)}: #${result.fragment}`,
+				);
+			}
 		}
 	}
 }
@@ -83,4 +121,6 @@ if (failures.length > 0) {
 	process.exit(1);
 }
 
-console.log(`Checked ${checked} internal references in the production build.`);
+console.log(
+	`Checked ${checked} internal references, including ${checkedAnchors} same-site anchors, in the production build.`,
+);

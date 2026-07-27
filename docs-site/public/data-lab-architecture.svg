@@ -1,62 +1,91 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" role="img" aria-labelledby="title description">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title description">
   <title id="title">Azure Data Lab Toolkit architecture</title>
-  <desc id="description">YAML, templates, flags, and a terminal interface flow through Core, Providers, and Engines to data targets, with plans, reports, tests, and cleanup evidence as outputs.</desc>
+  <desc id="description">Versioned inputs flow into the toolkit core and its normalized plan and evidence contracts. Distinct target providers, capability modules, catalog sources, solution packs, probes, and deployment engines contribute through those contracts. Outputs include reviewed plans, deployed labs, reports, and cleanup proof.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#53c9da"/>
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#65d3e2"/>
     </marker>
   </defs>
-  <rect width="1120" height="620" rx="14" fill="#10191d"/>
-  <text x="54" y="58" fill="#f4f8fb" font-family="Inter,Segoe UI,sans-serif" font-size="24" font-weight="700">From intent to evidence</text>
-  <text x="54" y="86" fill="#9fb0b9" font-family="Inter,Segoe UI,sans-serif" font-size="15">One normalized plan keeps decisions visible across targets and engines.</text>
 
-  <text x="54" y="144" fill="#79d8e5" font-family="Inter,Segoe UI,sans-serif" font-size="13" font-weight="700">INPUT</text>
-  <g font-family="Inter,Segoe UI,sans-serif" font-size="16">
-    <rect x="54" y="164" width="180" height="56" rx="6" fill="#18272e" stroke="#41545e"/>
-    <text x="78" y="198" fill="#f4f8fb">Versioned YAML</text>
-    <rect x="54" y="232" width="180" height="56" rx="6" fill="#18272e" stroke="#41545e"/>
-    <text x="78" y="266" fill="#f4f8fb">Templates + TUI</text>
-    <rect x="54" y="300" width="180" height="56" rx="6" fill="#18272e" stroke="#41545e"/>
-    <text x="78" y="334" fill="#f4f8fb">Explicit flags</text>
+  <rect width="1280" height="720" fill="#10191d"/>
+  <text x="48" y="48" fill="#f4f8fb" font-family="Inter,Segoe UI,sans-serif" font-size="24" font-weight="700">Intent becomes a reviewed, executable contract</text>
+  <text x="48" y="75" fill="#aab9c3" font-family="Inter,Segoe UI,sans-serif" font-size="14">Extension types stay separate; every engine consumes the same normalized plan.</text>
+
+  <text x="48" y="125" fill="#65d3e2" font-family="Inter,Segoe UI,sans-serif" font-size="12" font-weight="700">INPUT</text>
+  <g font-family="Inter,Segoe UI,sans-serif" font-size="15">
+    <rect x="48" y="142" width="180" height="50" rx="6" fill="#17262d" stroke="#3b4e57"/>
+    <text x="68" y="173" fill="#f4f8fb">Versioned YAML</text>
+    <rect x="48" y="204" width="180" height="50" rx="6" fill="#17262d" stroke="#3b4e57"/>
+    <text x="68" y="235" fill="#f4f8fb">Templates + TUI</text>
+    <rect x="48" y="266" width="180" height="50" rx="6" fill="#17262d" stroke="#3b4e57"/>
+    <text x="68" y="297" fill="#f4f8fb">Explicit flags</text>
   </g>
 
-  <path d="M 244 260 H 302" stroke="#53c9da" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M 240 229 H 282" stroke="#65d3e2" stroke-width="3" marker-end="url(#arrow)"/>
 
-  <text x="316" y="144" fill="#79d8e5" font-family="Inter,Segoe UI,sans-serif" font-size="13" font-weight="700">TOOLKIT</text>
-  <rect x="316" y="164" width="490" height="112" rx="8" fill="#15313a" stroke="#53c9da" stroke-width="2"/>
-  <text x="344" y="199" fill="#f4f8fb" font-family="Inter,Segoe UI,sans-serif" font-size="22" font-weight="700">Core</text>
-  <text x="344" y="230" fill="#b8c6cd" font-family="Inter,Segoe UI,sans-serif" font-size="15">Validate  ·  Assess  ·  Plan  ·  Catalog  ·  Cost</text>
-  <text x="344" y="254" fill="#b8c6cd" font-family="Inter,Segoe UI,sans-serif" font-size="15">Run state  ·  Policy  ·  Report  ·  Lifecycle</text>
+  <text x="294" y="125" fill="#65d3e2" font-family="Inter,Segoe UI,sans-serif" font-size="12" font-weight="700">CORE CONTRACTS</text>
+  <rect x="294" y="142" width="636" height="92" rx="8" fill="#15313a" stroke="#65d3e2" stroke-width="2"/>
+  <text x="318" y="177" fill="#f4f8fb" font-family="Inter,Segoe UI,sans-serif" font-size="21" font-weight="700">Core</text>
+  <text x="318" y="205" fill="#bfd5dc" font-family="Inter,Segoe UI,sans-serif" font-size="14">Resolve · Validate · Policy · Approval · Orchestrate · Reconcile · Report</text>
 
-  <path d="M 561 277 V 315" stroke="#53c9da" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="294" y="247" width="308" height="74" rx="7" fill="#1d2e35" stroke="#65d3e2"/>
+  <text x="318" y="277" fill="#f4f8fb" font-family="Inter,Segoe UI,sans-serif" font-size="17" font-weight="700">Normalized plan</text>
+  <text x="318" y="301" fill="#aab9c3" font-family="Inter,Segoe UI,sans-serif" font-size="13">Stable IDs · DAG · provenance · plan hash</text>
 
-  <rect x="316" y="330" width="490" height="112" rx="8" fill="#25261e" stroke="#e1b350" stroke-width="2"/>
-  <text x="344" y="365" fill="#f4f8fb" font-family="Inter,Segoe UI,sans-serif" font-size="22" font-weight="700">Providers</text>
-  <text x="344" y="396" fill="#c9c7b4" font-family="Inter,Segoe UI,sans-serif" font-size="15">SQL VM  ·  Azure SQL  ·  Fabric  ·  PostgreSQL</text>
-  <text x="344" y="420" fill="#c9c7b4" font-family="Inter,Segoe UI,sans-serif" font-size="15">Storage  ·  Git  ·  Software  ·  Databricks</text>
+  <rect x="622" y="247" width="308" height="74" rx="7" fill="#1d2e35" stroke="#65d3e2"/>
+  <text x="646" y="277" fill="#f4f8fb" font-family="Inter,Segoe UI,sans-serif" font-size="17" font-weight="700">Run state + evidence</text>
+  <text x="646" y="301" fill="#aab9c3" font-family="Inter,Segoe UI,sans-serif" font-size="13">Locks · ownership · events · report schema</text>
 
-  <path d="M 561 443 V 481" stroke="#53c9da" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M 612 322 V 354" stroke="#65d3e2" stroke-width="3" marker-end="url(#arrow)"/>
 
-  <rect x="316" y="496" width="490" height="70" rx="8" fill="#1d2d25" stroke="#54b883" stroke-width="2"/>
-  <text x="344" y="539" fill="#f4f8fb" font-family="Inter,Segoe UI,sans-serif" font-size="20" font-weight="700">Engines</text>
-  <text x="468" y="539" fill="#bfd6c8" font-family="Inter,Segoe UI,sans-serif" font-size="15">PowerShell first  ·  Bicep later  ·  Terraform later</text>
+  <text x="294" y="374" fill="#65d3e2" font-family="Inter,Segoe UI,sans-serif" font-size="12" font-weight="700">DISTINCT EXTENSION TYPES</text>
+  <g font-family="Inter,Segoe UI,sans-serif">
+    <rect x="294" y="392" width="196" height="72" rx="6" fill="#25261e" stroke="#efbd56"/>
+    <text x="312" y="420" fill="#f4f8fb" font-size="15" font-weight="700">Target providers</text>
+    <text x="312" y="444" fill="#c9c7b4" font-size="12">SQL VM · Azure SQL · Fabric</text>
 
-  <path d="M 817 260 H 875" stroke="#53c9da" stroke-width="3" marker-end="url(#arrow)"/>
+    <rect x="504" y="392" width="196" height="72" rx="6" fill="#25261e" stroke="#efbd56"/>
+    <text x="522" y="420" fill="#f4f8fb" font-size="15" font-weight="700">Capability modules</text>
+    <text x="522" y="444" fill="#c9c7b4" font-size="12">Network · identity · storage</text>
 
-  <text x="889" y="144" fill="#79d8e5" font-family="Inter,Segoe UI,sans-serif" font-size="13" font-weight="700">OUTPUT</text>
-  <g font-family="Inter,Segoe UI,sans-serif" font-size="16">
-    <rect x="889" y="164" width="177" height="56" rx="6" fill="#18272e" stroke="#41545e"/>
-    <text x="913" y="198" fill="#f4f8fb">Reviewed plan</text>
-    <rect x="889" y="232" width="177" height="56" rx="6" fill="#18272e" stroke="#41545e"/>
-    <text x="913" y="266" fill="#f4f8fb">Deployed lab</text>
-    <rect x="889" y="300" width="177" height="56" rx="6" fill="#18272e" stroke="#41545e"/>
-    <text x="913" y="334" fill="#f4f8fb">HTML evidence</text>
-    <rect x="889" y="368" width="177" height="56" rx="6" fill="#18272e" stroke="#41545e"/>
-    <text x="913" y="402" fill="#f4f8fb">Probe results</text>
-    <rect x="889" y="436" width="177" height="56" rx="6" fill="#18272e" stroke="#41545e"/>
-    <text x="913" y="470" fill="#f4f8fb">Cleanup proof</text>
+    <rect x="714" y="392" width="216" height="72" rx="6" fill="#25261e" stroke="#efbd56"/>
+    <text x="732" y="420" fill="#f4f8fb" font-size="15" font-weight="700">Catalog sources</text>
+    <text x="732" y="444" fill="#c9c7b4" font-size="12">Data · software · private artifacts</text>
+
+    <rect x="294" y="478" width="196" height="72" rx="6" fill="#25261e" stroke="#efbd56"/>
+    <text x="312" y="506" fill="#f4f8fb" font-size="15" font-weight="700">Solution packs</text>
+    <text x="312" y="530" fill="#c9c7b4" font-size="12">Versioned compositions</text>
+
+    <rect x="504" y="478" width="196" height="72" rx="6" fill="#25261e" stroke="#efbd56"/>
+    <text x="522" y="506" fill="#f4f8fb" font-size="15" font-weight="700">Probes</text>
+    <text x="522" y="530" fill="#c9c7b4" font-size="12">Declared checks + evidence</text>
+
+    <rect x="714" y="478" width="216" height="72" rx="6" fill="#1d2d25" stroke="#72d39e"/>
+    <text x="732" y="506" fill="#f4f8fb" font-size="15" font-weight="700">Deployment engines</text>
+    <text x="732" y="530" fill="#bfd6c8" font-size="12">PowerShell first · Bicep · Terraform</text>
   </g>
 
-  <text x="54" y="584" fill="#ff8989" font-family="Inter,Segoe UI,sans-serif" font-size="14" font-weight="700">CURRENT STATUS</text>
-  <text x="205" y="584" fill="#cbd6db" font-family="Inter,Segoe UI,sans-serif" font-size="14">Architecture scaffold · No deployable cmdlets yet · SQL Server on Azure VM is first</text>
+  <path d="M 941 229 H 982" stroke="#65d3e2" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <text x="994" y="125" fill="#65d3e2" font-family="Inter,Segoe UI,sans-serif" font-size="12" font-weight="700">REVIEW + EVIDENCE</text>
+  <g font-family="Inter,Segoe UI,sans-serif" font-size="14">
+    <rect x="994" y="142" width="238" height="50" rx="6" fill="#17262d" stroke="#3b4e57"/>
+    <text x="1014" y="173" fill="#f4f8fb">Offline plan + provenance</text>
+    <rect x="994" y="204" width="238" height="50" rx="6" fill="#17262d" stroke="#3b4e57"/>
+    <text x="1014" y="235" fill="#f4f8fb">Live WhatIf reconciliation</text>
+    <rect x="994" y="266" width="238" height="50" rx="6" fill="#17262d" stroke="#3b4e57"/>
+    <text x="1014" y="297" fill="#f4f8fb">Cost + policy decisions</text>
+    <rect x="994" y="328" width="238" height="50" rx="6" fill="#17262d" stroke="#3b4e57"/>
+    <text x="1014" y="359" fill="#f4f8fb">Deployment + probe report</text>
+    <rect x="994" y="390" width="238" height="50" rx="6" fill="#17262d" stroke="#3b4e57"/>
+    <text x="1014" y="421" fill="#f4f8fb">Ownership-aware teardown</text>
+    <rect x="994" y="452" width="238" height="50" rx="6" fill="#17262d" stroke="#3b4e57"/>
+    <text x="1014" y="483" fill="#f4f8fb">Cleanup proof</text>
+  </g>
+
+  <line x1="48" y1="604" x2="1232" y2="604" stroke="#3b4e57"/>
+  <text x="48" y="640" fill="#ff9ca8" font-family="Inter,Segoe UI,sans-serif" font-size="13" font-weight="700">CURRENT</text>
+  <text x="122" y="640" fill="#d8e1e5" font-family="Inter,Segoe UI,sans-serif" font-size="13">Architecture, documentation, and backlog only · no deployable cmdlets</text>
+  <text x="48" y="672" fill="#efbd56" font-family="Inter,Segoe UI,sans-serif" font-size="13" font-weight="700">FIRST PROOF</text>
+  <text x="142" y="672" fill="#d8e1e5" font-family="Inter,Segoe UI,sans-serif" font-size="13">Complete SQL Server on Azure VM lifecycle with PowerShell · Bicep and Terraform follow stable contracts</text>
 </svg>

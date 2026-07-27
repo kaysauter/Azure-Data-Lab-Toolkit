@@ -1,54 +1,66 @@
 ---
 title: Microsoft Fabric Guidance
-description: Planned guidance for Fabric targets, workspaces, items, shortcuts, and CI/CD.
+description: Planned guidance for Fabric item choices, workspaces, shortcuts, monitoring, and CI/CD.
 ---
 
-<span class="status status-planned">Planned</span>
+<span class="status status-backlog">Committed guidance, provider backlog</span>
 
-The Fabric provider is intended to guide target selection and create understandable workspace and item structures, not merely call provisioning APIs.
+The Fabric provider will guide target selection and create understandable workspace and item lifecycles. It will not reduce Fabric to a generic provisioning call.
 
-## Choosing an item
+## Choose the item from the workload
 
-| Need | Likely starting point | Questions to resolve |
+| Need | Likely starting point | Review before choosing |
 | --- | --- | --- |
-| Transactional relational application | SQL database in Fabric | Transaction semantics, compatibility, scale, connectivity |
-| Governed relational analytics | Warehouse | Dimensional model, SQL access, loading, concurrency |
-| Spark, open formats, or mixed data | Lakehouse | Delta layout, notebooks, medallion design, data engineering skills |
+| Transactional relational application | [SQL database in Fabric](https://learn.microsoft.com/en-us/fabric/database/sql/overview) | Transaction behavior, compatibility, connectivity, scale, recovery |
+| Governed relational analytics | [Warehouse](https://learn.microsoft.com/en-us/fabric/data-warehouse/data-warehousing) | Dimensional model, T-SQL surface, loading, concurrency, downstream BI |
+| Spark, open formats, or mixed data | [Lakehouse](https://learn.microsoft.com/en-us/fabric/data-engineering/lakehouse-overview) | Delta layout, notebooks, medallion design, engineering skills |
 
-This is orientation, not an automatic verdict. Assessment evidence and current [Microsoft Fabric documentation](https://learn.microsoft.com/en-us/fabric/fundamentals/microsoft-fabric-overview) remain essential.
+This is guidance, not an automatic verdict. The plan will record workload evidence, rejected choices, capacity assumptions, preview limitations, and unresolved questions.
 
-## Workspaces and items
+## Workspace and item lifecycle
 
-The planned provider will guide and validate:
+The provider backlog covers:
 
-- tenant and capacity prerequisites;
-- workspace purpose, naming, roles, domains, and capacity assignment;
-- item creation and dependencies;
-- environment-specific parameters and connections;
-- test and teardown behavior;
-- what can and cannot be recovered.
+1. validate tenant settings, capacity access, region, identities, and licensing;
+2. plan workspace purpose, naming, domain, roles, capacity assignment, and network controls;
+3. create or reuse items only after capability and dependency checks;
+4. bind environment-specific connections and parameters without placing secrets in source control;
+5. probe the item after deployment and record unsupported behavior;
+6. preview teardown, preserve shared content, and explain what cannot be recovered.
+
+Git metadata, item definitions, data, connections, permissions, and capacity are different lifecycle objects. Reports must not imply that versioning one protects all the others.
 
 ## OneLake shortcuts
 
-A shortcut is a reference to data in OneLake or an external store; it is not automatically a copied dataset. Guidance must explain:
+A [OneLake shortcut](https://learn.microsoft.com/en-us/fabric/onelake/onelake-shortcuts) references data in OneLake or an external source; it is not automatically a copied dataset. The plan must identify the target, physical data location, connection identity, permissions, network path, freshness behavior, and ownership.
 
-- where the data physically remains;
-- which identity and credential are used;
-- how permissions and network access are evaluated;
-- whether source changes are immediately visible;
-- what deleting the shortcut does and does not delete.
+Optional shortcut caching can reduce repeated cross-cloud reads for supported shortcut types, but it creates workspace cache behavior and retention settings that need to be reported.
 
-See Microsoft's [OneLake shortcuts overview](https://learn.microsoft.com/en-us/fabric/onelake/onelake-shortcuts).
+Deletion needs especially clear language:
+
+- deleting the **shortcut object** does not cascade to the target data;
+- deleting files or folders **through the shortcut** can delete them at the target when the identity has permission.
+
+Teardown must remove only the shortcut object unless the user separately approves a data-deletion operation.
+
+## FUAM
+
+[Fabric Unified Admin Monitoring](https://github.com/microsoft/fabric-toolbox/tree/main/monitoring/fabric-unified-admin-monitoring) is a community solution in Microsoft Fabric Toolbox, not an officially supported Microsoft product. The intended flow is validate first, show what is healthy or missing, and preserve an existing deployment by default.
+
+Installing, salvaging, upgrading, or repairing FUAM requires a user-reviewed action summary and explicit confirmation. Detection alone never authorizes replacement or deletion.
 
 ## Fabric CI/CD
 
-Microsoft Fabric currently supports [Git integration and deployment pipelines](https://learn.microsoft.com/en-us/fabric/cicd/cicd-overview), with support and limitations varying by item type. The toolkit should:
+[Fabric Git integration](https://learn.microsoft.com/en-us/fabric/cicd/git-integration/intro-to-git-integration) currently supports cloud-hosted Azure DevOps, GitHub, and GitHub Enterprise. Support also varies by Fabric item and can include preview limitations. GitLab, Gitea, and Forgejo belong to the toolkit's broader Git-provider backlog; they are not currently supported Fabric Git integrations.
 
-- validate Git and deployment-pipeline support for selected items;
-- separate metadata deployment from data movement;
-- support GitHub first while respecting Fabric's supported-provider matrix;
+The Fabric workflow will:
+
+- validate the current supported-item matrix before connecting a workspace;
+- separate source-controlled definitions from data, credentials, and external connections;
 - preserve environment parameters and access controls;
-- test promoted items after deployment;
-- record unsupported or preview behavior in the plan.
+- use deployment pipelines or APIs only where the item supports them;
+- probe promoted items and retain deployment evidence.
 
-Planned demonstrations include [FUAM](https://github.com/microsoft/fabric-toolbox/tree/main/monitoring/fabric-unified-admin-monitoring), [Rayfin](https://github.com/microsoft/rayfin), and [TMDL](https://learn.microsoft.com/en-us/analysis-services/tmdl/tmdl-overview).
+Microsoft documents several CI/CD and automation approaches, including Git integration, deployment pipelines, APIs, and Terraform. Full item coverage and equivalent behavior across PowerShell, Bicep, Terraform, and Fabric-native routes are **exploratory**, not a committed parity claim.
+
+Planned demonstrations include FUAM, [Rayfin](https://github.com/microsoft/rayfin), and [TMDL](https://learn.microsoft.com/en-us/analysis-services/tmdl/tmdl-overview).

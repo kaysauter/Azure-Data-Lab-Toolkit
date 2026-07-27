@@ -39,10 +39,14 @@ export default defineConfig({
 					label: 'Architecture',
 					items: [
 						{ label: 'Architecture Overview', slug: 'architecture' },
+						{ label: 'Decisions And Status', slug: 'architecture/decisions' },
+						{ label: 'System Context', slug: 'architecture/system-context' },
 						{ label: 'Core', slug: 'architecture/core' },
-						{ label: 'Providers And Targets', slug: 'architecture/providers' },
+						{ label: 'Plan And State', slug: 'architecture/plan-and-state' },
+						{ label: 'Extension Model', slug: 'architecture/extension-model' },
+						{ label: 'Target Providers', slug: 'architecture/providers' },
 						{ label: 'Deployment Engines', slug: 'architecture/engines' },
-						{ label: 'Provider Lifecycle', slug: 'architecture/provider-lifecycle' },
+						{ label: 'Execution Lifecycle', slug: 'architecture/provider-lifecycle' },
 					],
 				},
 				{

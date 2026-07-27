@@ -1,29 +1,32 @@
 ---
 title: Third-party Notices
-description: Dependencies used by the documentation and the distinction between candidates and integrations.
+description: Dependencies used to build the documentation and how release notices will be produced.
 ---
 
-## Documentation build
+## Documentation build dependencies
 
-The documentation site currently uses:
+The current documentation project directly declares these packages:
 
-| Project | Purpose | License |
+| Package | Purpose | Upstream license |
 | --- | --- | --- |
-| [Astro](https://astro.build/) | Static site framework | MIT |
-| [Starlight](https://starlight.astro.build/) | Documentation theme and components | MIT |
-| [Slidev](https://sli.dev/) | Pitch deck | MIT |
-| [sharp](https://sharp.pixelplumbing.com/) | Image processing dependency | Apache-2.0 |
+| [Astro](https://astro.build/) | Static site framework | [MIT](https://github.com/withastro/astro/blob/main/LICENSE) |
+| [Starlight](https://starlight.astro.build/) | Documentation theme and components | [MIT](https://github.com/withastro/starlight/blob/main/LICENSE) |
+| [sharp](https://sharp.pixelplumbing.com/) | Image processing | [Apache-2.0](https://github.com/lovell/sharp/blob/main/LICENSE) |
+| [Slidev CLI](https://sli.dev/) | Pitch-deck build tooling | [MIT](https://github.com/slidevjs/slidev/blob/main/LICENSE) |
+| [Slidev default theme](https://github.com/slidevjs/themes/tree/main/packages/theme-default) | Pitch-deck theme | [MIT](https://github.com/slidevjs/themes/blob/main/LICENSE) |
 
-Exact versions and transitive dependencies are recorded in `docs-site/package-lock.json`.
+The [package lock](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/docs-site/package-lock.json) records the exact installed versions, integrity hashes, and transitive dependency graph. The package manifest permits compatible updates for several direct dependencies, so this page alone is not a release bill of materials.
 
-## Toolkit integrations
+Release-specific notices must be generated and reviewed from the lockfile and the artifacts actually shipped in that release. They must include relevant transitive packages and preserve any required license text or attribution.
+
+## Candidate integrations are not dependencies
 
 :::note[No distributed toolkit integrations yet]
-Azure Data Lab Toolkit has no released provider, sample database, community tool, or software integration. Projects named in the community pages are planned candidates and retain their own ownership and terms.
+Azure Data Lab Toolkit has no released target provider, sample database, community tool, or software integration. Projects on the community pages are candidates only. They are not documentation build dependencies and retain their upstream ownership, support model, and terms.
 :::
 
-Future releases will list every bundled, downloaded, generated, or redistributed artifact with its version, owner, source, license, attribution, and material restrictions.
+A future release that downloads, bundles, generates, or redistributes an artifact must identify its version, owner, authoritative source, license or usage terms, attribution, integrity evidence, and material restrictions in release-specific notices.
 
 See [Licensing](../licensing/), [Tools And Solution Packs](../community/tools/), and [Sample And Data Sources](../community/data-sources/).
 
-The predecessor project maintains separate [Azure SQLVM Toolkit third-party notices](https://kaysauter.github.io/azure-sqlvm-toolkit/third-party-notices/).
+The predecessor project has its own [Azure SQLVM Toolkit third-party notices](https://kaysauter.github.io/azure-sqlvm-toolkit/third-party-notices/).

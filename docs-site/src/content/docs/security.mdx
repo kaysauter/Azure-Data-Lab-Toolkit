@@ -1,73 +1,71 @@
 ---
 title: Security And Sensitive Data
-description: Planned identity, network, secret, artifact, and sensitive-data guardrails.
+description: Security boundaries and control intent for identities, networks, secrets, artifacts, and data.
 ---
 
-:::danger[Architecture intent, not a security guarantee]
-Azure Data Lab Toolkit is not production-ready and does not yet implement these controls. A future release must publish its supported security baseline, threat model, limitations, and verification evidence.
+:::danger[Heavy development: no security guarantee]
+Azure Data Lab Toolkit is not production-ready and does not yet implement the controls described here. This page records committed design intent and backlog requirements, not verified protection. A production release will need a published threat model, supported baseline, limitations, and test evidence.
 :::
 
-<span class="status status-planned">Planned</span>
+<span class="status status-committed">Committed design</span>
 
-Security is a core planning concern, not a setting added after deployment.
+Security decisions must be visible in the plan before Azure or a guest operating system is changed.
+
+## Trust surfaces
+
+| Surface | Main risks | Control intent |
+| --- | --- | --- |
+| Operator workstation | Command history, local files, cached tokens | Keep secrets out of YAML and logs; redact reports; use short-lived sign-in |
+| CI runner | Untrusted pull requests, broad cloud access, retained logs | Protected environments, OIDC, least privilege, no cloud credentials on forked PRs |
+| Azure control plane | Excessive RBAC, public endpoints, drift | Scoped roles, policy checks, private access where practical, Azure-aware `-WhatIf` |
+| VM or container guest | Privileged installers, secret exposure, lateral movement | Minimize guest privileges, verify artifacts, probe installed state |
+| Data and artifact sources | Tampering, malicious installers, unclear provenance | Pin versions, verify checksums or signatures, record owner and license |
+| Run state and reports | Secret or sensitive-data leakage | Versioned schemas, redaction, access control, retention rules |
+| Teardown | Deleting shared resources or leaving chargeable data behind | Ownership-aware deletion, confirmation, and cleanup proof |
 
 ## Identity and secrets
 
-The intended baseline is:
+The committed baseline is Microsoft Entra authentication and [managed identities](https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/managed-identity-best-practice-recommendations) where the target supports them. Every identity will receive only the permissions required for its operation. The plan must show the identity, scope, role assignments, and lifecycle before execution.
 
-- Microsoft Entra identities and managed identities where the target supports them;
-- least-privilege Azure RBAC scoped to the operation;
-- Azure Key Vault references instead of secrets in YAML, command history, logs, state, or reports;
-- short-lived federation for CI/CD instead of stored client secrets;
-- separate, explicit opt-ins for secret generation and secret display;
-- redaction that remains active across terminal, JSON, Markdown, and HTML outputs.
+[Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/secure-key-vault) is the intended secret boundary. YAML, command history, run state, and reports will contain references rather than secret values. The design also calls for Azure RBAC, network restrictions, soft delete, purge protection, auditing, and an explicit retention decision for each vault.
 
-Showing a password in the shell is a high-risk action because terminal history, transcripts, screen sharing, and CI logs can retain it. A future flag may permit this deliberately, but it must never be implied by another convenience option.
+Password creation and password display are separate high-risk choices:
+
+- `-GeneratePassword` opts in to toolkit-side generation when an approved secret does not already exist.
+- `-ShowPassword` independently opts in to printing the value in the shell.
+- one flag will never imply the other;
+- both default to off, and non-interactive runs must make either choice explicitly.
+
+Shell output can survive in scrollback, transcripts, screenshots, support bundles, and CI logs. Outside the one explicitly requested interactive display, redaction must remain active in terminal messages, JSON, Markdown, and HTML outputs.
+
+## Network access and Bastion
+
+Public SQL, SSH, and RDP endpoints are not part of the intended default. A plan will show private endpoints, DNS, network security rules, operator access, and every requested public exception.
+
+[Azure Bastion](https://learn.microsoft.com/en-us/azure/bastion/bastion-sku-comparison) is the intended administrative path for Azure VM labs when its region, capabilities, and cost fit the scenario. Developer, Basic, Standard, and Premium have different connection, scale, peering, recording, and private-only capabilities. The selected tier and its continuing cost must appear in the plan and cost report.
 
 ## Sensitive data
 
-Real databases need stronger decisions than public samples. The planned `ContainsSensitiveData` acknowledgement will trigger policy checks for:
+`ContainsSensitiveData` is a required acknowledgement for real or restricted data. It is not a compliance certificate, a classification engine, or permission to bypass policy.
 
-- permitted subscriptions, regions, and target services;
-- encryption and key ownership;
-- public access and private endpoint requirements;
-- diagnostic data and report redaction;
-- backup, snapshot, and temporary-copy retention;
-- access reviews and teardown evidence.
-
-The flag records awareness; it does not certify compliance or make an unsafe design acceptable.
-
-## Network access and Azure Bastion
-
-SQL and administrative ports should not be opened to the public internet by default. The provider should prefer private connectivity and explain any exception.
-
-[Microsoft currently documents four Azure Bastion SKUs](https://learn.microsoft.com/en-us/azure/bastion/bastion-sku-comparison):
-
-| Tier | Practical fit | Important trade-off |
-| --- | --- | --- |
-| Developer | Small dev/test lab in a supported region | Shared service, one VM at a time, no VNet peering; not for production |
-| Basic | Dedicated host with fixed capacity | No advanced native-client, sharing, scaling, or recording features |
-| Standard | Advanced connection features and configurable scaling | Dedicated hourly cost and public IP requirement |
-| Premium | Compliance-sensitive administration | Adds session recording and private-only deployment |
-
-The future schema should require an explicit tier or a documented default derived from the environment. Upgrades are possible, but Microsoft states that downgrades require delete-and-recreate; plans and cost reports must expose that consequence.
+The acknowledgement will activate checks for permitted subscriptions and regions, encryption, key ownership, public access, diagnostic data, report redaction, backup and snapshot retention, access review, and deletion evidence. The organization that owns the data remains responsible for classification, legal basis, policy, and compliance.
 
 ## Artifact supply chain
 
-Every downloadable tool, script, installer, backup, or model should carry:
+Every downloadable tool, script, installer, backup, model, or private artifact needs:
 
-- authoritative owner and source URL;
+- an authoritative owner and source;
 - license and redistribution status;
-- immutable version or release identifier;
-- checksum or signature when available;
-- user-supplied checksum support for private URLs;
-- compatibility and privilege requirements;
-- installation and removal evidence.
+- an immutable version or release identifier where available;
+- a publisher signature or expected checksum where available;
+- user-supplied checksum support for private paths and URLs;
+- required execution privilege and compatibility;
+- acquisition, installation, verification, and removal evidence.
 
-Downloads should fail closed when an expected checksum does not match. A catalog entry is not an endorsement, and an artifact must not inherit trust merely because it is popular.
+A checksum mismatch must fail closed. Mutable URLs and artifacts without integrity evidence need an explicit warning and approval. Catalog inclusion is not an endorsement.
 
-## Security review workflow
+## CI identity
 
-Planned pull-request and release gates include secret scanning, dependency review, CodeQL, infrastructure-as-code scanning, vulnerability scanning, PowerShell analysis, Pester tests, and a documented threat-model review for changed trust boundaries.
+The committed GitHub design uses [OpenID Connect federation](https://docs.github.com/en/actions/concepts/security/openid-connect) instead of stored Azure client secrets. Trust conditions must bind the identity to the expected repository, branch or environment, and workflow context. Protected environments will gate live deployments and teardown.
 
-See [Git And CI/CD](../git-and-cicd/) for the proposed automation.
+Secret scanning, dependency review, infrastructure scanning, PowerShell analysis, Pester, and vulnerability scanning remain backlog controls until their workflows exist and publish evidence. See [Git And CI/CD](../git-and-cicd/).

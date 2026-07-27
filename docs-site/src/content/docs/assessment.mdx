@@ -1,36 +1,57 @@
 ---
 title: Assessment
-description: Planned source discovery, target-fit guidance, and migration-readiness assessment.
+description: Planned inventory, best-practices, target-fit, and migration-readiness assessment.
 ---
 
-<span class="status status-planned">Planned</span>
+<span class="status status-committed">Committed direction, integration backlog</span>
 
-Assessment answers **what exists, what it needs, and where it could fit**. It is separate from deployment and migration.
+Assessment answers **what exists, what it needs, and where it could fit**. It is not deployment, remediation, or migration.
 
-## Assessment dimensions
+## SQL Server starting points
 
-The planned assessment model covers:
+The first supported routes will be [SQL Server enabled by Azure Arc](https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/overview) and the [migration component in SQL Server Management Studio](https://learn.microsoft.com/en-us/ssms/migrate/migrate-sql-server-azure-sql).
 
-- source inventory, versions, editions, features, dependencies, and data size;
-- compatibility and blockers for candidate targets;
-- workload shape, performance, availability, and recovery needs;
+These routes provide different evidence and must remain separate in the plan:
+
+| Capability | Purpose | Important planning detail |
+| --- | --- | --- |
+| Arc inventory | Discover connected SQL Server instances and metadata | Requires Arc onboarding, extension health, identity, network, and data-governance review |
+| [Arc best-practices assessment](https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/assess?view=sql-server-ver17) | Find configuration and operational recommendations | Has its own extension, Log Analytics, role, SQL permission, connectivity, collection, and cost prerequisites |
+| [Arc migration assessment](https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/migration-assessment?view=sql-server-ver17) | Assess Azure SQL readiness, sizing, risks, and target options | Requires a supported connected Windows instance and extension; published retail estimates use documented assumptions |
+| SSMS migration component | Run a local metadata-based readiness assessment or view Arc results | Requires a supported SSMS version and SQL permissions; local and Arc-backed results differ |
+
+The toolkit will identify which capability is requested, validate its prerequisites, and report missing evidence. It will not silently enable agents, workspaces, recurring collection, or billing.
+
+## Privilege and collection disclosure
+
+Microsoft documents that the Azure SQL extension performs Arc migration-assessment collection as `NT AUTHORITY\SYSTEM` by default. Microsoft also documents a [least-privilege service-account alternative](https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/migration-assessment?view=sql-server-ver17#permissions).
+
+Before enabling collection, the plan must show:
+
+- the operating-system and SQL identity used;
+- Azure roles and SQL permissions;
+- extension, agent, workspace, and network prerequisites;
+- metadata and performance data collected, destination, schedule, and retention;
+- licensing and billing implications, including [Arc-enabled SQL Server billing choices](https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/manage-license-billing?view=sql-server-ver17);
+- how collection is disabled and its artifacts are removed.
+
+Using `SYSTEM` cannot be hidden behind a default. The user must see the privilege difference and choose the documented route that fits the environment.
+
+## Assessment result
+
+The normalized result will keep these dimensions separate:
+
+- inventory and evidence freshness;
+- compatibility and feature blockers;
+- workload shape, sizing, availability, and recovery needs;
 - identity, network, encryption, sensitive-data, and compliance constraints;
-- licensing and cost implications;
-- migration readiness, downtime tolerance, and validation requirements;
-- confidence, evidence source, and unresolved questions.
+- target options and their trade-offs;
+- licensing and cost assumptions;
+- migration readiness and required remediation;
+- confidence and unresolved questions.
 
-The result should compare viable targets rather than force a single recommendation without showing trade-offs.
-
-## SQL Server direction
-
-[SQL Server enabled by Azure Arc](https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/overview) is the preferred first integration point for inventory, best-practices assessment, and migration assessment where its prerequisites and data-collection model are acceptable.
-
-Microsoft's supported SQL assessment path is evolving. The repository backlog still contains older Data Migration Assistant wording; that choice is under review and will not be treated as final architecture.
-
-## Migration is a later operation
-
-BACPAC can be useful for particular import and export scenarios, but it is not an assessment strategy. Migration orchestration, including BACPAC-based flows, is intentionally deferred until target providers, validation, evidence, and rollback expectations are mature.
+Assessment can inform a later migration decision, but it does not move data or prove that a target is fit for production.
 
 ## Fabric and FUAM
 
-Fabric assessment should validate tenant, capacity, workspace, item, security, and lifecycle prerequisites. When an existing [Fabric Unified Admin Monitoring](https://github.com/microsoft/fabric-toolbox/tree/main/monitoring/fabric-unified-admin-monitoring) deployment is detected, the toolkit should offer to validate and preserve it before proposing repair or replacement. No destructive action should follow from detection alone.
+Fabric assessment will validate tenant, capacity, workspace, item, security, and lifecycle prerequisites. When [Fabric Unified Admin Monitoring](https://github.com/microsoft/fabric-toolbox/tree/main/monitoring/fabric-unified-admin-monitoring) is detected, the toolkit will validate the existing installation and preserve it by default. Setup or repair requires a user-reviewed summary and explicit confirmation.

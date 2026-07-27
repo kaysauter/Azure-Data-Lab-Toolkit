@@ -1,0 +1,115 @@
+---
+title: Extension Model
+description: Separate contracts for targets, capabilities, catalogs, solution packs, probes, and engines.
+---
+
+<span class="status status-committed">Committed design</span>
+
+Azure Data Lab Toolkit uses several narrow extension types. Calling all of them
+"providers" would blur ownership and make compatibility difficult to test.
+
+## Extension types
+
+| Type | Purpose | Examples |
+| --- | --- | --- |
+| Target provider | Model one deployable data platform | SQL VM, Azure SQL Database, SQL MI, Fabric |
+| Capability module | Add a reusable platform concern | Network, Bastion, Key Vault, storage, Git, budget |
+| Catalog source | Resolve governed metadata and acquisition instructions | Microsoft samples, community tools, private registry |
+| Solution pack | Compose a repeatable scenario | SQL performance lab, Fabric monitoring lab |
+| Probe | Verify a declared postcondition | SQL connectivity, installed version, Fabric item health |
+| Deployment engine | Export and apply plan nodes | PowerShell, later Bicep or Terraform |
+
+All extensions declare an extension ID, contract version, implementation version,
+supported toolkit and schema ranges, dependencies, capabilities, and integrity
+metadata. Registration is explicit; arbitrary scripts do not become trusted
+extensions merely by appearing on a path.
+
+## Target providers
+
+Target providers own target semantics and contribute normalized resources and
+actions. They do not own orchestration, report formats, state backends, or engine
+exports. See [Target Providers](../providers/).
+
+## Capability modules
+
+A capability module contributes a reusable concern to one or more target
+providers. It may add schema fragments, validation, resources, actions, cost
+quantities, risks, and probes. The target provider requests a capability by
+stable ID rather than importing implementation-specific behavior.
+
+For example, a SQL VM plan may require `azure.network.private-access`,
+`azure.access.bastion`, `azure.secrets.key-vault`, and
+`azure.storage.file-share`. Those modules remain reusable by later VM or data
+targets.
+
+Conflicting modules fail during resolution. A module cannot override core
+approval, ownership, or secret rules.
+
+## Catalog sources
+
+A catalog source returns metadata; it does not download or execute content during
+planning. Each catalog entry includes:
+
+- stable publisher and item IDs;
+- project home, maintainer or publisher, and attribution;
+- license and any explicit acceptance requirement;
+- immutable version where available;
+- source URI or private reference;
+- checksum or signature information and verification policy;
+- supported targets, architectures, and installation methods;
+- required privilege and executable content;
+- sensitivity, redistribution, size, and cost notes;
+- deprecation or update policy.
+
+Mutable URLs without trusted integrity metadata remain `unverified`. Private
+sources authenticate through secret references. Cache entries are content
+addressed and never make an unverified artifact trusted.
+
+Catalog selection is optional. Users can supply approved local or URL-based
+artifacts through the same metadata and policy contract. Community content is
+never mandatory.
+
+## Solution packs
+
+A solution pack is a versioned composition of:
+
+- one target provider;
+- capability modules;
+- catalog selections or user-supplied artifact slots;
+- configuration defaults;
+- probes and expected outcomes.
+
+It cannot hide licensing, sensitivity, cost, public networking, or destructive
+behavior. Pack defaults sit at the template layer and remain overridable through
+YAML and supported explicit flags. A resolved plan records the pack version and
+every contributed value.
+
+## Probes
+
+A probe has a stable ID, required identity and access, target conditions, timeout,
+retry policy, data-sensitivity classification, and evidence schema. Probes are
+read-only where possible. A mutating test action must be declared in the plan,
+approved, reversible, and cleaned up with evidence.
+
+Probe success means only that its declared condition was observed. It does not
+promote an exploratory provider or unfinished toolkit to production ready.
+
+## Engines
+
+Engines consume normalized plan nodes and own export and apply mechanics. They do
+not re-resolve configuration or target intent. See
+[Deployment Engines](../engines/).
+
+## Compatibility and failure
+
+Compatibility is negotiated before plan approval. A structured capability
+failure identifies:
+
+- requesting stable ID;
+- missing or incompatible capability;
+- provider, module, engine, and contract versions;
+- affected plan nodes;
+- whether another explicit engine or configuration can satisfy the request.
+
+The core never silently drops an unsupported action, chooses another engine, or
+substitutes a less secure capability.
