@@ -49,7 +49,7 @@ layout: default
 
 # Building the lab should not be harder than learning from it
 
-<div class="two-col">
+<div class="two-col problem-layout">
   <div class="problem-list">
     <div><strong>Fragmented provisioning</strong><span>Portal steps, scripts, infrastructure code, and guest setup drift apart.</span></div>
     <div><strong>Hidden decisions</strong><span>Identity, networking, licensing, and cost appear after resources already exist.</span></div>
@@ -57,7 +57,7 @@ layout: default
     <div><strong>Unreliable cleanup</strong><span>A stopped VM is not an empty bill, and failed runs leave uncertainty behind.</span></div>
   </div>
   <div class="statement">
-    <span>Labs become difficult to</span>
+    <span class="statement-copy">Labs become difficult to</span>
     <div class="statement-terms">
       <b>repeat</b><b>compare</b><b>teach</b><b>trust</b>
     </div>
@@ -117,8 +117,8 @@ layout: default
 </div>
 
 <div class="danger-line">
-  The unfinished <a href="https://github.com/kaysauter/azure-sqlvm-toolkit">Azure SQLVM Toolkit</a>
-  is a source of lessons, not a working predecessor or inherited implementation.
+  The unfinished <a href="https://github.com/kaysauter/azure-sqlvm-toolkit" target="_blank" rel="noreferrer">Azure SQLVM Toolkit</a>
+  provides practical lessons for the broader design. No deployable implementation is inherited.
 </div>
 
 ---
@@ -230,7 +230,10 @@ layout: default
 <div class="two-col compact-top">
   <div>
     <h3>First assessment paths</h3>
-    <p><a href="https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/overview">SQL Server enabled by Azure Arc</a> and the <a href="https://learn.microsoft.com/en-us/ssms/migrate/migrate-sql-server-azure-sql">migration component in SSMS</a>.</p>
+    <div class="link-group link-group-single" aria-label="First assessment references">
+      <a href="https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/overview" target="_blank" rel="noreferrer">SQL Server enabled by Azure Arc</a>
+      <a href="https://learn.microsoft.com/en-us/ssms/migrate/migrate-sql-server-azure-sql" target="_blank" rel="noreferrer">Migration component in SSMS</a>
+    </div>
   </div>
   <div>
     <h3>Security boundary</h3>
@@ -279,7 +282,15 @@ layout: default
 <div class="two-col compact-top">
   <div>
     <h3>Community and sample sources</h3>
-    <p><a href="https://github.com/microsoft/sql-server-samples">Microsoft SQL samples</a>, <a href="https://sqlsunday.com/downloads/">SQL Sunday</a>, <a href="https://www.sqlbi.com/tools/contoso-data-generator/">SQLBI Contoso</a>, <a href="https://github.com/devrimgunduz/pagila">Pagila</a>, <a href="https://github.com/lerocha/chinook-database">Chinook</a>, <a href="https://dbatools.io/">dbatools</a>, and the <a href="https://www.brentozar.com/first-aid/">First Responder Kit</a>.</p>
+    <div class="link-group" aria-label="Community tools and sample data sources">
+      <a href="https://github.com/microsoft/sql-server-samples" target="_blank" rel="noreferrer">Microsoft SQL samples</a>
+      <a href="https://sqlsunday.com/downloads/" target="_blank" rel="noreferrer">SQL Sunday</a>
+      <a href="https://www.sqlbi.com/tools/contoso-data-generator/" target="_blank" rel="noreferrer">SQLBI Contoso</a>
+      <a href="https://github.com/devrimgunduz/pagila" target="_blank" rel="noreferrer">Pagila</a>
+      <a href="https://github.com/lerocha/chinook-database" target="_blank" rel="noreferrer">Chinook</a>
+      <a href="https://dbatools.io/" target="_blank" rel="noreferrer">dbatools</a>
+      <a href="https://www.brentozar.com/first-aid/" target="_blank" rel="noreferrer">First Responder Kit</a>
+    </div>
   </div>
   <div>
     <h3>Custom and private sources</h3>
@@ -354,7 +365,11 @@ layout: default
 <div class="two-col">
   <div>
     <h3>Acceleration</h3>
-    <p><a href="https://openai.com/codex/">OpenAI Codex</a> and <a href="https://claude.com/product/overview">Claude</a> help with research, architecture exploration, implementation, documentation, and review.</p>
+    <div class="link-group link-group-single" aria-label="AI collaborators">
+      <a href="https://openai.com/codex/" target="_blank" rel="noreferrer">OpenAI Codex</a>
+      <a href="https://claude.com/product/overview" target="_blank" rel="noreferrer">Claude</a>
+    </div>
+    <p>They help with research, architecture exploration, implementation, documentation, and review.</p>
     <p>That acceleration makes a long-held idea practical to pursue at this scale.</p>
   </div>
   <div>
@@ -368,7 +383,10 @@ layout: default
   Maintainers can showcase tools and databases through reproducible, properly credited lab scenarios. Commercial projects should make contact first.
 </div>
 
-<a href="https://www.linkedin.com/in/kaysauter/">LinkedIn</a> · <a href="https://www.kayondata.com/contact/">Kay On Data contact form</a>
+<div class="link-group contact-links" aria-label="Contact Kay Sauter">
+  <a href="https://www.linkedin.com/in/kaysauter/" target="_blank" rel="noreferrer">LinkedIn</a>
+  <a href="https://www.kayondata.com/contact/" target="_blank" rel="noreferrer">Kay On Data contact form</a>
+</div>
 
 ---
 layout: default
@@ -391,6 +409,6 @@ class: final-slide
 
 <div class="final-links">
   <a href="/Azure-Data-Lab-Toolkit/architecture/">Architecture</a>
-  <a href="https://github.com/kaysauter/Azure-Data-Lab-Toolkit">Repository</a>
-  <a href="https://github.com/users/kaysauter/projects/6/views/1">Public roadmap</a>
+  <a href="https://github.com/kaysauter/Azure-Data-Lab-Toolkit" target="_blank" rel="noreferrer">Repository</a>
+  <a href="https://github.com/users/kaysauter/projects/6/views/1" target="_blank" rel="noreferrer">Public roadmap</a>
 </div>

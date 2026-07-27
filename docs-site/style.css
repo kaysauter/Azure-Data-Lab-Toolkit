@@ -203,6 +203,13 @@ html.light {
 .problem-list {
 	display: grid;
 	gap: 0.55rem;
+	min-width: 0;
+}
+
+.problem-layout {
+	grid-template-columns: minmax(0, 1.15fr) minmax(12rem, 0.85fr);
+	min-width: 0;
+	max-width: 100%;
 }
 
 .problem-list > div {
@@ -233,16 +240,26 @@ html.light {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 0;
+	max-width: 100%;
 	border-left: 4px solid var(--deck-cyan);
 	padding: 1.5rem;
+	overflow: hidden;
 	background: var(--deck-surface);
 	color: var(--deck-text);
 	font-size: 1.45rem;
 	line-height: 1.25;
 }
 
-.statement > span {
+.statement-copy {
+	display: block;
 	width: 100%;
+	min-width: 0;
+	max-width: 18ch;
+	overflow-wrap: anywhere;
+	word-break: normal;
 }
 
 .statement-terms {
@@ -250,12 +267,16 @@ html.light {
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 0.45rem 0.8rem;
 	width: 100%;
+	min-width: 0;
+	max-width: 18rem;
 	margin-top: 1.2rem;
 }
 
 .statement-terms b {
+	min-width: 0;
 	color: var(--deck-cyan);
 	font-size: 1.05rem;
+	overflow-wrap: anywhere;
 }
 
 .lifecycle,
@@ -535,6 +556,44 @@ html.light {
 	min-height: 3rem;
 	color: var(--deck-cyan);
 	font-size: 0.65rem;
+}
+
+.link-group {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.38rem;
+	width: 100%;
+	min-width: 0;
+	max-width: 100%;
+}
+
+.link-group a {
+	display: flex;
+	align-items: center;
+	box-sizing: border-box;
+	min-width: 0;
+	min-height: 2rem;
+	border: 1px solid var(--deck-line);
+	border-left: 2px solid var(--deck-cyan);
+	border-radius: 4px;
+	padding: 0.38rem 0.5rem;
+	overflow: hidden;
+	background: var(--deck-surface-2);
+	font-size: 0.65rem;
+	font-weight: 700;
+	line-height: 1.25;
+	overflow-wrap: anywhere;
+	word-break: normal;
+}
+
+.link-group-single {
+	grid-template-columns: minmax(0, 1fr);
+	max-width: 25rem;
+}
+
+.contact-links {
+	grid-template-columns: repeat(2, minmax(0, 11.5rem));
+	margin-top: 0.65rem;
 }
 
 .fabric-tree {
