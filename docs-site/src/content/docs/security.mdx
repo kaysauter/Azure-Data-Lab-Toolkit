@@ -23,11 +23,30 @@ Security decisions must be visible in the plan before Azure or a guest operating
 | Run state and reports | Secret or sensitive-data leakage | Versioned schemas, redaction, access control, retention rules |
 | Teardown | Deleting shared resources or leaving chargeable data behind | Ownership-aware deletion, confirmation, and cleanup proof |
 
-## Identity and secrets
+## Secret-store decision for every solution
 
 The committed baseline is Microsoft Entra authentication and [managed identities](https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/managed-identity-best-practice-recommendations) where the target supports them. Every identity will receive only the permissions required for its operation. The plan must show the identity, scope, role assignments, and lifecycle before execution.
 
-[Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/secure-key-vault) is the intended secret boundary. YAML, command history, run state, and reports will contain references rather than secret values. The design also calls for Azure RBAC, network restrictions, soft delete, purge protection, auditing, and an explicit retention decision for each vault.
+Every target provider and solution pack must emit exactly one
+`secretStoreDecision`:
+
+| Decision | Meaning |
+| --- | --- |
+| `deploy-key-vault` | Create an owned Azure Key Vault through the reusable capability module |
+| `reuse-key-vault` | Use an existing vault without silently taking teardown ownership |
+| `approved-external-store` | Use another approved store through an explicit adapter and policy decision |
+| `not-applicable` | Record why the target or pack has no secret value to store |
+
+[Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/secure-key-vault)
+is the default Azure secret boundary, but the provider does not embed the vault
+implementation. The Key Vault capability records Azure RBAC, network
+restrictions, soft delete, purge protection, auditing, retention, ownership, and
+teardown behavior.
+
+The decision appears in Plan, WhatIf, cost, security, ownership, and teardown
+evidence. YAML, command history, normalized plans, run state, logs, and reports
+contain references rather than secret values. `not-applicable` is never an
+implicit default and always needs a recorded rationale.
 
 Password creation and password display are separate high-risk choices:
 
@@ -38,11 +57,30 @@ Password creation and password display are separate high-risk choices:
 
 Shell output can survive in scrollback, transcripts, screenshots, support bundles, and CI logs. Outside the one explicitly requested interactive display, redaction must remain active in terminal messages, JSON, Markdown, and HTML outputs.
 
-## Network access and Bastion
+## Administrative access decision for every VM
 
 Public SQL, SSH, and RDP endpoints are not part of the intended default. A plan will show private endpoints, DNS, network security rules, operator access, and every requested public exception.
 
-[Azure Bastion](https://learn.microsoft.com/en-us/azure/bastion/bastion-sku-comparison) is the intended administrative path for Azure VM labs when its region, capabilities, and cost fit the scenario. Developer, Basic, Standard, and Premium have different connection, scale, peering, recording, and private-only capabilities. The selected tier and its continuing cost must appear in the plan and cost report.
+Every Azure VM must emit an `administrativeAccessDecision`. The default is
+[Azure Bastion](https://learn.microsoft.com/en-us/azure/bastion/bastion-sku-comparison)
+with no public IP. Reusing an existing Bastion instance or opting out requires a
+rationale and explicit approval. The decision, selected tier, continuing cost,
+network effect, and public-access exception appear in Plan, WhatIf, cost, and
+security evidence.
+
+Developer, Basic, Standard, and Premium tiers have different connection, scale,
+peering, recording, and private-only capabilities. A provider requests the
+Bastion capability; it does not implement Bastion internally. VM-hosted
+containers inherit the same decision. Managed container platforms do not because
+they do not expose a VM administrative surface.
+
+## Execution and state
+
+Protected interactive runs may use local state. CI, webhooks, or other
+unattended mutation require encrypted remote state with authenticated locking,
+monotonically increasing fencing tokens, resumable events, and short-lived OIDC
+or managed-identity authentication. A local file lock cannot coordinate
+independent runners safely.
 
 ## Sensitive data
 
@@ -68,4 +106,6 @@ A checksum mismatch must fail closed. Mutable URLs and artifacts without integri
 
 The committed GitHub design uses [OpenID Connect federation](https://docs.github.com/en/actions/concepts/security/openid-connect) instead of stored Azure client secrets. Trust conditions must bind the identity to the expected repository, branch or environment, and workflow context. Protected environments will gate live deployments and teardown.
 
-Secret scanning, dependency review, infrastructure scanning, PowerShell analysis, Pester, and vulnerability scanning remain backlog controls until their workflows exist and publish evidence. See [Git And CI/CD](../git-and-cicd/).
+Secret scanning, dependency review, infrastructure scanning, PowerShell
+analysis, Pester, and vulnerability scanning remain backlog controls until their
+workflows exist and publish evidence. See [Git And CI/CD](../git-and-cicd/).

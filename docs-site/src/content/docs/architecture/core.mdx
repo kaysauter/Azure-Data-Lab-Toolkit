@@ -64,7 +64,7 @@ these advanced-user parameters and their meaning:
 | `-OutputFormat` and `-OutputPath` | Select console, JSON, Markdown, or HTML rendering and its destination |
 | `-DeploymentEngine` | Explicitly select `PowerShell`, and later `Bicep` or `Terraform` when supported |
 | `-TerminalUi` | Opt in to guided YAML creation; never make the terminal UI mandatory |
-| `-KeyVaultName` and `-UseExistingKeyVault` | Select or reuse the approved secret boundary |
+| `-KeyVaultName` and `-UseExistingKeyVault` | Contribute to, but never silently replace, the target or solution pack's explicit `secretStoreDecision` |
 | `-GeneratePassword` and `-ShowPassword` | Independently opt in to generation and shell display |
 | `-ContainsSensitiveData` | Acknowledge restricted data and activate policy checks |
 | `-UseCustomArtifact`, `-CustomArtifactPath`, `-CustomArtifactUrl`, and `-CustomArtifactChecksum` | Select a user-controlled artifact and optional expected digest |
@@ -85,6 +85,8 @@ job, or AI session cannot approve itself.
 
 The following always remain explicit:
 
+- each target and solution pack's secret-store decision;
+- each Azure VM's administrative-access decision;
 - secret generation or display;
 - use of sensitive data;
 - unverified or unsigned artifacts;
@@ -115,6 +117,10 @@ Assessment can inform target choice, sizing, compatibility, security, and
 migration readiness. It does not move data. Migration is a later, separate
 capability with its own plan and approval.
 
+Assessment evidence is required for a release when the target or scenario
+declares it applicable. Assessment is not a prerequisite for security policy,
+planning, cost estimation, or an initial deployment canary.
+
 For the first SQL Server path, the committed assessment integrations are
 [SQL Server enabled by Azure Arc](https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/overview)
 and the
@@ -132,7 +138,9 @@ Authenticated triggers may:
 
 They may not widen approval, increase spend, reveal secrets, acknowledge
 sensitive data, accept a license, adopt resources, or approve teardown. Resume
-begins with state lock acquisition and live reconciliation.
+begins with state lock acquisition and live reconciliation. CI, webhook, and
+other unattended mutation requires an approved remote state backend with leases,
+fencing, resumable events, and OIDC or managed identity.
 
 See [Plan and State](../plan-and-state/) for the serialized contracts and
 [Extension Model](../extension-model/) for contribution boundaries.

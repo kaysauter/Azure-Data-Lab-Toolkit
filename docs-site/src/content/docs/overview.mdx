@@ -17,14 +17,15 @@ The planned workflow starts with a schema-validated YAML file:
 
 1. Select a template or describe a lab.
 2. Validate prerequisites, permissions, regions, quotas, and policy.
-3. Assess the source and intended target.
-4. Review a deterministic plan, an Azure-aware comparison, and an explicit cost estimate.
-5. Confirm any sensitive-data or destructive operation.
-6. Deploy through PowerShell initially, with Bicep and Terraform engines planned later.
-7. Load approved sample, community, generated, private, local, or URL-based data.
-8. Install approved software and solution packs.
-9. Probe the environment and export an HTML evidence report.
-10. Shut down, resume, or remove the lab with lifecycle guardrails.
+3. Review a deterministic plan, an Azure-aware comparison, and an explicit cost estimate.
+4. Review the target's secret-store decision and, for a VM, its administrative-access decision.
+5. Run applicable assessment without treating assessment as migration or a prerequisite for every earlier review step.
+6. Confirm any sensitive-data or destructive operation.
+7. Deploy through PowerShell initially; Bicep and Terraform follow before Fabric delivery.
+8. Load approved sample, community, generated, private, local, or URL-based data.
+9. Install approved software and solution packs.
+10. Probe the environment and export an HTML evidence report.
+11. Shut down, resume, or remove the lab with lifecycle guardrails.
 
 Templates, command-line flags, and a future terminal UI are intended to serve different experience levels without creating different underlying behaviors.
 
@@ -44,12 +45,27 @@ Neither command exists yet. The first implementation proof point must demonstrat
 The design separates reusable decisions from target-specific behavior:
 
 - **Core** owns configuration, validation, planning, policy, run state, reporting, and lifecycle controls.
-- **Target providers** understand deployable platforms such as SQL Server on Azure VM or Microsoft Fabric.
-- **Capability modules** connect supporting services such as storage, Git, identity, assessment, and cost data.
+- **Target providers** understand deployable platforms such as SQL Server on Azure VM, managed or self-hosted PostgreSQL, or Microsoft Fabric.
+- **Capability modules** connect supporting services such as Key Vault, Bastion, storage, Git, identity, assessment, and cost data.
 - **Catalog sources** describe governed data, software, and templates; **solution packs** compose them into scenarios.
 - **Deployment engines** translate approved actions; **probes** verify outcomes and create evidence.
 
 Read [Architecture Overview](../architecture/) for the full model.
+
+## Delivery direction
+
+SQL VM is followed by Azure SQL Database and SQL Managed Instance. The project
+then delivers managed PostgreSQL, PostgreSQL on an Azure VM, and containerized
+PostgreSQL before adding Bicep, Terraform, and the broader Git and CI/CD
+adapters. Fabric follows those segments, then Databricks and later platforms.
+
+Every target and solution pack must state whether it will deploy or reuse Key
+Vault, use an approved external secret store, or explain why no secret store
+applies. Every Azure VM defaults to Azure Bastion with no public IP unless a
+reviewed plan explicitly approves another administrative-access decision.
+
+Read the [Roadmap](../roadmap/) for the full S0-S22 delivery plan and quality
+gates.
 
 ## Project relationship
 

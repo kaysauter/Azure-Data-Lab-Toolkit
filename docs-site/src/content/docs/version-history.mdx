@@ -17,12 +17,22 @@ description: Published and unreleased documentation, architecture, module, provi
 - Clear extension boundaries for target providers, capability modules, catalog sources, solution packs, deployment engines, and probes.
 - Separate offline `-Plan` resolution and Azure-aware, non-mutating `-WhatIf` comparison contracts.
 - Roadmap metadata that separates technical prerequisites from delivery sequencing.
+- Authoritative S0-S22 delivery segments with Contract, Live, and Release gates.
+- First-class epics for the PowerShell engine, probes and evidence, Windows and
+  Linux guest operations, SQL VM solution pack, remote state, PostgreSQL VM and
+  container paths, Git/CI intent, Key Vault decisions, and Bastion decisions.
 
 ### Changed
 
 - Corrected the Azure SQLVM Toolkit description to identify it as an unfinished predecessor and source of lessons.
 - Aligned the assessment direction with Azure Arc and the migration component in SQL Server Management Studio.
 - Clarified that architecture is committed design and roadmap entries are not shipped functionality.
+- Reordered the roadmap so the managed, Azure VM, and containerized PostgreSQL
+  paths, then Bicep, Terraform, and general Git/CI adapters, precede Fabric.
+- Required a `secretStoreDecision` for every target and solution pack and a
+  Bastion-first `administrativeAccessDecision` for every Azure VM.
+- Separated repository engineering CI from the user-facing Git and pipeline
+  capability.
 
 ### Current limitations
 

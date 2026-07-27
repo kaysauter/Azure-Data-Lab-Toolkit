@@ -36,7 +36,7 @@ layout: default
 <div class="agenda-list">
   <div><span>01</span><strong>Why</strong><small>The repeatability problem and the product promise</small></div>
   <div><span>02</span><strong>Architecture</strong><small>Contracts, extension types, Plan, WhatIf, and lifecycle</small></div>
-  <div><span>03</span><strong>Targets</strong><small>SQL VM first, then managed SQL, Fabric, and PostgreSQL</small></div>
+  <div><span>03</span><strong>Delivery</strong><small>VM first, then Azure SQL, PostgreSQL, engines, Git, and Fabric</small></div>
   <div><span>04</span><strong>Guardrails</strong><small>Assessment, security, cost, ownership, catalogs, and testing</small></div>
   <div><span>05</span><strong>Proof</strong><small>Accountability, community, and the first complete lifecycle</small></div>
 </div>
@@ -73,7 +73,6 @@ layout: default
 <div class="lifecycle">
   <span>Describe</span><i>→</i>
   <span>Validate</span><i>→</i>
-  <span>Assess</span><i>→</i>
   <span>Plan</span><i>→</i>
   <span>Compare</span><i>→</i>
   <span>Approve</span><i>→</i>
@@ -81,6 +80,8 @@ layout: default
   <span>Probe</span><i>→</i>
   <span>Report</span>
 </div>
+
+<div class="candidate-note">Assessment adds evidence before or after planning when it is useful. It is not a blocker for every lab.</div>
 
 <div class="two-col compact-top">
   <div>
@@ -108,8 +109,8 @@ layout: default
 <div class="foundation-grid">
   <span>Networking</span>
   <span>Managed identity</span>
-  <span>Key Vault</span>
-  <span>Azure Bastion</span>
+  <span>Key Vault decision</span>
+  <span>Bastion decision</span>
   <span>Guest configuration</span>
   <span>Storage and restore</span>
   <span>Software delivery</span>
@@ -190,27 +191,27 @@ layout: default
 layout: default
 ---
 
-# A deliberate target sequence
+# A deliberate delivery sequence
 
 <ol class="target-sequence">
-  <li><strong>SQL Server on Azure VM</strong><span>Reference target provider</span></li>
-  <li><strong>Azure SQL Database</strong><span>First managed SQL target</span></li>
-  <li><strong>Azure SQL Managed Instance</strong><span>Network-heavy managed instance</span></li>
-  <li><strong>Microsoft Fabric</strong><span>Guided workspaces and items</span></li>
-  <li><strong>Azure Database for PostgreSQL</strong><span>Managed PostgreSQL</span></li>
-  <li><strong>Linux VMs and containers</strong><span>SQL Server and PostgreSQL</span></li>
-  <li><strong>Kubernetes</strong><span>After container contracts mature</span></li>
+  <li><strong>SQL Server on Azure VM</strong><span>Plan → canary → useful lab → release</span></li>
+  <li><strong>Azure SQL Database and SQL MI</strong><span>Managed SQL paths</span></li>
+  <li><strong>PostgreSQL</strong><span>Azure managed → VM → container</span></li>
+  <li><strong>Bicep and Terraform</strong><span>Independent engine gates</span></li>
+  <li><strong>Git and CI/CD adapters</strong><span>GitHub, Azure DevOps, GitLab, Gitea, Forgejo</span></li>
+  <li><strong>Microsoft Fabric</strong><span>Guidance → items → CI/CD + solution-pack lanes</span></li>
+  <li><strong>Later platforms</strong><span>Databricks, more data targets, SQL Linux, Kubernetes</span></li>
 </ol>
 
 <div class="backlog-line">
-  Delivery order is not technical coupling. Azure Databricks, Cosmos DB, and additional data platforms remain later backlog candidates.
+  Delivery order is not technical coupling. Terraform does not depend on Bicep, and Fabric workspace creation does not depend on Git.
 </div>
 
 ---
 layout: default
 ---
 
-# Assess first. Migration remains separate.
+# Assessment adds evidence. Migration remains separate.
 
 <div class="three-col">
   <div class="plain-panel">
@@ -250,7 +251,7 @@ layout: default
 <div class="four-col">
   <div class="plain-panel">
     <h3>Security</h3>
-    <p>Managed identity, Key Vault references, private networking, Bastion, and explicit secret-output opt-ins.</p>
+    <p>Every target records a secret-store decision. Every Azure VM records a Bastion-first administrative-access decision.</p>
   </div>
   <div class="plain-panel">
     <h3>Cost</h3>
@@ -306,6 +307,8 @@ layout: default
 
 # Fabric needs guidance and honest capability limits
 
+<div class="candidate-note">Fabric delivery follows PostgreSQL, Bicep, Terraform, and the general Git/CI adapter segment.</div>
+
 <div class="fabric-tree">
   <div><strong>Transactional relational?</strong><span>Evaluate a SQL database in Fabric</span></div>
   <div><strong>Governed relational analytics?</strong><span>Evaluate Warehouse</span></div>
@@ -345,16 +348,16 @@ layout: default
 
 <div class="two-col compact-top">
   <div>
-    <h3>Every pull request</h3>
+    <h3>Toolkit repository CI</h3>
     <p>Dependency review, Dependabot, secret scanning, PSScriptAnalyzer, Pester, docs and links, plus Checkov when Bicep or Terraform exists. CodeQL complements this but does not analyze PowerShell.</p>
   </div>
   <div>
-    <h3>Protected live lanes</h3>
-    <p>GitHub OIDC, approved subscriptions and regions, strict TTL, constrained cost, retained reports, failure recovery, and independent cleanup queries.</p>
+    <h3>User-facing pipeline intent</h3>
+    <p>Plan, approve, deploy, probe, report, and teardown through OIDC, protected environments, remotely locked state, and retained evidence.</p>
   </div>
 </div>
 
-<div class="candidate-note">GitHub comes first. Azure DevOps, GitLab, Gitea, and Forgejo remain future integration candidates.</div>
+<div class="candidate-note">GitHub is the reference adapter. Azure DevOps, GitLab, Gitea, and Forgejo are planned before Fabric; Fabric still supports only its own current integration matrix.</div>
 
 ---
 layout: default
@@ -401,10 +404,10 @@ class: final-slide
 
 <div class="milestones">
   <span>1. Decision-complete contracts</span>
-  <span>2. Module and public API</span>
-  <span>3. Plan, state, and evidence</span>
-  <span>4. Guardrails and CI</span>
-  <span>5. SQL VM reference provider</span>
+  <span>2. Installable offline Core</span>
+  <span>3. GitHub engineering CI</span>
+  <span>4. SQL VM plan and secure canary</span>
+  <span>5. Useful lab and release evidence</span>
 </div>
 
 <div class="final-links">

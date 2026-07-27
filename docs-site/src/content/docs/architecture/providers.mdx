@@ -18,6 +18,9 @@ A target provider:
 - validates target-specific configuration and offline constraints;
 - contributes resources, actions, dependencies, risks, preconditions,
   postconditions, ownership expectations, and teardown intent;
+- contributes a `secretStoreDecision` for every target plan;
+- contributes an `administrativeAccessDecision` when the target includes an
+  Azure VM;
 - identifies live facts that `-WhatIf` must reconcile;
 - declares cost quantities and estimation limitations;
 - identifies compatible engines and returns structured capability failures;
@@ -34,20 +37,34 @@ export and apply.
 | 1 | SQL Server on Azure VM | Committed design | Prove VM, network, Bastion, Key Vault, storage, guest, restore, tools, probes, and teardown |
 | 2 | Azure SQL Database | Backlog | Prove managed-service differences and database-scoped lifecycle |
 | 3 | Azure SQL Managed Instance | Backlog | Prove network-heavy managed instance planning and longer operations |
-| 4 | Microsoft Fabric | Backlog | Prove workspace, capacity, item, shortcut, and deployment-pipeline guidance |
-| Later | Azure Database for PostgreSQL | Backlog | Add managed PostgreSQL after the first four targets |
-| Later | Azure Databricks, Cosmos DB, and other data services | Backlog | Add only through the same contracts |
-| Later | SQL Server and PostgreSQL on Linux VMs or containers | Deferred | Portability targets after managed paths mature |
-| Later | Kubernetes and AKS | Deferred | Orchestration target after container contracts mature |
+| 4 | Azure Database for PostgreSQL | Backlog | Prove managed PostgreSQL identity, compatibility, and dump or restore paths |
+| 5 | PostgreSQL on Azure VM | Backlog | Prove reusable Linux guest and Bastion-first VM behavior |
+| 6 | Containerized PostgreSQL | Backlog | Prove explicit container-host, image, persistence, and update contracts |
+| 7 | Microsoft Fabric | Backlog | Follow Bicep, Terraform, and general Git/CI delivery; prove workspace, item, shortcut, and pipeline guidance |
+| Later | Azure Databricks, Cosmos DB, and other data services | Backlog or Deferred | Add only through the same contracts and separate release gates |
+| Later | SQL Server on Linux VMs or containers | Backlog | Reuse Linux and container capabilities without conflating it with PostgreSQL |
+| Later | Kubernetes and AKS | Deferred | Orchestration target after a required container workload passes release |
 
 Delivery order is not a technical dependency. Azure SQL Database does not depend
-on SQL VM resources, and PostgreSQL does not depend on Fabric. The order only
-controls implementation priority.
+on SQL VM resources, PostgreSQL does not depend on Fabric, and Fabric workspace
+creation does not depend on Git. Bicep, Terraform, and general Git/CI adapters
+are not target providers, but their delivery segments occur before Fabric.
 
 Fabric infrastructure-as-code completeness is **exploratory**. The provider may
 initially expose only capabilities that can be planned, executed, and evidenced
 reliably. Unsupported workspace or item operations fail explicitly rather than
 falling back to undocumented behavior.
+
+## Cross-provider security capabilities
+
+Every provider requests the reusable secret-store capability and emits one of
+`deploy-key-vault`, `reuse-key-vault`, `approved-external-store`, or justified
+`not-applicable`. The provider cannot silently choose or omit a secret store.
+
+Every Azure VM provider also requests the administrative-access capability.
+Azure Bastion with no public IP is the default. Reuse or opt-out is an explicit,
+approved, costed plan decision. VM-hosted containers inherit the rule; managed
+container platforms do not.
 
 ## Capability declaration
 
@@ -74,6 +91,7 @@ declared complete. Its acceptance scope includes:
 - deterministic offline planning;
 - live `-WhatIf` reconciliation;
 - identity, network, Bastion, Key Vault, storage, and VM resources;
+- explicit secret-store and administrative-access decisions;
 - SQL and guest configuration boundaries;
 - governed sample, backup, and software acquisition;
 - post-deployment probes;

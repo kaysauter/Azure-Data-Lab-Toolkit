@@ -3,7 +3,7 @@ title: Deployment Engines
 description: PowerShell-first execution with coherent Bicep and Terraform roles.
 ---
 
-<span class="status status-committed">Committed engine roles; implementation deferred</span>
+<span class="status status-committed">Committed engine roles; implementation backlog</span>
 
 A deployment engine translates an approved normalized plan into engine-specific
 artifacts and applies supported actions through core orchestration. Target
@@ -12,8 +12,8 @@ providers describe intent; engines own export and apply syntax.
 | Engine | Status | Long-term role |
 | --- | --- | --- |
 | PowerShell | Committed design, first | Export an auditable action package and apply supported actions |
-| Bicep | Deferred implementation | Export Azure-native templates and apply them through orchestration |
-| Terraform | Deferred implementation | Export configuration and apply it through orchestration with an explicit state boundary |
+| Bicep | Backlog, S12 | Export Azure-native templates and apply them through orchestration |
+| Terraform | Backlog, S13 | Export configuration and apply it through orchestration with an explicit state boundary |
 
 The engine is selected explicitly. The core never guesses from installed tools
 or configuration files.
@@ -73,4 +73,11 @@ each engine. Missing support is a structured capability failure.
 
 PowerShell must be implemented and proven first. Bicep and Terraform work starts
 only after the normalized plan, provider, evidence, and state contracts are
-stable.
+stable. They are scheduled after the initial SQL, PostgreSQL VM, and
+containerized PostgreSQL delivery paths and before Fabric.
+
+Terraform does not depend technically on Bicep. Their S12/S13 order limits
+parallel delivery risk and gives each engine an independent conformance gate.
+Neither engine's earlier delivery implies complete Fabric infrastructure-as-code
+support; Fabric exposes only operations its provider and current APIs can
+reliably plan, execute, and evidence.

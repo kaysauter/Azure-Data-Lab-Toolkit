@@ -1,42 +1,69 @@
 ---
 title: Roadmap
-description: Dependency-ordered delivery path from architecture to multi-platform data labs.
+description: Segmented delivery from an offline core through VM-first, PostgreSQL, engines, Git, Fabric, and later data labs.
 ---
 
 The roadmap records **Backlog**, **Exploratory**, and **Deferred** work. It is not a statement of shipped behavior or a delivery commitment. Accepted architecture is **Committed design**; only published and verified release functionality is **Available**.
 
-The authoritative backlog is [FEATURE_REQUESTS.md](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/FEATURE_REQUESTS.md). Work is tracked through [GitHub issues](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/issues) and the public [Azure Data Lab Toolkit Roadmap](https://github.com/users/kaysauter/projects/6/views/1).
+The authoritative implementation plan is
+[`architecture/delivery-segments.md`](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/architecture/delivery-segments.md).
+The epic catalog is
+[`FEATURE_REQUESTS.md`](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/FEATURE_REQUESTS.md).
+Work is tracked through [GitHub issues](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/issues)
+and the public [Azure Data Lab Toolkit Roadmap](https://github.com/users/kaysauter/projects/6/views/1).
 
-## Delivery sequence
+## Segmented delivery
 
-```text
-Architecture
-  -> PowerShell module, YAML, flags, and provider contracts
-  -> deterministic planning and run state
-  -> assessment, security, cost, catalogs, CI/CD, and validation
-  -> SQL Server on Azure VM reference provider
-  -> storage, data onboarding, and software delivery
-  -> Azure SQL Database
-  -> Azure SQL Managed Instance
-  -> Microsoft Fabric
-  -> Azure Database for PostgreSQL
-  -> Linux VMs and containers
-  -> Kubernetes
-```
-
-This sequence controls delivery focus, not architectural coupling. PostgreSQL follows Fabric in the delivery order but does not depend on Fabric contracts. Bicep and Terraform both wait for stable normalized-plan and provider contracts; Terraform does not technically depend on Bicep.
-
-## Phases
-
-| Phase | Main outcome | Status |
+| Segments | Delivery outcome | Gate |
 | --- | --- | --- |
-| Foundation | Decision-complete architecture and reusable contracts | **Committed design** |
-| SQL VM | First complete, tested lab lifecycle | **Backlog** |
-| Azure SQL | Managed SQL Database and Managed Instance target providers | **Backlog** |
-| Fabric | Guided workspace and item lifecycle | **Backlog**, with IaC aspects **Exploratory** |
-| PostgreSQL | Managed PostgreSQL target provider | **Backlog** |
-| Ecosystem | Databricks, additional Git adapters, and solution packs | **Backlog** |
-| Engines and platforms | Bicep, Terraform, Linux, containers, and later Kubernetes | **Deferred** |
+| **S0-S2** | Architecture and contracts, installable offline Core, and the toolkit repository's GitHub CI baseline | Contract |
+| **S3-S6** | Read-only SQL VM plan, secure VM canary, useful SQL VM data lab, and first SQL VM release | Contract → Live → Release |
+| **S7-S8** | Azure SQL Database, then Azure SQL Managed Instance | Release |
+| **S9-S11** | Azure Database for PostgreSQL, PostgreSQL on Azure VM, then containerized PostgreSQL | Release |
+| **S12-S13** | Bicep, then Terraform, as additional deployment engines | Release |
+| **S14** | General Git and CI/CD intent with GitHub, Azure DevOps, GitLab, Gitea, and Forgejo adapters | Release |
+| **S15-S18** | Fabric guidance and workspaces, then items and shortcuts, followed by parallel conditional lanes for CI/CD and FUAM, Rayfin, or TMDL packs | Live → Release |
+| **S19-S22** | Azure Databricks, individually approved later providers, SQL Server on Linux or containers, then Kubernetes | Release per target |
+
+This order controls delivery focus, not architectural coupling. Terraform does
+not depend technically on Bicep. Fabric workspace creation does not depend on
+Git, although Fabric CI/CD depends on Fabric items and whichever Git adapters
+Fabric actually supports. PostgreSQL does not depend on Fabric. After S16,
+Fabric CI/CD and solution packs may proceed in parallel; a pack depends on S17
+only when its accepted design uses CI/CD.
+
+Research and deterministic contract fixtures may start early. A later segment
+does not become the active delivery focus until the preceding segment passes its
+exit gate.
+
+Product epics remain stable across releases, but their implementation work can
+span several segments. Those slices are tracked as native GitHub sub-issues so,
+for example, protected local state can support the interactive VM canary without
+waiting for release-only remote execution. The checked-in
+[sub-issue manifest](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/architecture/github-project-sub-issue-manifest.md)
+defines the parent, segment, gate, dependencies, and acceptance delta for each
+cross-segment or conditional child.
+
+## Quality gates
+
+| Gate | Required evidence |
+| --- | --- | --- |
+| **Contract** | Versioned interfaces, deterministic offline fixtures, no unexpected cloud calls, secret references only, and explicit cost, ownership, security, and teardown intent |
+| **Live** | Contract evidence plus isolated deployment, positive and negative probes, cost and security checks, failure handling, teardown, orphan query, and still-billable-resource evidence |
+| **Release** | Live evidence plus three consecutive clean lifecycles, resume, drift, duplicate-trigger locking and fencing, no unresolved critical or high findings, signed artifacts, and current documentation |
+
+Documentation or a successful create operation cannot pass a gate by itself.
+
+## Security decisions at every stage
+
+Every target and solution pack must emit a `secretStoreDecision`:
+`deploy-key-vault`, `reuse-key-vault`, `approved-external-store`, or justified
+`not-applicable`. Every Azure VM must emit an `administrativeAccessDecision`;
+the default is Azure Bastion with no public IP. Reuse or opt-out remains
+explicit, approved, costed, and evidenced.
+
+Key Vault and Bastion are capability modules shared by providers. They are not
+hidden SQL VM implementation details.
 
 ## Plan before execution
 
@@ -44,8 +71,16 @@ The first implementation will distinguish two non-mutating review steps. `-Plan`
 
 ## First proof point
 
-Success for the first implementation is not merely creating a VM. SQL Server on Azure VM must provide a complete, repeatable path from YAML through `-Plan`, `-WhatIf`, cost review, guarded PowerShell deployment, probes, HTML evidence, and confirmed teardown with cleanup proof.
+Success for the first implementation is not merely creating a VM. SQL Server on
+Azure VM must provide a complete, repeatable path from YAML through `-Plan`,
+`-WhatIf`, cost review, guarded PowerShell deployment, probes, HTML evidence,
+and confirmed teardown with cleanup proof.
 
-Assessment work starts with Azure Arc and the migration component in SQL Server Management Studio. The exact privileges, billing, evidence, and automation boundaries remain to be settled before implementation.
+Assessment work starts with Azure Arc and the migration component in SQL Server
+Management Studio. It is a release requirement where applicable, not a
+prerequisite for planning, security policy, cost estimation, or the first
+deployment canary.
 
-For implementation status, read [Project Status](../status/). The authoritative epic catalog separates technical prerequisites from delivery sequencing in [`FEATURE_REQUESTS.md`](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/FEATURE_REQUESTS.md).
+For implementation status, read [Project Status](../status/). The authoritative
+epic catalog separates technical prerequisites from delivery sequencing in
+[`FEATURE_REQUESTS.md`](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/FEATURE_REQUESTS.md).

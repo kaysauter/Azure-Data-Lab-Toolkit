@@ -16,7 +16,7 @@ requirements are satisfied.
 flowchart TB
     A["User or CI identity"] --> R["Workstation or CI runner"]
     T["Authenticated trigger or AI session"] --> R
-    R --> S["Local state and report store"]
+    R --> S["Local or remote state and report store"]
     R --> C["Artifact and catalog sources"]
     R --> Z["Azure control plane"]
     R --> K["Azure Key Vault"]
@@ -31,9 +31,9 @@ flowchart TB
 | Workstation or CI runner | Configuration, code, transient credentials, orchestration process | Trusted toolkit version, least privilege, protected working directory, dependency verification |
 | Artifact and catalog sources | Sample data, software, scripts, metadata | HTTPS, provenance, license, version, checksum or signature where available, content policy |
 | Azure control plane | Resource Manager and service management APIs | Entra identity, least-privilege RBAC, authenticated live queries, correlation IDs |
-| Azure Key Vault | Secret values, keys, and certificates | Secret references in plans, managed identity where possible, no report or state copies |
+| Secret store, with Azure Key Vault as the Azure default | Secret values, keys, and certificates | Explicit `secretStoreDecision`, references in plans, managed identity where possible, no report or state copies |
 | Target guest or data plane | VM guest, SQL endpoint, Fabric item, storage endpoint, future targets | Target-specific identity, network isolation, scoped commands, postcondition probes |
-| State and report store | Plans, events, snapshots, approvals, evidence | Access control, integrity hashes, retention policy, no secrets, redaction |
+| State and report store | Plans, events, snapshots, approvals, evidence | Access control, integrity hashes, retention policy, no secrets, redaction; remote leases and fencing for unattended mutation |
 
 Crossing a boundary produces structured evidence. Sensitive values are redacted
 at source rather than removed later from logs.
@@ -87,16 +87,21 @@ It cannot:
 - adopt or delete existing resources;
 - skip reconciliation, probes, or cleanup evidence required by policy.
 
-Expired approval, changed plan hash, missing lock, changed identity scope, drift,
-or conflict stops continuation and requires human review.
+CI, webhooks, and other unattended mutation require encrypted remote state,
+short-lived OIDC or managed identity, a renewable lease, a monotonically
+increasing fencing token, and resumable events. Local state is limited to
+protected interactive execution.
+
+Expired approval, changed plan hash, missing or stale fencing authority, changed
+identity scope, drift, or conflict stops continuation and requires human review.
 
 ## Network stance
 
-Providers and capability modules propose target-specific networking, but core
-policy decides whether a proposal is allowed. Private access, Azure Bastion, and
-managed identity are preferred where the target supports them. A public endpoint
-or broad firewall rule must be visible in the plan, risk record, cost estimate,
-and approval evidence.
+Providers and capability modules propose target-specific networking, but Core
+policy decides whether a proposal is allowed. Every Azure VM emits an
+`administrativeAccessDecision`; Azure Bastion with no public IP is the default.
+Reuse or opt-out and any public endpoint or broad firewall rule must be visible
+in the plan, WhatIf, risk record, cost estimate, and approval evidence.
 
 This architecture defines the control points. It does not claim that a complete
 threat model or production security baseline is implemented today.

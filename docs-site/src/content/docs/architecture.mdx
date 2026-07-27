@@ -55,30 +55,45 @@ flowchart LR
 - PowerShell is first; Bicep and Terraform follow as explicit engine choices.
 - Assessment, cost estimation, deployment, migration, and teardown are distinct
   operations.
+- Every target and solution pack emits an explicit `secretStoreDecision`.
+- Every Azure VM emits an `administrativeAccessDecision`; Bastion with no public
+  IP is the default.
 - Secrets are referenced, never embedded in plans, state, or reports.
 - Unknown resources are never deleted.
-- Local and CI execution use the same plan, evidence, and approval contracts.
+- Local and CI execution use the same plan, evidence, and approval contracts,
+  while unattended mutation requires remotely coordinated state.
 
 The detailed [plan and state contract](./plan-and-state/) makes these
 rules testable.
 
 ## Delivery order
 
-The committed provider sequence is SQL Server on Azure VM, Azure SQL Database,
-Azure SQL Managed Instance, then Microsoft Fabric. PostgreSQL and the other
-targets described in the [roadmap](../roadmap/) follow later. Linux VM and
-container targets, and Kubernetes, are deferred. Fabric infrastructure-as-code
-completeness remains exploratory.
+The [authoritative segment plan](../roadmap/) moves from the offline Core and
+repository CI into a four-step SQL VM proof, then Azure SQL Database and SQL
+Managed Instance. Managed PostgreSQL, PostgreSQL on Azure VM, and containerized
+PostgreSQL follow before Bicep, Terraform, and the general Git and CI/CD
+adapters. Fabric delivery begins after those segments. Databricks, later data
+providers, SQL Server on Linux or containers, and Kubernetes follow.
+
+That order controls focus, not technical coupling. Terraform does not depend
+technically on Bicep. Fabric workspace creation does not depend on Git.
+PostgreSQL does not depend on Fabric. Fabric infrastructure-as-code completeness
+remains exploratory even though the two infrastructure engines are delivered
+earlier.
 
 ## Lifecycle
 
 ```mermaid
 flowchart LR
     R["Resolve"] --> V["Validate"]
-    V --> A["Assess"]
-    A --> P["Plan"]
+    V --> P["Plan"]
     P --> W["What-if"]
     P --> C["Estimate cost"]
+    V -.-> A["Assess (optional)"]
+    P -.-> A
+    A --> AE["Assessment evidence"]
+    AE -.-> RP["Retain or revise plan"]
+    RP -.-> W
     W --> G["Approve"]
     C --> G
     G --> D["Deploy"]
@@ -92,13 +107,16 @@ flowchart LR
 
 Stages run only when applicable. [Provider lifecycle](./provider-lifecycle/)
 defines contribution boundaries; the core remains the lifecycle coordinator.
+Assessment may branch before or after Plan. If its evidence changes intended
+actions, Core creates a newly hashed plan before WhatIf or approval.
 
 ## Trust and evidence
 
 The architecture treats the workstation or CI runner, artifact sources, Azure
-control plane, Key Vault, target guest or data plane, and report/state store as
-separate trust zones. See [System Context](./system-context/) for the data flows
-and [Security](../security/) for project guidance.
+control plane, secret store, target guest or data plane, and local or remote
+report/state store as separate trust zones. See
+[System Context](./system-context/) for the data flows and
+[Security](../security/) for project guidance.
 
 Every operation emits a versioned evidence envelope. Console, JSON, Markdown,
 and HTML are renderings of the same underlying record, not independent truths.

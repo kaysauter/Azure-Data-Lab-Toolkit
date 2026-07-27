@@ -12,7 +12,7 @@ Azure Data Lab Toolkit uses several narrow extension types. Calling all of them
 
 | Type | Purpose | Examples |
 | --- | --- | --- |
-| Target provider | Model one deployable data platform | SQL VM, Azure SQL Database, SQL MI, Fabric |
+| Target provider | Model one deployable data platform | SQL VM, Azure SQL Database, SQL MI, PostgreSQL, Fabric |
 | Capability module | Add a reusable platform concern | Network, Bastion, Key Vault, storage, Git, budget |
 | Catalog source | Resolve governed metadata and acquisition instructions | Microsoft samples, community tools, private registry |
 | Solution pack | Compose a repeatable scenario | SQL performance lab, Fabric monitoring lab |
@@ -41,6 +41,11 @@ For example, a SQL VM plan may require `azure.network.private-access`,
 `azure.access.bastion`, `azure.secrets.key-vault`, and
 `azure.storage.file-share`. Those modules remain reusable by later VM or data
 targets.
+
+Every target and solution pack must request the secret-store decision
+capability, even when its result is justified `not-applicable`. Every Azure VM
+must request the administrative-access capability. The default module resolution
+selects Bastion and no public IP; a provider cannot silently replace that choice.
 
 Conflicting modules fail during resolution. A module cannot override core
 approval, ownership, or secret rules.
@@ -80,9 +85,11 @@ A solution pack is a versioned composition of:
 - probes and expected outcomes.
 
 It cannot hide licensing, sensitivity, cost, public networking, or destructive
-behavior. Pack defaults sit at the template layer and remain overridable through
-YAML and supported explicit flags. A resolved plan records the pack version and
-every contributed value.
+behavior. It emits its own `secretStoreDecision` even when the target provider
+also has one, because a pack can add credentials or certificates. Pack defaults
+sit at the template layer and remain overridable through YAML and supported
+explicit flags. A resolved plan records the pack version and every contributed
+value.
 
 ## Probes
 

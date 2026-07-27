@@ -28,30 +28,54 @@ No deployment capability is currently marked **Available**.
 | Core and extension boundaries | **Committed design** | Accepted separation of target providers, capability modules, catalog sources, solution packs, deployment engines, and probes |
 | PowerShell module, YAML schema, `-Plan`, and `-WhatIf` | **Backlog** | No installable module or command implementation exists |
 | SQL Server on Azure VM | **Backlog** | First end-to-end implementation and proof point |
+| PostgreSQL managed, VM, and container paths | **Backlog** | Three separate pre-Fabric delivery segments |
+| Bicep and Terraform engines | **Backlog** | Scheduled after stable target paths and before Fabric; neither is implemented |
+| General Git and CI/CD adapters | **Backlog** | GitHub reference plus Azure DevOps, GitLab, Gitea, and Forgejo before Fabric |
 | Fabric infrastructure as code | **Exploratory** | Practical API and engine boundaries remain under research |
-| Bicep and Terraform engines | **Deferred** | Begin after the normalized plan and provider contracts are stable |
+| Kubernetes targets | **Deferred** | Begin only after container contracts and a required workload are released |
 
 ## Plan and WhatIf
 
 The committed design separates offline reasoning from live comparison. `-Plan` will validate configuration and explain resolved and derived values without Azure access. `-WhatIf` will require Azure context, compare that resolved plan with existing resources, and report create, reuse, update, replace, conflict, drift, or no-change without mutation. Neither command is implemented today.
 
-## Target order
+## Delivery order
 
-The order is deliberate. A later target should reuse tested core behavior instead of creating a parallel toolkit.
+The order is deliberate. A later target should reuse tested Core behavior
+instead of creating a parallel toolkit.
 
-1. **SQL Server on Azure VM** - first end-to-end implementation and test target.
-2. **Azure SQL Database** - first managed SQL target.
-3. **Azure SQL Managed Instance** - managed instance networking and migration scenarios.
-4. **Microsoft Fabric** - workspace and item creation plus guided target decisions.
-5. **Azure Database for PostgreSQL** - managed PostgreSQL scenarios.
-6. **SQL Server and PostgreSQL on Linux VMs and containers** - portable engine scenarios.
-7. **Kubernetes** - deferred until container and lifecycle contracts are mature.
+1. **SQL Server on Azure VM** - read-only planning, secure canary, useful data
+   lab, then first release.
+2. **Azure SQL Database** and **Azure SQL Managed Instance**.
+3. **Azure Database for PostgreSQL**, **PostgreSQL on Azure VM**, and
+   **containerized PostgreSQL**.
+4. **Bicep**, **Terraform**, and general **Git and CI/CD adapters**.
+5. **Microsoft Fabric** - guidance and workspaces, then items and shortcuts,
+   followed by parallel conditional CI/CD and solution-pack lanes.
+6. **Azure Databricks**, later data providers, SQL Server on Linux or
+   containers, and eventually Kubernetes.
 
-Azure Databricks and additional data platforms are tracked as future target providers. Git, storage, community tools, and related capabilities use their own extension types in the [Roadmap](../roadmap/).
+The exact S0-S22 sequence and gates are in the [Roadmap](../roadmap/).
+Delivery order is not a technical dependency: Terraform does not technically
+depend on Bicep, and Fabric workspace creation does not technically depend on
+Git.
+
+Cross-segment work is represented by child issues. This keeps the S4 interactive
+VM canary on protected local state while remote locking, fencing, and unattended
+resume remain release work for S6.
+
+## Required security decisions
+
+The committed design requires a `secretStoreDecision` for every target and
+solution pack and an `administrativeAccessDecision` for every Azure VM. Key
+Vault is considered explicitly for every solution; Azure Bastion with no public
+IP is the default for VMs. These are contracts, not implemented controls today.
 
 ## First implementation proof
 
-SQL Server on Azure VM must prove one complete path: YAML validation, `-Plan`, `-WhatIf`, cost review, guarded PowerShell deployment, probes, evidence output, teardown preview, confirmed deletion, and cleanup proof.
+SQL Server on Azure VM must prove one complete path: YAML validation, `-Plan`,
+`-WhatIf`, cost review, explicit Key Vault and Bastion decisions, guarded
+PowerShell deployment, probes, evidence output, teardown preview, confirmed
+deletion, and cleanup proof.
 
 ## Source of truth
 

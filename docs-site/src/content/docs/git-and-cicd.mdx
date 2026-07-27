@@ -1,13 +1,28 @@
 ---
 title: Git And CI/CD
-description: Planned Git providers and automated quality, security, deployment, and cleanup workflows.
+description: Separate plans for the toolkit repository CI and user-facing Git, deployment, and cleanup workflows.
 ---
 
-<span class="status status-backlog">GitHub first; other providers are backlog</span>
+<span class="status status-backlog">Repository CI first; user-facing Git adapters follow before Fabric</span>
 
-[GitHub](https://docs.github.com/en/get-started/start-your-journey/what-is-github) and [GitHub Actions](https://docs.github.com/en/actions) are the first repository and pipeline targets. Later provider work may cover [Azure Pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/get-started/what-is-azure-pipelines), [GitLab CI/CD](https://docs.gitlab.com/ci/), [Gitea Actions](https://docs.gitea.com/usage/actions/overview), and [Forgejo Actions](https://forgejo.org/docs/latest/user/actions/reference/).
+[GitHub](https://docs.github.com/en/get-started/start-your-journey/what-is-github)
+and [GitHub Actions](https://docs.github.com/en/actions) serve two distinct
+purposes in the roadmap:
 
-Those later providers are architectural backlog. They do not imply support in Microsoft Fabric Git integration.
+1. **S2 repository engineering CI (FR-012)** checks Azure Data Lab Toolkit
+   itself: package, PowerShell, Pester, schemas, docs, links, dependencies,
+   secrets, vulnerabilities, and releases.
+2. **S14 user-facing Git and CI/CD (FR-042 and FR-027)** expresses
+   validate-plan-approve-deploy-probe-report-teardown intent for users, with
+   GitHub as the reference adapter and
+   [Azure Pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/get-started/what-is-azure-pipelines),
+   [GitLab CI/CD](https://docs.gitlab.com/ci/),
+   [Gitea Actions](https://docs.gitea.com/usage/actions/overview), and
+   [Forgejo Actions](https://forgejo.org/docs/latest/user/actions/reference/)
+   as additional adapters.
+
+The general adapter segment is scheduled after Bicep and Terraform and before
+Fabric. That schedule is not a code dependency on either engine.
 
 ## CI stages
 
@@ -44,14 +59,27 @@ Live workflows will use [GitHub OIDC federation](https://docs.github.com/en/acti
 
 Protected environments will control deployment and teardown identities, required reviewers, and environment-specific configuration. Forked or untrusted pull requests will not receive Azure credentials or access to protected secrets.
 
+CI, webhook, and other unattended mutation also requires encrypted remote run
+state, locking, monotonically increasing fencing tokens, idempotency keys,
+resumable evidence, and duplicate-trigger rejection. A workflow may resume an
+approved run; it cannot approve its own plan, secret handling, spend increase,
+sensitive data, adoption, or teardown.
+
 ## Live test protections
 
 Live tests need explicit subscription and region allowlists, quota checks, constrained SKUs, unique ownership tags, concurrency limits, budgets, short TTLs, and cleanup that runs after failure. A final Azure query will record resources that remain.
 
 Small SQL VM smoke tests can run after approval. Wider provider, engine, region, and version matrices belong on scheduled or release workflows. No workflow may delete a resource whose ownership is unknown.
 
-## Fabric CI/CD boundary
+## Fabric CI/CD is a later, separate segment
 
 Fabric automation will follow the current [Fabric Git integration provider and item matrix](https://learn.microsoft.com/en-us/fabric/cicd/git-integration/intro-to-git-integration) and [Fabric CI/CD guidance](https://learn.microsoft.com/en-us/fabric/fundamentals/understand-best-practices-fabric-cicd). Full Fabric infrastructure-as-code parity remains exploratory.
 
-Gitea and Forgejo can also become self-hosted lab targets, but that adds storage, backup, identity, ingress, certificates, upgrades, scanning, and teardown responsibilities beyond a pipeline adapter.
+Fabric workspace creation does not technically depend on Git. Fabric CI/CD does
+depend on Fabric items and on a Git adapter that Fabric actually supports.
+Completing GitLab, Gitea, or Forgejo adapters does not imply that Fabric accepts
+those services.
+
+Gitea and Forgejo can also become self-hosted lab solution packs, but that adds
+storage, backup, identity, ingress, certificates, upgrades, scanning, secret
+store, and teardown responsibilities beyond a pipeline adapter.

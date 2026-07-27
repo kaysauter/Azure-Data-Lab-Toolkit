@@ -28,6 +28,8 @@ but canonical JSON serialization is used for hashing and interchange.
 | `actions` | Stable action IDs, dependencies, capability requirements, and idempotency rules |
 | `outputs` | Declared non-secret outputs and secret-reference outputs |
 | `policies` | Findings, required acknowledgements, and denied conditions |
+| `secretStoreDecisions` | One explicit decision per target and solution pack, with rationale, ownership, cost, and teardown references |
+| `administrativeAccessDecisions` | One explicit decision per Azure VM, including Bastion or approved alternative, public-IP outcome, rationale, and approval requirement |
 | `unverifiedFacts` | External facts unavailable during offline planning |
 | `planHash` | Hash of the canonical envelope excluding the hash field itself |
 
@@ -156,6 +158,23 @@ delete Azure resources.
 Future external state backends must implement the same append, snapshot, lock,
 integrity, retention, and access-control contract. Backend choice cannot change
 lifecycle meaning.
+
+## Remote run state
+
+CI, webhooks, schedules, and other unattended mutation cannot use the local
+backend. They require an encrypted remote backend with:
+
+- OIDC or managed-identity authentication and least-privilege data-plane access;
+- atomic append or equivalent event ordering;
+- renewable leases and monotonically increasing fencing tokens;
+- idempotency-key and duplicate-trigger detection;
+- resumable snapshots and content-addressed evidence;
+- retention, legal-hold, recovery, and deletion policy;
+- no secret values, access tokens, private keys, or reusable signed URLs.
+
+Azure Blob Storage is the first reference design. Another backend can be added
+only by passing the same contract and failure tests. Loss of the lease,
+fencing authority, identity scope, or event integrity stops mutation.
 
 ## Lock, resume, and reconciliation
 

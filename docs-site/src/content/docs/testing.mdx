@@ -7,6 +7,17 @@ description: Planned verification from deterministic planning through live Azure
 
 Testing must prove creation, useful behavior, failure recovery, and cleanup. A deployment that appears successful but leaks resources is a failed lab run.
 
+## Segment quality gates
+
+| Gate | Minimum evidence |
+| --- | --- |
+| **Contract** | Versioned schemas and interfaces, deterministic offline fixtures, no unexpected cloud calls, secret references only, explicit security, cost, ownership, and teardown intent |
+| **Live** | Contract evidence plus isolated deployment, positive and negative probes, security and vulnerability review, cost and TTL controls, failure handling, teardown, orphan query, and still-billable-resource report |
+| **Release** | Live evidence plus three consecutive clean lifecycles, interrupted resume, drift, duplicate-trigger locking and fencing, zero unresolved critical or high findings, signed artifacts, and current docs |
+
+Each S0-S22 segment names the gate it must pass. A later target receives no
+credit merely because an earlier provider or engine passed.
+
 ## Plan and WhatIf are different tests
 
 | Mode | Azure access | Test assertion |
@@ -46,11 +57,21 @@ YAML
 
 Provider probes will verify reachable services, expected configuration, installed tools, loaded data, identity access, and report evidence. A successful deployment command is not enough.
 
+SQL VM planning tests also assert an explicit `secretStoreDecision` and
+`administrativeAccessDecision`. The secure default is a Key Vault decision plus
+Azure Bastion with no public IP. Reuse or opt-out must carry rationale, approval,
+cost, and security evidence.
+
 ## Failure injection
 
 Tests will inject failure after Azure resource creation, identity assignment, guest setup, artifact transfer, data loading, probe execution, state persistence, and partial teardown. Recovery must be idempotent, preserve evidence, avoid duplicate actions, and stop when ownership or state cannot be proven.
 
 Concurrency tests will cover two sessions targeting the same lab, stale locks, interrupted runs, expired credentials, throttling, delayed role assignments, and drift introduced between Plan, WhatIf, and execution.
+
+Interactive local-state tests cover owner-only storage and a per-run lock. CI,
+webhook, or unattended mutation tests require remote leases, monotonically
+increasing fencing tokens, OIDC or managed identity, idempotency keys, and
+duplicate-trigger rejection.
 
 ## Cost and cleanup protection
 
@@ -63,3 +84,8 @@ Cleanup runs even after test failure, but it can delete only `owned` resources o
 Pull requests use synthetic or redistributable fixtures. Real or sensitive databases run only in explicitly approved environments with `ContainsSensitiveData`, restricted reports, verified retention, and deletion evidence.
 
 Each live run will retain tool versions, normalized plan hash, WhatIf result, cost assumptions, approvals, probes, teardown summary, and cleanup query. Secrets and sensitive values remain redacted.
+
+For every target and solution pack, the retained evidence includes its
+`secretStoreDecision`. For every Azure VM, it also includes the
+`administrativeAccessDecision`, Bastion tier or approved alternative, and public
+IP outcome.

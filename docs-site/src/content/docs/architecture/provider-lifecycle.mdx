@@ -15,8 +15,8 @@ orchestration flows.
 | --- | --- | --- |
 | Resolve | Apply precedence and provenance; ask extensions for deterministic defaults | No |
 | Validate | Check schema, local inputs, policies, capabilities, and known constraints | No |
-| Assess | Collect facts and recommendations for suitability and readiness | No |
 | Plan | Build, validate, serialize, and hash the normalized DAG | No |
+| Assess (optional sidecar) | Collect facts and recommendations for suitability and readiness before or after Plan | No |
 | WhatIf | Reconcile the immutable plan with live state | No |
 | Estimate cost | Price declared quantities separately from planning and report uncertainty | No |
 | Approve | Bind actor and allowed scope to the plan hash | No |
@@ -29,8 +29,14 @@ orchestration flows.
 | Teardown | Delete only eligible, confirmed resources in dependency order | Yes |
 | Cleanup proof | Reconcile removals, retained resources, failures, and unknowns | No |
 
-`Assess` does not migrate data. Cost estimation does not grant spending approval.
-`WhatIf` does not approve or execute changes.
+`Assess` is not a mandatory step between Validate and Plan, and it does not
+migrate data. Cost estimation does not grant spending approval. `WhatIf` does
+not approve or execute changes.
+
+Assessment may run before or after planning depending on its inputs and the
+question being answered. It is a release requirement where applicable, not a
+prerequisite for security policy, cost estimation, or an initial deployment
+canary. Any assessment-derived plan change creates a new plan hash.
 
 ## Provider contribution
 
@@ -41,6 +47,8 @@ For each applicable stage, a target provider may contribute:
 - normalized resource and action nodes;
 - preconditions, postconditions, risks, and capability requirements;
 - cost quantities and quality limitations;
+- `secretStoreDecision` and, for an Azure VM,
+  `administrativeAccessDecision`;
 - probe specifications;
 - teardown dependencies and cleanup checks.
 
@@ -84,5 +92,9 @@ acceptance, unverified artifacts, adoption, replacement, or teardown.
 Authenticated CI, webhook, or AI-assisted sessions can request non-mutating work
 or resume an approved run with its run ID and idempotency key. They cannot bypass
 those checkpoints.
+
+An unattended mutating stage also requires remote locking and fencing. A local
+file lock cannot authorize two independent runners, webhook deliveries, or
+agent sessions to continue the same run.
 
 See [Plan and State](../plan-and-state/) for serialization and recovery details.
