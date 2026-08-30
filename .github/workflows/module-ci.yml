@@ -49,7 +49,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
 
-      - name: Verify PowerShell and install pinned test dependencies
+      - name: Verify PowerShell and stage pinned test dependencies
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -57,18 +57,72 @@ jobs:
             throw "PowerShell 7.6 or later is required; found $($PSVersionTable.PSVersion)."
           }
 
-          Install-PSResource Pester -Version 5.7.1 -Repository PSGallery -TrustRepository
-          Install-PSResource PSScriptAnalyzer -Version 1.25.0 -Repository PSGallery -TrustRepository
-          Install-PSResource powershell-yaml -Version 0.4.12 -Repository PSGallery -TrustRepository
-          Install-PSResource Az.Accounts -Version 5.5.0 -Repository PSGallery -TrustRepository
-          Install-PSResource Az.Resources -Version 10.0.0 -Repository PSGallery -TrustRepository
-          Install-PSResource Az.Compute -Version 11.6.0 -Repository PSGallery -TrustRepository
-          Install-PSResource Az.KeyVault -Version 6.5.0 -Repository PSGallery -TrustRepository
-          Install-PSResource Az.Monitor -Version 8.0.0 -Repository PSGallery -TrustRepository
+          $moduleRoot = Join-Path $env:RUNNER_TEMP 'adlt-modules'
+          if (Test-Path -LiteralPath $moduleRoot) {
+            Remove-Item -LiteralPath $moduleRoot -Recurse -Force
+          }
+          [void] (New-Item -ItemType Directory -Path $moduleRoot -Force)
+
+          $pinned = @(
+            @{ Name = 'Pester'; Version = '5.7.1' }
+            @{ Name = 'PSScriptAnalyzer'; Version = '1.25.0' }
+            @{ Name = 'powershell-yaml'; Version = '0.4.12' }
+            @{ Name = 'Az.Accounts'; Version = '5.5.0' }
+            @{ Name = 'Az.Resources'; Version = '10.0.0' }
+            @{ Name = 'Az.Compute'; Version = '11.6.0' }
+            @{ Name = 'Az.KeyVault'; Version = '6.5.0' }
+            @{ Name = 'Az.Monitor'; Version = '8.0.0' }
+          )
+          foreach ($dependency in $pinned) {
+            Save-PSResource `
+              -Name $dependency.Name `
+              -Version $dependency.Version `
+              -Repository PSGallery `
+              -TrustRepository `
+              -Path $moduleRoot `
+              -SkipDependencyCheck `
+              -ErrorAction Stop
+          }
+
+          # Both the build-tool lock and the module's runtime dependency lock
+          # require every locked dependency to resolve to exactly one manifest.
+          # Runner images preinstall some of these, which makes resolution
+          # ambiguous, so later steps narrow the search path to these staged
+          # copies plus the PowerShell built-ins.
+          #
+          # PSModulePath is set inside each pwsh session rather than exported
+          # through GITHUB_ENV: PowerShell re-adds the default user and shared
+          # module directories to an inherited PSModulePath at startup, which
+          # would reintroduce the duplicate.
+          "ADLT_MODULE_ROOT=$moduleRoot" |
+            Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+          $env:PSModulePath = @(
+            $moduleRoot
+            (Join-Path $PSHOME 'Modules')
+          ) -join [System.IO.Path]::PathSeparator
+
+          foreach ($dependency in $pinned) {
+            $found = @(Get-Module -ListAvailable -Name $dependency.Name)
+            "{0,-18} {1}" -f $dependency.Name, $found.Count
+            foreach ($candidate in $found) { "  $($candidate.Path)" }
+            if ($found.Count -ne 1) {
+              throw (
+                "Dependency '$($dependency.Name)' must resolve to exactly " +
+                "one manifest; found $($found.Count)."
+              )
+            }
+          }
 
       - name: Analyze, test, build, and package
         shell: pwsh
-        run: ./build.ps1 -Task All
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:PSModulePath = @(
+            $env:ADLT_MODULE_ROOT
+            (Join-Path $PSHOME 'Modules')
+          ) -join [System.IO.Path]::PathSeparator
+          ./build.ps1 -Task All
 
       - name: Stage tested release package
         if: >-
