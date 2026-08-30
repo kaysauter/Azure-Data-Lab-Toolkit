@@ -21,6 +21,32 @@ description: Published and unreleased documentation, architecture, module, provi
 - First-class epics for the PowerShell engine, probes and evidence, Windows and
   Linux guest operations, SQL VM solution pack, remote state, PostgreSQL VM and
   container paths, Git/CI intent, Key Vault decisions, and Bastion decisions.
+- Installable PowerShell 7.6 alpha with strict YAML validation, deterministic
+  SQL VM plans, RFC 8785 serialization, SHA-256 plan hashes, and field-level
+  provenance.
+- Offline commands for templates, catalogs, support matrices, planning, and
+  verified JSON, Markdown, and HTML export.
+- Azure sign-in, live resolution, native `-WhatIf` reconciliation, the
+  PowerShell deployment engine, post-deployment probes, local run state, and
+  approval-gated teardown.
+- Ownership-intent, idempotency, approval, teardown, Key Vault, Bastion,
+  identity, network, disk-protection, licensing, cost, and sensitivity
+  decisions in the normalized plan.
+- Fixed secure SQL VM desired-state profile with API versions, Trusted Launch,
+  private networking, Key Vault credential binding, Bastion Basic, and SQL IaaS
+  least-privilege intent.
+- Optional private Azure Files backup-share planning with SMB OAuth, private
+  DNS VNet link, VM identity authorization, and no storage-account key.
+- Manual SQL VM backup-restore solution pack with a pinned dbatools dependency,
+  separate rendering and staging actions, and a preview-first restore contract.
+- Structured blockers and plan-hash-bound acknowledgement requirements.
+- Cross-platform module checks plus 76 Pester tests, 87.19% command coverage,
+  and local packaging.
+- Scope-aware offline, Azure, and guest action contracts with matching
+  preconditions and reconciliation sources.
+- A checked minimal-plan hash fixture for cross-platform determinism.
+- Strict contributor metadata schemas and exact typed ARM ID validation for
+  reused resources.
 
 ### Changed
 
@@ -33,14 +59,24 @@ description: Published and unreleased documentation, architecture, module, provi
   Bastion-first `administrativeAccessDecision` for every Azure VM.
 - Separated repository engineering CI from the user-facing Git and pipeline
   capability.
+- Marked the first S1 slice as current development behavior without claiming
+  S1 completion or live deployment support.
+- Preserved deterministic storage-account hash suffixes when long lab names
+  require truncation.
+- Required the build to import its pinned Pester, PSScriptAnalyzer, and
+  powershell-yaml versions explicitly.
 
 ### Current limitations
 
-- No installable PowerShell module.
-- No deployable cmdlets.
-- No released providers or deployment engines.
-- No stable YAML schema or public command contract.
-- No implemented `-Plan`, `-WhatIf`, deployment, probe, or teardown workflow.
+- The module is an unreleased alpha and its command contract may change.
+- Azure authentication, live `-WhatIf`, the PowerShell deployment engine,
+  probes, local run state, and the teardown workflow are implemented and
+  test-covered, but unreleased and never run against a live subscription.
+- `Start-AzureDataLabDeployment` creates real Azure resources and
+  `Start-AzureDataLabTeardown` deletes them.
+- Guest execution remains preview-first and user-executed.
+- Selected catalog integrity, marketplace image version, and default external
+  secure input remain unresolved deployment blockers.
 - No production security baseline.
 
 The first implementation proof point is SQL Server on Azure VM from YAML through `-Plan`, `-WhatIf`, cost review, guarded deployment, probes, evidence, and confirmed teardown with cleanup proof.

@@ -52,7 +52,19 @@ before a plan is accepted.
 
 ## Command-line commitments
 
-The final cmdlet grouping remains API-design work, but the architecture reserves
+The alpha exports 24 commands. Offline: `Test-AzureDataLabConfiguration`,
+`New-AzureDataLabPlan`, `Export-AzureDataLabPlan`,
+`Find-AzureDataLabCatalogItem`, `Get-AzureDataLabSupportMatrix`,
+`Get-AzureDataLabTemplate`, `Start-AzureDataLabConfigurationWizard`. Azure-facing:
+`Connect-AzureDataLabAccount`, `Test-AzureDataLabAzureContext`,
+`Invoke-AzureDataLabPreflight`, `Test-AzureDataLabWhatIf`,
+`Start-AzureDataLabDeployment`, `Resume-AzureDataLabDeployment`,
+`Resolve-AzureDataLabDeployment`, `Test-AzureDataLabDeployment`,
+`Start-AzureDataLabTeardown`, `Resume-AzureDataLabTeardown`, and
+`Resolve-AzureDataLabTeardown`, plus the run-state and evidence commands.
+
+The final lifecycle cmdlet grouping remains API-design work, and the verb
+overloading on `Test-` and `Resolve-` is a known wart. The architecture reserves
 these advanced-user parameters and their meaning:
 
 | Parameter | Contract |
@@ -65,7 +77,8 @@ these advanced-user parameters and their meaning:
 | `-DeploymentEngine` | Explicitly select `PowerShell`, and later `Bicep` or `Terraform` when supported |
 | `-TerminalUi` | Opt in to guided YAML creation; never make the terminal UI mandatory |
 | `-KeyVaultName` and `-UseExistingKeyVault` | Contribute to, but never silently replace, the target or solution pack's explicit `secretStoreDecision` |
-| `-GeneratePassword` and `-ShowPassword` | Independently opt in to generation and shell display |
+| `-GeneratePassword` and `-ShowGeneratedPassword` | Independently opt in to generation and shell display |
+| `-DiskEncryptionSetResourceId` | Reference an existing customer-managed-key disk encryption set without taking ownership |
 | `-ContainsSensitiveData` | Acknowledge restricted data and activate policy checks |
 | `-UseCustomArtifact`, `-CustomArtifactPath`, `-CustomArtifactUrl`, and `-CustomArtifactChecksum` | Select a user-controlled artifact and optional expected digest |
 
@@ -74,8 +87,11 @@ deny policy merely because it was supplied explicitly.
 
 ## Policy and approval
 
-Policy findings have stable codes and one of four outcomes: `allow`, `warn`,
-`require-approval`, or `deny`. A warning does not become consent.
+Current offline policy findings have stable IDs and effects of `observe`,
+`acknowledge`, or `resolve-before-deploy`. Required acknowledgements and
+blocking findings are listed separately in the approval contract, and any
+future acknowledgement must bind to the exact plan hash. A warning does not
+become consent.
 
 Approval records contain the plan hash, actor, timestamp, expiry, approved
 operations, acknowledged risks, spend boundary, sensitive-data decision, and

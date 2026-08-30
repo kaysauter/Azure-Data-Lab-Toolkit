@@ -1,12 +1,18 @@
 # Delivery Segments
 
 This document is the authoritative delivery plan for Azure Data Lab Toolkit. It
-defines implementation order, segment exit criteria, and quality gates. It does
-not claim that any segment is implemented or released.
+defines implementation order, segment exit criteria, and quality gates. A
+partial implementation does not make a segment complete.
 
-> **Current state:** The repository contains architecture, documentation, a
-> pitch deck, and backlog artifacts. It has no installable module, deployable
-> cmdlets, released providers, or production-ready behavior.
+> **Current state:** S0 is documented and S1 is implemented in the repository:
+> an installable module validates YAML, creates deterministic SQL VM plans,
+> discovers metadata-only catalogs, reads a support matrix, exports plan
+> reports, and carries local run-state and evidence contracts. Azure sign-in,
+> live resolution, `-WhatIf` reconciliation, the PowerShell deployment engine,
+> post-deployment probes, and teardown are implemented and test-covered as well.
+> None of it has been exercised against a live subscription and no release has
+> been published, so no segment has passed its Live or Release gate and nothing
+> is production-ready.
 
 ## How To Read The Plan
 

@@ -6,10 +6,21 @@ already implemented.
 
 ## Repository status
 
-The repository currently contains a scaffold, documentation, and a backlog. It
-does not contain deployable cmdlets and is not production ready. The predecessor,
-Azure SQLVM Toolkit, is also unfinished. Azure Data Lab Toolkit starts with a new
-architecture so the first SQL VM implementation does not block later targets.
+The repository now contains an installable PowerShell alpha in addition to its
+architecture, documentation, and backlog. YAML validation, deterministic SQL VM
+plan generation, metadata-only catalog discovery, support matrix inspection, and
+JSON, Markdown, and HTML plan export are implemented and covered by local tests.
+The fixed alpha plan includes typed desired resource properties, Key Vault and
+Bastion capability nodes, private networking, structured policy findings, and
+explicit blockers.
+
+Azure authentication, WhatIf reconciliation, the PowerShell deployment engine,
+live resolution, post-deployment probes, the local run-state backend, and
+teardown are **also implemented and test-covered**. They are *Current*, not
+*Available*: nothing here has been exercised against a live subscription, and no
+release has been published. `Start-AzureDataLabDeployment` creates real Azure
+resources and `Start-AzureDataLabTeardown` deletes them. The project is not
+production ready. The predecessor, Azure SQLVM Toolkit, is also unfinished.
 
 The documentation uses these terms deliberately:
 
@@ -108,6 +119,10 @@ internals.
 `-Plan` is deterministic and offline. It does not require Azure authentication,
 query Azure, or mutate anything. Facts that cannot be established offline are
 marked `unverified`.
+
+The current alpha exposes this contract through
+`New-AzureDataLabPlan`. A future lifecycle command may add a `-Plan` mode
+without changing the normalized plan contract.
 
 `-WhatIf` requires Azure authentication. It reconciles an immutable plan with
 live state and reports `create`, `reuse`, `update`, `replace`, `conflict`, and

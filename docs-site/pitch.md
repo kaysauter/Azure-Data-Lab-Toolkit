@@ -12,7 +12,7 @@ wakeLock: false
 class: adlt-cover
 ---
 
-<div class="status-chip status-danger">Architecture and backlog only</div>
+<div class="status-chip status-danger">Unreleased alpha and roadmap</div>
 
 # Azure Data Lab Toolkit
 
@@ -21,7 +21,7 @@ class: adlt-cover
 Define a lab once. Review the decisions. Deploy consistently. Prove it works. Remove it cleanly.
 
 <div class="cover-meta">
-  <span>No deployable cmdlets yet</span>
+  <span>Planning, deployment, and teardown implemented; unreleased and unverified</span>
   <span>First target: SQL Server on Azure VM</span>
 </div>
 

@@ -3,17 +3,26 @@ title: Overview
 description: The goal, scope, and design direction of Azure Data Lab Toolkit.
 ---
 
-:::danger[Early architecture scaffold]
-Azure Data Lab Toolkit currently contains architecture documentation, a documentation website, a pitch deck, and a backlog. There are no deployable cmdlets or released providers, and the project is not production-ready.
+:::danger[Unreleased alpha that creates and deletes real Azure resources]
+Azure Data Lab Toolkit contains an installable PowerShell alpha. Alongside local
+validation, deterministic SQL VM planning, catalog and support discovery, and
+JSON, Markdown, or HTML plan export, it authenticates to Azure, verifies live
+state, deploys resources, probes them, and tears them down.
+
+None of that has been exercised against a live subscription and no release has
+been published, so it is not production-ready.
 :::
 
-Azure Data Lab Toolkit is a planned PowerShell module for creating repeatable data labs in Azure. Its purpose is to bring infrastructure, databases, sample data, assessment, community tools, testing, cost controls, and teardown into one understandable workflow.
+Azure Data Lab Toolkit is a PowerShell project for creating repeatable data
+labs in Azure. Its purpose is to bring infrastructure, databases, sample data,
+assessment, community tools, testing, cost controls, and teardown into one
+understandable workflow.
 
 The first implementation target is **SQL Server on Azure VM**. That target gives the project a demanding proving ground for identity, networking, storage, guest configuration, software installation, testing, and cleanup before the same core is extended to managed data services.
 
 ## Intended experience
 
-The planned workflow starts with a schema-validated YAML file:
+The intended workflow starts with a schema-validated YAML file:
 
 1. Select a template or describe a lab.
 2. Validate prerequisites, permissions, regions, quotas, and policy.
@@ -31,12 +40,16 @@ Templates, command-line flags, and a future terminal UI are intended to serve di
 
 ### Plan and WhatIf
 
-The committed command design gives `-Plan` and `-WhatIf` different jobs:
+The command design gives Plan and WhatIf different jobs:
 
-- `-Plan` works without Azure access. It validates the YAML and explains defaults, derived values, resources, actions, and guardrails.
+- `New-AzureDataLabPlan` is current. It works without Azure access, validates
+  YAML, and explains defaults, derived values, desired resources, actions,
+  policy findings, and guardrails.
 - `-WhatIf` runs after Azure sign-in. It compares the resolved plan with live resources and reports create, reuse, update, replace, conflict, drift, or no-change without making changes.
 
-Neither command exists yet. The first implementation proof point must demonstrate both behaviors for SQL Server on Azure VM before deployment, probes, reporting, and confirmed teardown.
+Both are implemented. `Test-AzureDataLabWhatIf` reconciles a compiled plan
+against live state using native ARM WhatIf. The remaining proof point is
+verification against a real subscription, which has not happened yet.
 
 ## Architecture at a glance
 
@@ -80,6 +93,7 @@ Published releases and release notes will be authoritative for **Available** beh
 ## Where to go next
 
 - [Project Status](../status/) separates current work from planned capabilities.
+- [Try The Alpha](../getting-started/) runs the current commands locally.
 - [Pitch Deck](../pitch/deck/) presents the idea in a meeting-friendly format.
 - [Roadmap](../roadmap/) shows the dependency path.
 - [Suggest a Project](../community/suggest-a-project/) explains how maintainers can propose tools or data sources.
