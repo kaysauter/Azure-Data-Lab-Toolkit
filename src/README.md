@@ -9,17 +9,17 @@
 | `Providers/` | Target-specific normalized plan contributors, beginning with SQL VM |
 | `Capabilities/` | Reusable networking, Key Vault, Bastion, and optional Azure Files plan contributors |
 | `Catalogs/` | Metadata-only software and sample-data catalogs |
-| `Schemas/` | Versioned configuration, plan, catalog, support-matrix, and TUI handoff contracts |
+| `Schemas/` | Versioned configuration, plan, catalog, support-matrix, and guided-selection handoff contracts |
 | `Support/` | Explicit capability matrices; unsupported combinations fail closed |
 | `Templates/` | Built-in YAML defaults that remain below user YAML and flags in precedence |
-| `Engines/` | Reserved for plan translators and deployment engines; none are shipped |
-| `Probes/` | Reserved for postcondition evidence; none are shipped |
+| `Engines/` | Deployment engine boundary; the PowerShell engine ships but still lives in `Private/` |
+| `Probes/` | Postcondition evidence boundary; probing ships but still lives in `Private/` |
 | `SolutionPacks/` | Scenario composition, currently the manual SQL VM backup-restore contract |
-| `Tui/` | TUI-neutral handoff contract; no terminal UI is shipped |
+| `Wizard/` | Offline browser configuration wizard bundle (HTML, CSS, JavaScript) |
 
 Module import loads only trusted PowerShell source from the known `Private`,
 `Providers`, `Capabilities`, `SolutionPacks`, and `Public` directories. Catalog data, guest
-scripts, future engine output, and TUI code are never dot-sourced into Core.
+scripts, future engine output, and wizard assets are never dot-sourced into Core.
 
 The module authenticates to Azure, calls Azure management APIs, deploys
 resources, and deletes them under explicit approval. It performs no SQL

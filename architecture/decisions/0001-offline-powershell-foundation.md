@@ -1,6 +1,7 @@
 # ADR 0001: Offline PowerShell Foundation
 
-- Status: Accepted
+- Status: Accepted; the terminal UI boundary is superseded by
+  [ADR 0006](0006-browser-configuration-wizard.md)
 - Date: 2026-07-27
 - Delivery segment: S1
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/tui-selection-1.0.json",
-  "title": "Azure Data Lab Toolkit terminal UI selection handoff",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/ui-selection-1.0.json",
+  "title": "Azure Data Lab Toolkit guided selection handoff",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -17,7 +17,7 @@
       "const": "1.0"
     },
     "kind": {
-      "const": "AzureDataLabTuiSelection"
+      "const": "AzureDataLabUiSelection"
     },
     "template": {
       "type": "string",

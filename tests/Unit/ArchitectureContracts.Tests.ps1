@@ -337,11 +337,11 @@ Describe 'Azure Files backup capability graph' {
     }
 }
 
-Describe 'Terminal UI handoff contract' {
+Describe 'Guided selection handoff contract' {
     It 'keeps software and sample-data selections in separate typed collections' {
         $selection = [ordered]@{
             schemaVersion = '1.0'
-            kind          = 'AzureDataLabTuiSelection'
+            kind          = 'AzureDataLabUiSelection'
             template      = 'sqlvm-secure'
             softwareIds   = @('software.dbatools')
             sampleDataIds = @('sample-data.adventureworks-2022')
@@ -352,7 +352,7 @@ Describe 'Terminal UI handoff contract' {
         }
         $schemaPath = Join-Path `
             $script:RepositoryRoot `
-            'src/AzureDataLabToolkit/Schemas/tui-selection.schema.json'
+            'src/AzureDataLabToolkit/Schemas/ui-selection.schema.json'
 
         Test-Json `
             -Json ($selection | ConvertTo-Json -Depth 20 -Compress) `

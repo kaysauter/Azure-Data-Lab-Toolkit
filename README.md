@@ -56,7 +56,7 @@ configuration can still be correctly blocked from execution.
 
 ## Intended Workflow
 
-1. Describe a lab in YAML, start from a template, or use explicit command flags and a future optional terminal UI.
+1. Describe a lab in YAML, start from a template, or use explicit command flags or the optional guided browser wizard.
 2. Use `New-AzureDataLabPlan` now to validate inputs and explain defaults,
    derived values, resources, actions, and guardrails offline. A future
    lifecycle command will expose the equivalent `-Plan` mode.

@@ -10,7 +10,7 @@ licensing, and releases remain the maintainer's responsibility.
 
 - PowerShell remains the first user and deployment path. Bicep and Terraform
   will follow through the same normalized plan rather than separate products.
-- YAML is the durable input. Templates, a future terminal UI, and explicit
+- YAML is the durable input. Templates, the guided browser wizard, and explicit
   command flags all resolve into the same versioned configuration.
 - SQL Server on Azure VM is the first proof point. Azure SQL Database, Azure SQL
   Managed Instance, PostgreSQL, Git and CI/CD integrations, and Microsoft

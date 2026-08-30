@@ -86,7 +86,7 @@ layout: default
 <div class="two-col compact-top">
   <div>
     <h3>Durable input</h3>
-    <p>Versioned YAML captures intent. Templates, flags, and a future terminal UI resolve into the same model.</p>
+    <p>Versioned YAML captures intent. Templates, flags, and the guided browser wizard resolve into the same model.</p>
   </div>
   <div>
     <h3>Durable evidence</h3>
@@ -176,7 +176,7 @@ layout: default
 
 <div class="input-map">
   <div><span class="input-id">1</span><strong>Templates</strong><small>Curated, reviewable starting points</small></div>
-  <div><span class="input-id">2</span><strong>Terminal UI</strong><small>Optional guided configuration</small></div>
+  <div><span class="input-id">2</span><strong>Browser wizard</strong><small>Optional guided configuration, offline</small></div>
   <div><span class="input-id">3</span><strong>YAML</strong><small>Canonical, versioned input</small></div>
   <div><span class="input-id">4</span><strong>PowerShell flags</strong><small>Explicit per-run overrides</small></div>
 </div>
