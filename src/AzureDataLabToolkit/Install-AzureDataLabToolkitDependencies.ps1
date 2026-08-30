@@ -49,6 +49,22 @@ $script:AdltDependencyInstallerPSResourceGetTrust = [ordered]@{
                 '61521954557a52d5f70ecb267f43fa582805ff3df91b022a575459014f57b73f'
             )
         }
+        [ordered]@{
+            Description   = 'PowerShell 7.6 on macOS (GitHub hosted runner)'
+            FileCount     = 45
+            ContentDigest = (
+                'sha256:' +
+                '1bf9524d1fe46dbbfaa1a918ea8794b7a0c3979295d07003c006e409f3f2404a'
+            )
+        }
+        [ordered]@{
+            Description   = 'PowerShell 7.6 on Ubuntu 24.04'
+            FileCount     = 45
+            ContentDigest = (
+                'sha256:' +
+                '0008b7643d3ab690399a72ffd10a99a6bbfb591e329f1873f3eda69c57c52b38'
+            )
+        }
     )
 }
 $script:AdltDependencyInstallerNames = @(
@@ -268,15 +284,22 @@ function Test-AdltDependencyInstallerBroadWrite {
             [System.IO.FileInfo] $Item
         )
     }
-    foreach ($rule in @($acl.Access)) {
+    # Use the .NET API rather than the Access property: Access is added by the
+    # Microsoft.PowerShell.Security type data, so it is absent in a session
+    # that has not loaded it and StrictMode then makes reading it throw.
+    # Requesting SecurityIdentifier rules also avoids translating each
+    # identity, which fails for orphaned SIDs.
+    $rules = $acl.GetAccessRules(
+        $true,
+        $true,
+        [System.Security.Principal.SecurityIdentifier]
+    )
+    foreach ($rule in $rules) {
         if (
             $rule.AccessControlType -eq
                 [System.Security.AccessControl.AccessControlType]::Allow -and
             ($rule.FileSystemRights -band $writeRights) -ne 0 -and
-            $broadSids -contains
-                $rule.IdentityReference.Translate(
-                    [System.Security.Principal.SecurityIdentifier]
-                ).Value
+            $broadSids -contains [string] $rule.IdentityReference.Value
         ) {
             return $true
         }
