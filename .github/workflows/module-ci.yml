@@ -114,6 +114,37 @@ jobs:
             }
           }
 
+      - name: Diagnose bootstrap trust environment
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'
+          "PSHOME = $PSHOME"
+          $home7 = Get-Item -LiteralPath $PSHOME -Force
+          "  IsContainer   : $($home7.PSIsContainer)"
+          "  ReparsePoint  : $((($home7.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0))"
+          "  LinkTarget    : $($home7.LinkTarget)"
+          if (-not $IsWindows) {
+            "  UnixFileMode  : $([System.IO.File]::GetUnixFileMode($home7.FullName))"
+          }
+          $psrg = Join-Path $PSHOME 'Modules/Microsoft.PowerShell.PSResourceGet'
+          "PSResourceGet base = $psrg"
+          if (Test-Path $psrg) {
+            Get-ChildItem -LiteralPath $psrg -Force |
+              ForEach-Object { "  version dir: $($_.Name)" }
+            $parent = Get-Item -LiteralPath (Split-Path $psrg -Parent) -Force
+            if (-not $IsWindows) {
+              "  Modules mode : $([System.IO.File]::GetUnixFileMode($parent.FullName))"
+            }
+          }
+          ""
+          "PSModulePath entries:"
+          $env:PSModulePath -split [System.IO.Path]::PathSeparator |
+            ForEach-Object { "  $_" }
+          ""
+          "PSScriptAnalyzer manifests visible:"
+          Get-Module -ListAvailable -Name PSScriptAnalyzer |
+            ForEach-Object { "  $($_.Version)  $($_.Guid)  $($_.Path)" }
+
       - name: Analyze, test, build, and package
         shell: pwsh
         run: |

@@ -1,0 +1,5 @@
+# The module verifies every shipped file by exact SHA-256 (see
+# Support/module-scripts.lock.json and the psm1 script-lock check). Any
+# end-of-line translation on checkout changes those bytes and the module
+# refuses to load. Never translate line endings in this repository.
+* -text

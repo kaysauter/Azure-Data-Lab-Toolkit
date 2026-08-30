@@ -231,11 +231,18 @@ function Test-AdltDependencyInstallerBroadWrite {
         'S-1-5-11'
         'S-1-5-32-545'
     )
+    # Only atomic write rights may appear in this mask. Modify and FullControl
+    # are composites that also carry ReadPermissions and Synchronize, so
+    # including them makes a read-only ACE test positive and flags every
+    # standard PowerShell installation as broadly writable. A Modify or
+    # FullControl ACE is still caught here because it contains these bits.
     $writeRights = (
-        [System.Security.AccessControl.FileSystemRights]::Write -bor
-        [System.Security.AccessControl.FileSystemRights]::Modify -bor
-        [System.Security.AccessControl.FileSystemRights]::FullControl -bor
+        [System.Security.AccessControl.FileSystemRights]::WriteData -bor
+        [System.Security.AccessControl.FileSystemRights]::AppendData -bor
+        [System.Security.AccessControl.FileSystemRights]::WriteExtendedAttributes -bor
+        [System.Security.AccessControl.FileSystemRights]::WriteAttributes -bor
         [System.Security.AccessControl.FileSystemRights]::Delete -bor
+        [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
         [System.Security.AccessControl.FileSystemRights]::ChangePermissions -bor
         [System.Security.AccessControl.FileSystemRights]::TakeOwnership
     )
