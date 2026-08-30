@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Azure Data Lab Toolkit teardown-preview evidence payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "liveResolutionEvidenceHash",
+    "whatIfEvidenceHash",
+    "resourceGroupId",
+    "resources",
+    "blockers"
+  ],
+  "properties": {
+    "liveResolutionEvidenceHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "whatIfEvidenceHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "resourceGroupId": {
+      "$ref": "#/$defs/resourceId"
+    },
+    "resources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stableId",
+          "resourceId",
+          "observedState",
+          "observedOwnership",
+          "teardownDisposition",
+          "ownershipProofRequired"
+        ],
+        "properties": {
+          "stableId": {
+            "type": "string",
+            "pattern": "^azure\\.[a-z0-9][a-z0-9.-]+$"
+          },
+          "resourceId": {
+            "$ref": "#/$defs/resourceId"
+          },
+          "observedState": {
+            "enum": [
+              "present",
+              "absent"
+            ]
+          },
+          "observedOwnership": {
+            "enum": [
+              "owned",
+              "future-owned",
+              "reused",
+              "external"
+            ]
+          },
+          "teardownDisposition": {
+            "enum": [
+              "inventory-before-exact-delete",
+              "retain-resource-group",
+              "retain"
+            ]
+          },
+          "ownershipProofRequired": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "code",
+          "resourceId",
+          "message"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^blocker\\.[a-z0-9][a-z0-9.-]+$"
+          },
+          "code": {
+            "enum": [
+              "dependency-blocked",
+              "ownership-unverified",
+              "resource-drift",
+              "retention-required",
+              "scope-mismatch",
+              "unknown-live-state"
+            ]
+          },
+          "resourceId": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/resourceId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "resourceId": {
+      "type": "string",
+      "pattern": "^/subscriptions/[0-9a-fA-F-]+/"
+    }
+  }
+}

@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/evidence-1.0.json",
+  "title": "Azure Data Lab Toolkit evidence event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "canonicalization",
+    "eventId",
+    "sequence",
+    "previousEventHash",
+    "runId",
+    "planHash",
+    "intentHash",
+    "stage",
+    "status",
+    "correlationIds",
+    "probes",
+    "redactions",
+    "payload",
+    "startedAt",
+    "completedAt",
+    "evidenceHash"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "AzureDataLabEvidence"
+    },
+    "canonicalization": {
+      "const": "rfc8785"
+    },
+    "eventId": {
+      "$ref": "#/$defs/uuid"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "previousEventHash": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/hash"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "runId": {
+      "$ref": "#/$defs/uuid"
+    },
+    "planHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "intentHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "stage": {
+      "$ref": "#/$defs/stage"
+    },
+    "status": {
+      "$ref": "#/$defs/status"
+    },
+    "correlationIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      }
+    },
+    "probes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/probe"
+      }
+    },
+    "redactions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/redaction"
+      }
+    },
+    "payload": {
+      "$ref": "#/$defs/safeObject"
+    },
+    "startedAt": {
+      "$ref": "#/$defs/utcTimestamp"
+    },
+    "completedAt": {
+      "$ref": "#/$defs/utcTimestamp"
+    },
+    "evidenceHash": {
+      "$ref": "#/$defs/hash"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "probe"
+          }
+        },
+        "required": [
+          "stage"
+        ]
+      },
+      "then": {
+        "properties": {
+          "probes": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]{1,9})?Z$"
+    },
+    "stage": {
+      "enum": [
+        "validate",
+        "plan",
+        "live-resolution",
+        "what-if",
+        "cost",
+        "authorization",
+        "deploy",
+        "probe",
+        "shutdown",
+        "resume",
+        "teardown-preview",
+        "teardown",
+        "cleanup-proof",
+        "report"
+      ]
+    },
+    "status": {
+      "enum": [
+        "pass",
+        "fail",
+        "warning",
+        "denied",
+        "unverified"
+      ]
+    },
+    "probe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "probeId",
+        "status",
+        "correlationIds",
+        "observedAt",
+        "message",
+        "payload"
+      ],
+      "properties": {
+        "probeId": {
+          "type": "string",
+          "pattern": "^probe\\.[a-z0-9][a-z0-9.-]+$"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "correlationIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "observedAt": {
+          "$ref": "#/$defs/utcTimestamp"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "payload": {
+          "$ref": "#/$defs/safeObject"
+        }
+      }
+    },
+    "redaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "classification",
+        "reason",
+        "replacement"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(/([^~/]|~0|~1)*)*$"
+        },
+        "classification": {
+          "enum": [
+            "credential",
+            "personal-data",
+            "private-content",
+            "signed-uri"
+          ]
+        },
+        "reason": {
+          "enum": [
+            "field-name-denylist",
+            "policy",
+            "source-marked-sensitive"
+          ]
+        },
+        "replacement": {
+          "const": "[REDACTED]"
+        }
+      }
+    },
+    "safeObject": {
+      "type": "object",
+      "propertyNames": {
+        "not": {
+          "enum": [
+            "password",
+            "secretValue",
+            "clientSecret",
+            "token",
+            "accessToken",
+            "refreshToken",
+            "connectionString",
+            "sasToken",
+            "accountKey",
+            "accessKey"
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

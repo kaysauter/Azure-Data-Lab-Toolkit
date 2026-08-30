@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/evidence-probe-payload-1.0.json",
+  "title": "Azure Data Lab Toolkit post-deployment probe evidence payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "operationId",
+    "executionRecordHash",
+    "deploymentEvidenceHash",
+    "executionArtifactDigest",
+    "inventoryHash",
+    "approvedResourceSetHash",
+    "readinessHash",
+    "sqlReadinessProxy",
+    "requiredResourceCount",
+    "observedResourceCount",
+    "outcome",
+    "failureKind",
+    "retryable",
+    "checkedAt"
+  ],
+  "properties": {
+    "operationId": {
+      "$ref": "#/$defs/uuid"
+    },
+    "executionRecordHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "deploymentEvidenceHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "executionArtifactDigest": {
+      "$ref": "#/$defs/hash"
+    },
+    "inventoryHash": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/hash"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "approvedResourceSetHash": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/hash"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "readinessHash": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/hash"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sqlReadinessProxy": {
+      "oneOf": [
+        {
+          "const": "sql-iaas-registration-and-extension-succeeded"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "requiredResourceCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 256
+    },
+    "observedResourceCount": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 256
+    },
+    "outcome": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "denied",
+        "unverified"
+      ]
+    },
+    "failureKind": {
+      "oneOf": [
+        {
+          "enum": [
+            "denied",
+            "unauthenticated",
+            "absent",
+            "conflict",
+            "throttled",
+            "unknown",
+            "resource-identity-mismatch",
+            "resource-provisioning-failed",
+            "resource-provisioning-unverified",
+            "empty-vm-instance-view",
+            "vm-instance-identity-mismatch",
+            "vm-instance-not-running"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "retryable": {
+      "type": "boolean"
+    },
+    "checkedAt": {
+      "$ref": "#/$defs/utcTimestamp"
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]{1,9})?Z$"
+    }
+  }
+}

@@ -1,0 +1,403 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/execution-authorization-1.0.json",
+  "title": "Azure Data Lab Toolkit execution authorization",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "canonicalization",
+    "operation",
+    "runId",
+    "planHash",
+    "intentHash",
+    "liveResolutionEvidenceHash",
+    "whatIfEvidenceHash",
+    "costEvidenceHash",
+    "teardownPlanHash",
+    "executionArtifactDigest",
+    "module",
+    "commit",
+    "engine",
+    "runtime",
+    "scope",
+    "stateBinding",
+    "permittedActionIds",
+    "permittedResourceIds",
+    "approval",
+    "createdAt",
+    "expiresAt",
+    "maximumCost",
+    "maximumRuntimeMinutes",
+    "acknowledgementIds",
+    "authorizationHash"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "AzureDataLabExecutionAuthorization"
+    },
+    "canonicalization": {
+      "const": "rfc8785"
+    },
+    "runId": {
+      "$ref": "#/$defs/uuid"
+    },
+    "operation": {
+      "const": "deploy"
+    },
+    "planHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "intentHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "liveResolutionEvidenceHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "whatIfEvidenceHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "costEvidenceHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "teardownPlanHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "executionArtifactDigest": {
+      "$ref": "#/$defs/hash"
+    },
+    "module": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "digest"
+      ],
+      "properties": {
+        "name": {
+          "const": "AzureDataLabToolkit"
+        },
+        "version": {
+          "$ref": "#/$defs/semanticVersion"
+        },
+        "digest": {
+          "$ref": "#/$defs/hash"
+        },
+        "revisionKind": {
+          "enum": [
+            "git",
+            "content-derived"
+          ]
+        }
+      }
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^([a-f0-9]{40}|[a-f0-9]{64})$"
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "contractVersion",
+        "implementationVersion",
+        "digest"
+      ],
+      "properties": {
+        "name": {
+          "enum": [
+            "powershell",
+            "bicep",
+            "terraform"
+          ]
+        },
+        "contractVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+$"
+        },
+        "implementationVersion": {
+          "$ref": "#/$defs/semanticVersion"
+        },
+        "digest": {
+          "$ref": "#/$defs/hash"
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "powershell",
+        "dependencies"
+      ],
+      "properties": {
+        "powershell": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "version",
+            "edition"
+          ],
+          "properties": {
+            "version": {
+              "$ref": "#/$defs/semanticVersion"
+            },
+            "edition": {
+              "const": "Core"
+            }
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "version",
+              "guid",
+              "author",
+              "source",
+              "packageDigest",
+              "contentDigest",
+              "manifestPathHash"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "version": {
+                "$ref": "#/$defs/semanticVersion"
+              },
+              "guid": {
+                "$ref": "#/$defs/uuid"
+              },
+              "author": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "source": {
+                "const": "PSGallery"
+              },
+              "packageDigest": {
+                "$ref": "#/$defs/hash"
+              },
+              "contentDigest": {
+                "$ref": "#/$defs/hash"
+              },
+              "manifestPathHash": {
+                "$ref": "#/$defs/hash"
+              }
+            }
+          }
+        }
+      }
+    },
+    "scope": {
+      "$ref": "#/$defs/azureScope"
+    },
+    "stateBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stateHash",
+        "generation",
+        "eventSequence",
+        "eventHash"
+      ],
+      "properties": {
+        "stateHash": {
+          "$ref": "#/$defs/hash"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "eventSequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "eventHash": {
+          "$ref": "#/$defs/hash"
+        }
+      }
+    },
+    "permittedActionIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/actionId"
+      }
+    },
+    "permittedResourceIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/resourceId"
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approver",
+        "mechanism",
+        "approvedAt",
+        "recordId"
+      ],
+      "properties": {
+        "approver": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "id"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "user",
+                "service-principal"
+              ]
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          }
+        },
+        "mechanism": {
+          "enum": [
+            "interactive",
+            "protected-environment",
+            "signed-record"
+          ]
+        },
+        "approvedAt": {
+          "$ref": "#/$defs/utcTimestamp"
+        },
+        "recordId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      }
+    },
+    "createdAt": {
+      "$ref": "#/$defs/utcTimestamp"
+    },
+    "expiresAt": {
+      "$ref": "#/$defs/utcTimestamp"
+    },
+    "maximumCost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "amountMinorUnits",
+        "currency"
+      ],
+      "properties": {
+        "amountMinorUnits": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    },
+    "maximumRuntimeMinutes": {
+      "type": "integer",
+      "minimum": 30,
+      "maximum": 720
+    },
+    "acknowledgementIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^policy\\.[a-z0-9][a-z0-9.-]+$"
+      }
+    },
+    "authorizationHash": {
+      "$ref": "#/$defs/hash"
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]{1,9})?Z$"
+    },
+    "semanticVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "actionId": {
+      "type": "string",
+      "pattern": "^action\\.[a-z0-9][a-z0-9.-]+$"
+    },
+    "azureScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cloud",
+        "tenantId",
+        "subscriptionId",
+        "resourceGroupName",
+        "location"
+      ],
+      "properties": {
+        "cloud": {
+          "const": "AzureCloud"
+        },
+        "tenantId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "subscriptionId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "resourceGroupName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90,
+          "pattern": "^[^<>%&:\\\\?/#]+[^.\\s]$"
+        },
+        "location": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+$",
+          "minLength": 2,
+          "maxLength": 40
+        }
+      }
+    },
+    "resourceId": {
+      "type": "string",
+      "pattern": "^/subscriptions/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/resourceGroups/[^/]+(?:/providers/[A-Za-z0-9.]+/[A-Za-z0-9]+/[^/]+(?:/[A-Za-z0-9]+/[^/]+)*)?$"
+    }
+  }
+}

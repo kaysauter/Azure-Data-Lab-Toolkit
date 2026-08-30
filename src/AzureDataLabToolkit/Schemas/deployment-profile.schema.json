@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/deployment-profile-1.0.json",
+  "title": "Azure Data Lab Toolkit deployment profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "id",
+    "version",
+    "targetType",
+    "engine",
+    "status",
+    "template",
+    "exactConfiguration",
+    "requiredConfigurationPaths",
+    "emptyConfigurationPaths",
+    "requiredLiveChecks"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "AzureDataLabDeploymentProfile"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+/v[0-9]+$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "targetType": {
+      "const": "sqlVm"
+    },
+    "engine": {
+      "const": "powershell"
+    },
+    "status": {
+      "const": "protected-alpha"
+    },
+    "template": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+    },
+    "exactConfiguration": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": [
+          "string",
+          "boolean",
+          "integer"
+        ]
+      }
+    },
+    "requiredConfigurationPaths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9]+(?:\\.[A-Za-z0-9]+)+$"
+      }
+    },
+    "emptyConfigurationPaths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9]+(?:\\.[A-Za-z0-9]+)+$"
+      }
+    },
+    "requiredLiveChecks": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      }
+    }
+  }
+}

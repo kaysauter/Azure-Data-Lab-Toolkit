@@ -1,0 +1,973 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/plan-1.0.json",
+  "title": "Azure Data Lab Toolkit normalized plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "planSchemaVersion",
+    "kind",
+    "toolkit",
+    "contracts",
+    "canonicalization",
+    "intentHash",
+    "target",
+    "context",
+    "unverifiedFacts",
+    "configuration",
+    "decisions",
+    "resources",
+    "actions",
+    "catalogSelections",
+    "supportEvaluation",
+    "provenance",
+    "unsupportedCapabilities",
+    "policyFindings",
+    "warnings",
+    "approval",
+    "planHash"
+  ],
+  "properties": {
+    "planSchemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "AzureDataLabPlan"
+    },
+    "toolkit": {
+      "type": "object"
+    },
+    "contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "configurationSchemaVersion",
+        "planSchemaVersion",
+        "catalogSchemaVersion",
+        "catalogRevisions",
+        "contributors",
+        "engine"
+      ],
+      "properties": {
+        "configurationSchemaVersion": {
+          "const": "1.0"
+        },
+        "planSchemaVersion": {
+          "const": "1.0"
+        },
+        "catalogSchemaVersion": {
+          "const": "1.0"
+        },
+        "catalogRevisions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "catalogType",
+              "schemaVersion",
+              "revision"
+            ],
+            "properties": {
+              "catalogType": {
+                "enum": [
+                  "software",
+                  "sample-data"
+                ]
+              },
+              "schemaVersion": {
+                "const": "1.0"
+              },
+              "revision": {
+                "type": "string",
+                "pattern": "^sha256:[a-f0-9]{64}$"
+              }
+            }
+          }
+        },
+        "contributors": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "targetProvider",
+            "capabilities",
+            "solutionPacks"
+          ],
+          "properties": {
+            "targetProvider": {
+              "$ref": "#/$defs/contributorContract"
+            },
+            "capabilities": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/contributorContract"
+              }
+            },
+            "solutionPacks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/contributorContract"
+              }
+            }
+          }
+        },
+        "engine": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "contractVersion",
+            "implementationStatus"
+          ],
+          "properties": {
+            "name": {
+              "enum": [
+                "powershell",
+                "bicep",
+                "terraform"
+              ]
+            },
+            "contractVersion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "implementationStatus": {
+              "enum": [
+                "available",
+                "unavailable"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "canonicalization": {
+      "const": "rfc8785"
+    },
+    "intentHash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "target": {
+      "type": "object"
+    },
+    "context": {
+      "type": "object"
+    },
+    "unverifiedFacts": {
+      "type": "object"
+    },
+    "configuration": {
+      "type": "object"
+    },
+    "decisions": {
+      "type": "object"
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "type",
+          "apiVersion",
+          "logicalName",
+          "externalResourceId",
+          "desiredProperties",
+          "ownership",
+          "desiredState",
+          "liveState"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "apiVersion": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}(-preview)?$"
+          },
+          "logicalName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "externalResourceId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^/subscriptions/[0-9a-fA-F-]+/"
+          },
+          "desiredProperties": {
+            "type": "object",
+            "minProperties": 1
+          },
+          "ownership": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "intent",
+              "expectedClassification",
+              "observedClassification",
+              "collisionPolicy",
+              "replacePolicy",
+              "teardownIntent"
+            ],
+            "properties": {
+              "intent": {
+                "enum": [
+                  "create",
+                  "reuse",
+                  "observe"
+                ]
+              },
+              "expectedClassification": {
+                "enum": [
+                  "owned",
+                  "adopted",
+                  "reused",
+                  "external"
+                ]
+              },
+              "observedClassification": {
+                "const": "unverified"
+              },
+              "collisionPolicy": {
+                "const": "fail"
+              },
+              "replacePolicy": {
+                "const": "forbidden"
+              },
+              "teardownIntent": {
+                "enum": [
+                  "delete-after-proof-and-approval",
+                  "retain",
+                  "retain-until-separately-approved"
+                ]
+              }
+            }
+          },
+          "desiredState": {
+            "const": "present"
+          },
+          "liveState": {
+            "const": "unverified"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "Microsoft.Compute/virtualMachines"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "desiredProperties": {
+                  "required": [
+                    "location",
+                    "identity",
+                    "hardwareProfile",
+                    "securityProfile",
+                    "imageReference",
+                    "osProfile",
+                    "networkProfile",
+                    "storageProfile",
+                    "patching"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "Microsoft.SqlVirtualMachine/sqlVirtualMachines"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "desiredProperties": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "location",
+                    "virtualMachineResourceId",
+                    "sqlServerLicenseType",
+                    "leastPrivilegeMode",
+                    "enableAutomaticUpgrade",
+                    "sqlImageOffer",
+                    "sqlImageSku",
+                    "assessmentSettings",
+                    "autoPatchingSettings",
+                    "storageConfigurationSettings"
+                  ],
+                  "properties": {
+                    "location": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "virtualMachineResourceId": {
+                      "type": "string",
+                      "pattern": "^/subscriptions/[0-9a-fA-F-]+/resourceGroups/[^/]+/providers/Microsoft\\.Compute/virtualMachines/[^/]+$"
+                    },
+                    "sqlServerLicenseType": {
+                      "enum": [
+                        "PAYG",
+                        "AHUB",
+                        "DR"
+                      ]
+                    },
+                    "leastPrivilegeMode": {
+                      "const": "Enabled"
+                    },
+                    "enableAutomaticUpgrade": {
+                      "type": "boolean"
+                    },
+                    "sqlImageOffer": {
+                      "const": "SQL2022-WS2022"
+                    },
+                    "sqlImageSku": {
+                      "const": "Developer"
+                    },
+                    "assessmentSettings": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "enable",
+                        "runImmediately"
+                      ],
+                      "properties": {
+                        "enable": {
+                          "type": "boolean"
+                        },
+                        "runImmediately": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "autoPatchingSettings": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "enable"
+                      ],
+                      "properties": {
+                        "enable": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "storageConfigurationSettings": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "diskConfigurationType",
+                        "enableStorageConfigBlade",
+                        "sqlDataSettings",
+                        "sqlLogSettings",
+                        "sqlSystemDbOnDataDisk",
+                        "storageWorkloadType"
+                      ],
+                      "properties": {
+                        "diskConfigurationType": {
+                          "const": "NEW"
+                        },
+                        "enableStorageConfigBlade": {
+                          "type": "boolean"
+                        },
+                        "sqlDataSettings": {
+                          "$ref": "#/$defs/sqlStorageSettings"
+                        },
+                        "sqlLogSettings": {
+                          "$ref": "#/$defs/sqlStorageSettings"
+                        },
+                        "sqlSystemDbOnDataDisk": {
+                          "type": "boolean"
+                        },
+                        "storageWorkloadType": {
+                          "enum": [
+                            "GENERAL",
+                            "OLTP",
+                            "DW"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "Microsoft.Authorization/roleAssignments"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "desiredProperties": {
+                  "required": [
+                    "scopeResourceId",
+                    "principalReference",
+                    "principalIdStatus",
+                    "roleDefinitionName"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "Microsoft.Storage/storageAccounts"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "desiredProperties": {
+                  "required": [
+                    "location",
+                    "kind",
+                    "sku",
+                    "minimumTlsVersion",
+                    "httpsTrafficOnly",
+                    "sharedKeyAccess",
+                    "publicNetworkAccess",
+                    "managedIdentitySmbOAuth"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "operation",
+          "resourceId",
+          "executionScope",
+          "dependsOn",
+          "mutation",
+          "retryClass",
+          "idempotencyKey",
+          "ownershipEffect",
+          "preconditions",
+          "postconditions",
+          "reconciliation"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "operation": {
+            "enum": [
+              "ensure",
+              "reference",
+              "stage",
+              "render"
+            ]
+          },
+          "resourceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "executionScope": {
+            "enum": [
+              "offline",
+              "azure",
+              "guest"
+            ]
+          },
+          "dependsOn": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "mutation": {
+            "type": "boolean"
+          },
+          "retryClass": {
+            "const": "reconcile-before-retry"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "pattern": "^adlt:v1:sha256:[a-f0-9]{64}:action\\."
+          },
+          "ownershipEffect": {
+            "enum": [
+              "intend-owned",
+              "intend-reused",
+              "none"
+            ]
+          },
+          "preconditions": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "postconditions": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "reconciliation": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "beforeAttempt",
+              "afterAttempt",
+              "unknownState",
+              "stateSource"
+            ],
+            "properties": {
+              "beforeAttempt": {
+                "const": "required"
+              },
+              "afterAttempt": {
+                "const": "required"
+              },
+              "unknownState": {
+                "const": "stop"
+              },
+              "stateSource": {
+                "enum": [
+                  "local-artifact-state",
+                  "azure-control-plane",
+                  "guest-probe"
+                ]
+              }
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "executionScope": {
+                  "const": "offline"
+                }
+              },
+              "required": [
+                "executionScope"
+              ]
+            },
+            "then": {
+              "properties": {
+                "mutation": {
+                  "const": false
+                },
+                "preconditions": {
+                  "allOf": [
+                    {
+                      "contains": {
+                        "const": "approved-plan-hash-matches"
+                      }
+                    },
+                    {
+                      "contains": {
+                        "const": "local-input-contract-valid"
+                      }
+                    },
+                    {
+                      "not": {
+                        "contains": {
+                          "enum": [
+                            "live-state-observed",
+                            "ownership-established",
+                            "collision-check-passed",
+                            "target-ready",
+                            "guest-execution-authorized"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "reconciliation": {
+                  "properties": {
+                    "stateSource": {
+                      "const": "local-artifact-state"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "executionScope": {
+                  "const": "azure"
+                }
+              },
+              "required": [
+                "executionScope"
+              ]
+            },
+            "then": {
+              "properties": {
+                "preconditions": {
+                  "allOf": [
+                    {
+                      "contains": {
+                        "const": "approved-plan-hash-matches"
+                      }
+                    },
+                    {
+                      "contains": {
+                        "const": "live-state-observed"
+                      }
+                    },
+                    {
+                      "contains": {
+                        "const": "ownership-established"
+                      }
+                    },
+                    {
+                      "contains": {
+                        "const": "collision-check-passed"
+                      }
+                    },
+                    {
+                      "not": {
+                        "contains": {
+                          "enum": [
+                            "local-input-contract-valid",
+                            "target-ready",
+                            "guest-execution-authorized"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "reconciliation": {
+                  "properties": {
+                    "stateSource": {
+                      "const": "azure-control-plane"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "executionScope": {
+                  "const": "guest"
+                }
+              },
+              "required": [
+                "executionScope"
+              ]
+            },
+            "then": {
+              "properties": {
+                "preconditions": {
+                  "allOf": [
+                    {
+                      "contains": {
+                        "const": "approved-plan-hash-matches"
+                      }
+                    },
+                    {
+                      "contains": {
+                        "const": "live-state-observed"
+                      }
+                    },
+                    {
+                      "contains": {
+                        "const": "target-ready"
+                      }
+                    },
+                    {
+                      "contains": {
+                        "const": "guest-execution-authorized"
+                      }
+                    },
+                    {
+                      "contains": {
+                        "const": "collision-check-passed"
+                      }
+                    },
+                    {
+                      "not": {
+                        "contains": {
+                          "enum": [
+                            "local-input-contract-valid",
+                            "ownership-established"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "reconciliation": {
+                  "properties": {
+                    "stateSource": {
+                      "const": "guest-probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "catalogSelections": {
+      "type": "array"
+    },
+    "supportEvaluation": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "axis",
+          "value",
+          "plan",
+          "deployment",
+          "supported"
+        ],
+        "properties": {
+          "axis": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "plan": {
+            "enum": [
+              "supported",
+              "supported-with-warning",
+              "unsupported"
+            ]
+          },
+          "deployment": {
+            "enum": [
+              "available",
+              "unavailable",
+              "backlog",
+              "research",
+              "refused"
+            ]
+          },
+          "supported": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "unsupportedCapabilities": {
+      "type": "array"
+    },
+    "policyFindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "severity",
+          "effect",
+          "configurationPath",
+          "message",
+          "acknowledgementRequired",
+          "blocksDeployment"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^policy\\.[a-z0-9.-]+$"
+          },
+          "severity": {
+            "enum": [
+              "information",
+              "warning",
+              "high",
+              "blocking"
+            ]
+          },
+          "effect": {
+            "enum": [
+              "observe",
+              "acknowledge",
+              "resolve-before-deploy"
+            ]
+          },
+          "configurationPath": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "acknowledgementRequired": {
+            "type": "boolean"
+          },
+          "blocksDeployment": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "approvedPlanHashRequired",
+        "acknowledgementPlanHashRequired",
+        "requiredAcknowledgementIds",
+        "blockingFindingIds",
+        "destructiveActions",
+        "teardownRequiresSeparatePlan"
+      ],
+      "properties": {
+        "required": {
+          "const": true
+        },
+        "approvedPlanHashRequired": {
+          "const": true
+        },
+        "acknowledgementPlanHashRequired": {
+          "const": true
+        },
+        "requiredAcknowledgementIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^policy\\."
+          }
+        },
+        "blockingFindingIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^policy\\."
+          }
+        },
+        "destructiveActions": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "teardownRequiresSeparatePlan": {
+          "const": true
+        }
+      }
+    },
+    "planHash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  },
+  "$defs": {
+    "contributorContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "contractVersion",
+        "implementationVersion",
+        "source",
+        "integrity"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contractVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+$"
+        },
+        "implementationVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$"
+        },
+        "source": {
+          "const": "bundled-module"
+        },
+        "integrity": {
+          "const": "covered-by-module-package"
+        }
+      }
+    },
+    "sqlStorageSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "defaultFilePath",
+        "luns",
+        "useStoragePool"
+      ],
+      "properties": {
+        "defaultFilePath": {
+          "type": "string",
+          "minLength": 3
+        },
+        "luns": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "useStoragePool": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

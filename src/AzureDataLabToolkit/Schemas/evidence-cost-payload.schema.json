@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Azure Data Lab Toolkit cost evidence payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "estimateModelVersion",
+    "estimateScope",
+    "billingDurationMinutes",
+    "activeComputeDurationMinutes",
+    "currency",
+    "source",
+    "liveResolutionEvidenceHash",
+    "components",
+    "knownSubtotalMinorUnits",
+    "totalAmountMinorUnits",
+    "maximumRunCost",
+    "guardrail",
+    "pricingComplete",
+    "unknowns",
+    "stillBillableAfterShutdown"
+  ],
+  "properties": {
+    "estimateModelVersion": {
+      "const": "1.0"
+    },
+    "estimateScope": {
+      "const": "incremental-new-resources"
+    },
+    "billingDurationMinutes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "activeComputeDurationMinutes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z]{3}$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uri",
+        "retrievedAt"
+      ],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "retrievedAt": {
+          "$ref": "#/$defs/utcTimestamp"
+        }
+      }
+    },
+    "liveResolutionEvidenceHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "componentId"
+        ],
+        "properties": {
+          "componentId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "knownSubtotalMinorUnits": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "totalAmountMinorUnits": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "maximumRunCost": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/money"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "guardrail": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "headroomMinorUnits"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "within-limit",
+            "exceeded",
+            "unverified",
+            "not-configured"
+          ]
+        },
+        "headroomMinorUnits": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "pricingComplete": {
+      "type": "boolean"
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "stillBillableAfterShutdown": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]{1,9})?Z$"
+    },
+    "money": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "amountMinorUnits",
+        "currency"
+      ],
+      "properties": {
+        "amountMinorUnits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    }
+  }
+}

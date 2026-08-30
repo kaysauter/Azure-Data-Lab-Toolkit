@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Azure Data Lab Toolkit WhatIf evidence payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "liveResolutionEvidenceHash",
+    "results",
+    "mutationCount",
+    "scope",
+    "deploymentName",
+    "validationLevel",
+    "resultFormat",
+    "executionArtifactDigest",
+    "templateHash",
+    "parameterReferenceHash",
+    "parameterFileHash",
+    "invocationHash",
+    "nativeStatus",
+    "nativeChanges",
+    "nativeDiagnostics",
+    "nativePotentialChangeCount",
+    "nativeChangesHash",
+    "nativeWhatIfResultHash",
+    "nativeFailureKind"
+  ],
+  "properties": {
+    "liveResolutionEvidenceHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stableId",
+          "resourceId",
+          "resourceType",
+          "plannedOwnership",
+          "observedState",
+          "classification",
+          "desiredHash"
+        ],
+        "properties": {
+          "stableId": {
+            "type": "string",
+            "pattern": "^azure\\.[a-z0-9][a-z0-9.-]+$"
+          },
+          "resourceId": {
+            "$ref": "#/$defs/resourceId"
+          },
+          "resourceType": {
+            "type": "string",
+            "minLength": 1
+          },
+          "plannedOwnership": {
+            "enum": [
+              "owned",
+              "adopted",
+              "reused",
+              "external"
+            ]
+          },
+          "observedState": {
+            "enum": [
+              "present",
+              "absent",
+              "unknown",
+              "denied",
+              "unverified"
+            ]
+          },
+          "classification": {
+            "enum": [
+              "create",
+              "reuse",
+              "no-change",
+              "update",
+              "conflict",
+              "denied",
+              "unverified"
+            ]
+          },
+          "desiredHash": {
+            "$ref": "#/$defs/hash"
+          }
+        }
+      }
+    },
+    "mutationCount": {
+      "const": 0
+    },
+    "scope": {
+      "type": "string",
+      "pattern": "^/subscriptions/[0-9a-fA-F-]{36}$"
+    },
+    "deploymentName": {
+      "type": "string",
+      "pattern": "^adlt-whatif-[a-f0-9]{8}-[a-f0-9]{12}$"
+    },
+    "validationLevel": {
+      "const": "Provider"
+    },
+    "resultFormat": {
+      "const": "ResourceIdOnly"
+    },
+    "executionArtifactDigest": {
+      "$ref": "#/$defs/hash"
+    },
+    "templateHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "parameterReferenceHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "parameterFileHash": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/hash"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "invocationHash": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/hash"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nativeWhatIfResultHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "nativeStatus": {
+      "enum": [
+        "Succeeded",
+        "NotRun",
+        "Unavailable"
+      ]
+    },
+    "nativeChanges": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "resourceId",
+          "changeType"
+        ],
+        "properties": {
+          "resourceId": {
+            "$ref": "#/$defs/resourceId"
+          },
+          "changeType": {
+            "enum": [
+              "Create",
+              "Delete",
+              "Deploy",
+              "Ignore",
+              "Modify",
+              "NoChange",
+              "Unsupported"
+            ]
+          }
+        }
+      }
+    },
+    "nativeDiagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "level",
+          "code",
+          "target"
+        ],
+        "properties": {
+          "level": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "nativePotentialChangeCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "nativeChangesHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "nativeFailureKind": {
+      "oneOf": [
+        {
+          "enum": [
+            "unsafe-custom-preflight",
+            "unauthenticated",
+            "denied",
+            "absent",
+            "conflict",
+            "throttled",
+            "unknown"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "resourceId": {
+      "type": "string",
+      "pattern": "^/subscriptions/[0-9a-fA-F-]+/"
+    }
+  }
+}
