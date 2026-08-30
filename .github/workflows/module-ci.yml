@@ -114,36 +114,40 @@ jobs:
             }
           }
 
-      - name: Diagnose bootstrap trust environment
+      # The Ubuntu runner image ships /opt/microsoft/powershell/7 as mode 0777.
+      # The toolkit refuses to bootstrap from a world-writable PowerShell
+      # installation, and it is right to: anything on the box could rewrite the
+      # module used to fetch every other dependency. Harden the directory
+      # rather than relaxing the check.
+      - name: Harden the Linux PowerShell installation
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo chmod -R go-w /opt/microsoft/powershell/7
+          stat -c '%a %n' /opt/microsoft/powershell/7
+
+      # Temporary. Prints the reviewed bootstrap identity for this platform so
+      # the values pinned in ReviewedContent are harvested from a real run
+      # instead of guessed. Remove once every supported platform is pinned.
+      - name: Report bootstrap content identity
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Continue'
-          "PSHOME = $PSHOME"
-          $home7 = Get-Item -LiteralPath $PSHOME -Force
-          "  IsContainer   : $($home7.PSIsContainer)"
-          "  ReparsePoint  : $((($home7.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0))"
-          "  LinkTarget    : $($home7.LinkTarget)"
-          if (-not $IsWindows) {
-            "  UnixFileMode  : $([System.IO.File]::GetUnixFileMode($home7.FullName))"
-          }
-          $psrg = Join-Path $PSHOME 'Modules/Microsoft.PowerShell.PSResourceGet'
-          "PSResourceGet base = $psrg"
-          if (Test-Path $psrg) {
-            Get-ChildItem -LiteralPath $psrg -Force |
-              ForEach-Object { "  version dir: $($_.Name)" }
-            $parent = Get-Item -LiteralPath (Split-Path $psrg -Parent) -Force
-            if (-not $IsWindows) {
-              "  Modules mode : $([System.IO.File]::GetUnixFileMode($parent.FullName))"
-            }
-          }
-          ""
-          "PSModulePath entries:"
-          $env:PSModulePath -split [System.IO.Path]::PathSeparator |
-            ForEach-Object { "  $_" }
-          ""
-          "PSScriptAnalyzer manifests visible:"
-          Get-Module -ListAvailable -Name PSScriptAnalyzer |
-            ForEach-Object { "  $($_.Version)  $($_.Guid)  $($_.Path)" }
+          $ErrorActionPreference = 'Stop'
+          . ./src/AzureDataLabToolkit/Install-AzureDataLabToolkitDependencies.ps1
+          $moduleBase = Join-Path `
+            $PSHOME `
+            'Modules/Microsoft.PowerShell.PSResourceGet'
+          $manifest = Import-PowerShellDataFile `
+            -LiteralPath (Join-Path $moduleBase 'Microsoft.PowerShell.PSResourceGet.psd1')
+          $content = Get-AdltDependencyInstallerContentDigest -ModuleBase $moduleBase
+          "REVIEWED-CONTENT-CANDIDATE"
+          "  Platform      : $([System.Runtime.InteropServices.RuntimeInformation]::OSDescription)"
+          "  ModuleBase    : $moduleBase"
+          "  Version       : $($manifest.ModuleVersion)"
+          "  Guid          : $($manifest.GUID)"
+          "  FileCount     : $($content.FileCount)"
+          "  ContentDigest : $($content.Digest)"
 
       - name: Analyze, test, build, and package
         shell: pwsh
