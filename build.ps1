@@ -295,7 +295,13 @@ function Get-AdltBuildSourceRevision {
 function New-AdltBuildProvenance {
     param(
         [Parameter(Mandatory)]
-        [string] $ModulePath
+        [string] $ModulePath,
+
+        [Parameter()]
+        [string] $RepositoryPath = $repositoryRoot,
+
+        [Parameter()]
+        [scriptblock] $GitInvoker = ${function:Invoke-AdltBuildGit}
     )
 
     $manifestPath = Join-Path $ModulePath 'AzureDataLabToolkit.psd1'
@@ -311,7 +317,9 @@ function New-AdltBuildProvenance {
         ConvertTo-AdltBuildCanonicalJson -InputObject $files
     )
     $source = Get-AdltBuildSourceRevision `
-        -AggregateDigest $aggregateDigest
+        -AggregateDigest $aggregateDigest `
+        -RepositoryPath $RepositoryPath `
+        -GitInvoker $GitInvoker
     $provenance = [ordered]@{
         schemaVersion      = '1.0'
         canonicalization   = 'rfc8785'

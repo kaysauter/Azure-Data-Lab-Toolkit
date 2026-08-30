@@ -274,7 +274,13 @@ Describe 'Locked build-tool trust' {
                 Get-Module -Name $name |
                     Select-Object -ExpandProperty Path
             )
-            $identity = Get-AdltVerifiedBuildTool -Name $name
+            # Resolve from an explicit candidate rather than the ambient
+            # PSModulePath. Hosted runners preinstall these exact locked
+            # versions, so an ambient lookup finds two identical manifests and
+            # fails the uniqueness check for reasons unrelated to this test.
+            $identity = Get-AdltVerifiedBuildTool `
+                -Name $name `
+                -Candidates @(Get-TestBuildToolModule -Name $name)
             $loadedAfter = @(
                 Get-Module -Name $name |
                     Select-Object -ExpandProperty Path
@@ -377,7 +383,13 @@ Describe 'Locked build-tool trust' {
             'reviewed payload',
             [System.Text.UTF8Encoding]::new($false)
         )
-        New-AdltBuildProvenance -ModulePath $moduleRoot
+        # Bind provenance to a directory that is deliberately not a Git
+        # repository. Reading the ambient repository would make the recorded
+        # kind depend on whether the developer's working tree happens to be
+        # clean, which is not what this test is about.
+        New-AdltBuildProvenance `
+            -ModulePath $moduleRoot `
+            -RepositoryPath (Join-Path $TestDrive 'no-repository')
 
         $identity = Test-AdltBuildProvenance `
             -ModulePath $moduleRoot `
@@ -398,5 +410,42 @@ Describe 'Locked build-tool trust' {
         {
             Test-AdltBuildProvenance -ModulePath $moduleRoot
         } | Should -Throw '*complete module content*'
+    }
+
+    It 'records a git source revision from a clean repository' {
+        $moduleRoot = Join-Path $TestDrive 'git-provenance'
+        [void] (New-Item -ItemType Directory -Path $moduleRoot)
+        Copy-Item `
+            -LiteralPath (
+                Join-Path `
+                    $script:RepositoryRoot `
+                    'src/AzureDataLabToolkit/AzureDataLabToolkit.psd1'
+            ) `
+            -Destination $moduleRoot
+
+        $repositoryPath = New-TestGitRepositoryPath -Name 'clean-repository'
+        $revision = 'a' * 40
+        $gitInvoker = {
+            param($RepositoryPath, $Arguments)
+
+            $output = switch -Regex ($Arguments -join ' ') {
+                'rev-parse --show-toplevel' { @($repositoryPath) }
+                'rev-parse --verify HEAD'   { @($revision) }
+                default                     { @() }
+            }
+            return [ordered]@{ exitCode = 0; output = $output }
+        }.GetNewClosure()
+
+        New-AdltBuildProvenance `
+            -ModulePath $moduleRoot `
+            -RepositoryPath $repositoryPath `
+            -GitInvoker $gitInvoker
+
+        $identity = Test-AdltBuildProvenance `
+            -ModulePath $moduleRoot `
+            -ExpectedModuleVersion '0.1.0-alpha1' `
+            -RequireGit
+        $identity.sourceRevisionKind | Should -BeExactly 'git'
+        $identity.sourceRevision | Should -BeExactly $revision
     }
 }
