@@ -152,7 +152,10 @@ Describe 'PSResourceGet bootstrap boundary' {
         } | Should -Throw
     }
 
-    It 'accepts the exact reviewed PSResourceGet bundled with PowerShell' {
+    It 'accepts the PSResourceGet bundled with this PowerShell build' {
+        # Assert identity and location, never a specific content digest. The
+        # bundled tree differs per platform, so pinning one digest here would
+        # encode the machine this test was written on.
         $trusted = Assert-AdltDependencyInstallerPSResourceGetTrust
 
         $trusted.Name |
@@ -160,10 +163,7 @@ Describe 'PSResourceGet bootstrap boundary' {
         $trusted.Version | Should -Be ([version] '1.2.0')
         $trusted.Guid |
             Should -Be ([guid] 'e4e0bda1-0703-44a5-b70d-8fe704cd0643')
-        $trusted.ContentDigest | Should -BeExactly (
-            'sha256:' +
-            '61521954557a52d5f70ecb267f43fa582805ff3df91b022a575459014f57b73f'
-        )
+        $trusted.ContentDigest | Should -Match '^sha256:[a-f0-9]{64}$'
         [System.IO.Path]::GetFullPath($trusted.ModuleBase) |
             Should -BeExactly (
                 [System.IO.Path]::GetFullPath(
@@ -172,6 +172,29 @@ Describe 'PSResourceGet bootstrap boundary' {
                         'Modules/Microsoft.PowerShell.PSResourceGet')
                 )
             )
+    }
+
+    It 'fails closed when the bundled content is not a reviewed identity' {
+        $trustRoot = [ordered]@{}
+        foreach (
+            $key in
+                @($script:AdltDependencyInstallerPSResourceGetTrust.Keys)
+        ) {
+            $trustRoot[$key] =
+                $script:AdltDependencyInstallerPSResourceGetTrust[$key]
+        }
+        $trustRoot.ReviewedContent = @(
+            [ordered]@{
+                Description   = 'Deliberately unmatched reviewed entry'
+                FileCount     = 1
+                ContentDigest = 'sha256:' + ('0' * 64)
+            }
+        )
+
+        {
+            Assert-AdltDependencyInstallerPSResourceGetTrust `
+                -TrustRoot $trustRoot
+        } | Should -Throw '*does not match the reviewed bootstrap trust root*'
     }
 
     It 'loads only the reviewed PowerShell-bundled command identities' {
@@ -297,13 +320,18 @@ Describe 'PSResourceGet bootstrap boundary' {
         $reviewed = Get-AdltDependencyInstallerContentDigest `
             -ModuleBase $moduleBase
         $trustRoot = [ordered]@{
-            Name          = 'Microsoft.PowerShell.PSResourceGet'
-            Version       = [version] '1.2.0'
-            Guid          =
+            Name            = 'Microsoft.PowerShell.PSResourceGet'
+            Version         = [version] '1.2.0'
+            Guid            =
                 [guid] 'e4e0bda1-0703-44a5-b70d-8fe704cd0643'
-            Manifest      = 'Microsoft.PowerShell.PSResourceGet.psd1'
-            FileCount     = $reviewed.FileCount
-            ContentDigest = $reviewed.Digest
+            Manifest        = 'Microsoft.PowerShell.PSResourceGet.psd1'
+            ReviewedContent = @(
+                [ordered]@{
+                    Description   = 'Fixture bootstrap content'
+                    FileCount     = $reviewed.FileCount
+                    ContentDigest = $reviewed.Digest
+                }
+            )
         }
 
         {

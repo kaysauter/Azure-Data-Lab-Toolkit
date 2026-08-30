@@ -25,7 +25,6 @@ $script:AdltDependencyInstallerPSResourceGetTrust = [ordered]@{
     Version        = [version] '1.2.0'
     Guid           = [guid] 'e4e0bda1-0703-44a5-b70d-8fe704cd0643'
     Manifest       = 'Microsoft.PowerShell.PSResourceGet.psd1'
-    FileCount      = 45
     PackageUri     = (
         'https://www.powershellgallery.com/api/v2/package/' +
         'Microsoft.PowerShell.PSResourceGet/1.2.0'
@@ -34,9 +33,22 @@ $script:AdltDependencyInstallerPSResourceGetTrust = [ordered]@{
         'sha256:' +
         '90e4c97b2f5ecf8c7d4730ca3b7028739e2b7665ded27249390483f73be71944'
     )
-    ContentDigest  = (
-        'sha256:' +
-        '61521954557a52d5f70ecb267f43fa582805ff3df91b022a575459014f57b73f'
+    # The bundled tree is not byte-identical across PowerShell builds: the
+    # Windows bundle carries a signed catalogue (.signature.p7s) that the
+    # Linux and macOS bundles do not, so file counts and digests differ by
+    # platform. Each entry below is a separately reviewed content identity for
+    # the same module version and GUID. Verification still requires an exact
+    # match against exactly one reviewed entry, so an unreviewed build fails
+    # closed; adding a platform is a deliberate review step, not a relaxation.
+    ReviewedContent = @(
+        [ordered]@{
+            Description   = 'PowerShell 7.6 on macOS (Homebrew)'
+            FileCount     = 45
+            ContentDigest = (
+                'sha256:' +
+                '61521954557a52d5f70ecb267f43fa582805ff3df91b022a575459014f57b73f'
+            )
+        }
     )
 }
 $script:AdltDependencyInstallerNames = @(
@@ -451,13 +463,20 @@ function Assert-AdltDependencyInstallerPSResourceGetTrust {
 
     $content = Get-AdltDependencyInstallerContentDigest `
         -ModuleBase $moduleBase
-    if (
-        $content.FileCount -ne [int] $TrustRoot.FileCount -or
-        [string] $content.Digest -cne [string] $TrustRoot.ContentDigest
-    ) {
+    $matchedContent = @(
+        $TrustRoot.ReviewedContent |
+            Where-Object {
+                [int] $_.FileCount -eq [int] $content.FileCount -and
+                [string] $_.ContentDigest -ceq [string] $content.Digest
+            }
+    )
+    if ($matchedContent.Count -ne 1) {
         throw (
             'The PowerShell-bundled PSResourceGet content does not match ' +
-            'the reviewed bootstrap trust root.'
+            'the reviewed bootstrap trust root. Observed ' +
+            "$($content.FileCount) files with digest $($content.Digest) " +
+            "at '$moduleBase'. Add a reviewed entry only after auditing " +
+            'that exact content.'
         )
     }
 
