@@ -2,9 +2,10 @@
 const base = '/Azure-Data-Lab-Toolkit';
 const canonical = 'https://kaysauter.github.io/Azure-Data-Lab-Toolkit/';
 const description =
-	'Architecture and roadmap for repeatable, security-minded, cost-aware data labs across Azure and self-managed data platforms.';
+		'Offline PowerShell planning alpha, architecture, and roadmap for repeatable, security-minded, cost-aware data labs.';
 const links = {
-	docs: `${base}/overview/`,
+		docs: `${base}/overview/`,
+		gettingStarted: `${base}/getting-started/`,
 	architecture: `${base}/architecture/`,
 	deck: `${base}/pitch/deck/`,
 	roadmap: `${base}/roadmap/`,
@@ -453,18 +454,21 @@ const links = {
 			<div class="content">
 				<section class="hero">
 					<div>
-						<p class="kicker">Architecture and roadmap</p>
+						<p class="kicker">Unreleased alpha and roadmap</p>
 						<h1>Azure Data Lab Toolkit</h1>
 						<p class="lede">
 							Define a data lab once, review its security and cost implications, deploy it
 							consistently, prove that it works, and remove it cleanly.
 						</p>
-						<div class="status-warning">
-							<strong>Early architecture scaffold.</strong> No deployable cmdlets exist yet.
-							SQL Server on Azure VM is the first implementation target.
-						</div>
-						<div class="actions">
-							<a class="button primary" href={links.architecture}>Explore the architecture</a>
+							<div class="status-warning">
+								<strong>Unreleased alpha. It deploys and deletes real Azure resources.</strong>
+								Local YAML validation, deterministic SQL VM planning, plan export, Azure
+								sign-in, WhatIf, deployment, probes, and teardown are all current. None has
+								been verified against a live subscription and no release has been published.
+							</div>
+							<div class="actions">
+								<a class="button primary" href={links.gettingStarted}>Try the alpha</a>
+								<a class="button" href={links.architecture}>Explore the architecture</a>
 							<a class="button" href={links.deck}>Open pitch deck</a>
 							<a class="button" href={links.docs}>Read the documentation</a>
 						</div>
@@ -492,12 +496,12 @@ const links = {
 						</p>
 					</div>
 					<div class="capability-grid">
-						<article class="capability">
-							<span class="status-label">First target</span>
-							<h3>SQL Server on Azure VM</h3>
-							<p>
-								The reference provider will exercise networking, Key Vault, Bastion, guest setup,
-								storage, restore, software, probes, and cleanup.
+							<article class="capability">
+								<span class="status-label">Current offline slice</span>
+								<h3>SQL Server on Azure VM</h3>
+								<p>
+									The fixed alpha plan covers desired VM state, networking, Key Vault, Bastion,
+									optional Azure Files, and a manual restore contract. Live execution follows.
 							</p>
 						</article>
 						<article class="capability">

@@ -1,0 +1,61 @@
+schemaVersion: "1.0"
+kind: AzureDataLab
+template: sqlvm-first-canary
+metadata:
+  name: sqlvm-canary
+  purpose: canary
+target:
+  type: sqlVm
+engine:
+  type: powershell
+security:
+  vmManagedIdentity: system-assigned
+  secretStore:
+    mode: reuse-key-vault
+  administrativeAccess:
+    mode: deploy-bastion
+    sku: basic
+  vmAdministratorCredential:
+    source: key-vault-secret
+    secretName: vm-admin-password
+    allowShellOutput: false
+  containsSensitiveData: false
+cost:
+  estimateRequested: true
+  budget:
+    currency: USD
+lifecycle:
+  maximumRuntimeMinutes: 120
+  timeToLiveMinutes: 180
+  expiryBehavior: cleanup-only
+  teardown:
+    mode: preauthorized-canary
+    strategy: exact-resource-ids
+    retainResourceGroup: true
+    freshInventoryRequired: true
+    retainBackupShare: false
+capabilities:
+  backupShare:
+    enabled: false
+    driveLetter: S
+    quotaGiB: 100
+    authentication: managed-identity-smb-oauth
+    networkAccess: private-endpoint
+solutionPacks:
+  sqlVmBackupRestore:
+    enabled: false
+    restoreMode: local-staging
+    replaceExistingDatabase: false
+sqlVm:
+  platform: windows
+  sqlServerVersion: "2022"
+  compute:
+    vmSize: Standard_D4s_v5
+    securityType: trustedLaunch
+    encryptionAtHost: true
+  network:
+    vmPublicIp: false
+  software:
+    catalogIds: []
+  sampleData:
+    catalogIds: []

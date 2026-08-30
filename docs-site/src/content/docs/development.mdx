@@ -4,7 +4,9 @@ description: Repository boundaries, contribution flow, and architecture governan
 ---
 
 :::note[Current state]
-The repository currently contains architecture, documentation, a pitch deck, and a backlog. There is no installable toolkit, deployable cmdlet, released provider, or production-ready behavior.
+The repository contains the first installable offline module slice. It has no
+Azure authentication, live provider, deployment engine, or production-ready
+behavior.
 :::
 
 ## Repository boundaries
@@ -12,10 +14,10 @@ The repository currently contains architecture, documentation, a pitch deck, and
 | Path | Responsibility |
 | --- | --- |
 | `architecture/` | Committed system design, contracts, decision records, and trust boundaries |
-| `src/` | Reserved for the PowerShell module, Core, and extensions |
-| `tests/` | Reserved for unit, contract, integration, live deployment, and teardown tests |
+| `src/` | Current offline PowerShell module, schemas, provider and capability plan contributors, catalogs, templates, and future extension boundaries |
+| `tests/` | Current Pester unit and contract checks plus reserved live deployment and teardown suites |
 | `docs-site/` | Current Astro/Starlight documentation and Slidev pitch deck |
-| `.github/workflows/` | Current documentation checks and future module, security, release, and deployment checks |
+| `.github/workflows/` | Current documentation, Pages, and cross-platform module checks; security, release, and deployment lanes remain staged work |
 
 ## Contribution sequence
 

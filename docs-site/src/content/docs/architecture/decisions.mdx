@@ -28,29 +28,40 @@ them.
 | AD-015 | Every target and solution pack emits `secretStoreDecision`: deploy or reuse Key Vault, use an approved external store, or justify not applicable | Key Vault remains a reusable capability; no provider silently ignores secret storage |
 | AD-016 | Every Azure VM emits `administrativeAccessDecision`; Bastion with no public IP is the default | Reuse or opt-out needs rationale and approval and remains visible in Plan, WhatIf, cost, and security evidence |
 | AD-017 | CI, webhook, or other unattended mutation requires encrypted remote state, leases, fencing, resumable events, and OIDC or managed identity | A local file lock cannot coordinate independent runners |
+| AD-019 | Guided configuration is an offline browser wizard; no terminal UI is planned | The handoff contract is UI-neutral (`ui-selection`); the wizard holds no token, accepts no secret, and applies no policy |
 | AD-018 | Assessment is a release requirement where applicable, not a prerequisite for security, planning, cost, or an initial canary | Assessment can mature alongside the target without blocking foundational controls |
 
 ## Current repository state
 
-- The repository contains a scaffold, documentation, and backlog.
-- No deployable Azure Data Lab Toolkit cmdlets are present.
+- The repository contains an installable module that plans, authenticates,
+  reconciles, deploys, probes, and tears down, plus documentation and backlog.
+- Nothing has been verified against a live Azure subscription and no release
+  has been published, so no behavior is **Available**.
 - The project is not production ready.
 - Azure SQLVM Toolkit is unfinished and is a source of lessons, not a working
   production baseline.
 
 ## Implementation backlog
 
-- Implement the versioned YAML schema and provenance resolver.
-- Implement normalized plan canonicalization, validation, and hashing.
-- Implement local event state, snapshots, locking, and reconciliation.
-- Implement the PowerShell engine and SQL VM provider end to end.
-- Implement evidence renderers and HTML output.
+Implemented in the repository, pending verification against a live
+subscription and a published release:
+
+- Versioned YAML schema and provenance resolver.
+- Normalized plan canonicalization, validation, and hashing.
+- Local event state, snapshots, locking, and reconciliation.
+- The PowerShell engine and SQL VM provider end to end.
+- Evidence renderers and HTML output.
+- Governed catalogs, probes, cost, Key Vault, and Bastion capabilities.
+
+Still outstanding:
+
+- Extract the deployment engine behind a registered contract before a second
+  engine or target provider lands.
+- Remote state for unattended runs.
 - Add Azure SQL Database and SQL MI, then the three PostgreSQL paths.
 - Add Bicep, Terraform, and general Git and CI/CD adapters before Fabric.
 - Add Fabric workspaces, items, shortcuts, CI/CD, and separately gated solution
   packs.
-- Add governed catalogs, probes, cost, Key Vault, Bastion, and remote state
-  capabilities against the accepted contracts.
 
 Backlog order does not create technical coupling between target providers.
 

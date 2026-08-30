@@ -1,0 +1,553 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/configuration-1.0.json",
+  "title": "Azure Data Lab Toolkit configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "metadata",
+    "target",
+    "azure"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "AzureDataLab"
+    },
+    "template": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+    },
+    "deploymentProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "hash"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+/v[0-9]+$"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 63,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9-]*$"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "purpose": {
+          "enum": [
+            "lab",
+            "canary"
+          ]
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "sqlVm"
+          ]
+        }
+      }
+    },
+    "azure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cloud",
+        "tenantId",
+        "subscriptionId",
+        "location",
+        "authentication",
+        "resourceGroup"
+      ],
+      "properties": {
+        "cloud": {
+          "const": "AzureCloud"
+        },
+        "tenantId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "subscriptionId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "location": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+$",
+          "minLength": 2,
+          "maxLength": 40
+        },
+        "authentication": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "contextScope"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "interactive-user",
+                "managed-identity",
+                "oidc"
+              ]
+            },
+            "contextScope": {
+              "const": "process"
+            }
+          }
+        },
+        "resourceGroup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "name"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "create",
+                "reuse"
+              ]
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 90
+            },
+            "resourceId": {
+              "$ref": "#/$defs/resourceId"
+            }
+          }
+        }
+      }
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "powershell",
+            "bicep",
+            "terraform"
+          ]
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "secretStore",
+        "administrativeAccess",
+        "vmAdministratorCredential",
+        "vmManagedIdentity",
+        "containsSensitiveData"
+      ],
+      "properties": {
+        "vmManagedIdentity": {
+          "const": "system-assigned"
+        },
+        "secretStore": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "deploy-key-vault",
+                "reuse-key-vault",
+                "approved-external-store",
+                "not-applicable"
+              ]
+            },
+            "resourceId": {
+              "$ref": "#/$defs/resourceId"
+            },
+            "diagnosticDestinationResourceId": {
+              "$ref": "#/$defs/resourceId"
+            },
+            "rationale": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 500
+            }
+          }
+        },
+        "administrativeAccess": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "sku"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "deploy-bastion",
+                "reuse-bastion",
+                "opt-out"
+              ]
+            },
+            "sku": {
+              "enum": [
+                "developer",
+                "basic",
+                "standard",
+                "premium"
+              ]
+            },
+            "resourceId": {
+              "$ref": "#/$defs/resourceId"
+            },
+            "rationale": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 500
+            }
+          }
+        },
+        "vmAdministratorCredential": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "secretName",
+            "allowShellOutput"
+          ],
+          "properties": {
+            "source": {
+              "enum": [
+                "key-vault-secret",
+                "generate-during-deployment"
+              ]
+            },
+            "secretName": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9-]{1,127}$"
+            },
+            "secretVersion": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{32}$"
+            },
+            "allowShellOutput": {
+              "type": "boolean"
+            }
+          }
+        },
+        "containsSensitiveData": {
+          "type": "boolean"
+        }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "estimateRequested",
+        "budget"
+      ],
+      "properties": {
+        "estimateRequested": {
+          "type": "boolean"
+        },
+        "maximumRunCost": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "amountMinorUnits",
+            "currency"
+          ],
+          "properties": {
+            "amountMinorUnits": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000000000
+            },
+            "currency": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            }
+          }
+        },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "currency"
+          ],
+          "properties": {
+            "monthlyLimit": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "currency": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            }
+          }
+        }
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maximumRuntimeMinutes",
+        "timeToLiveMinutes",
+        "expiryBehavior",
+        "teardown"
+      ],
+      "properties": {
+        "maximumRuntimeMinutes": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 720
+        },
+        "timeToLiveMinutes": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 1440
+        },
+        "expiryBehavior": {
+          "const": "cleanup-only"
+        },
+        "teardown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "strategy",
+            "retainResourceGroup",
+            "freshInventoryRequired",
+            "retainBackupShare"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "explicit",
+                "preauthorized-canary"
+              ]
+            },
+            "strategy": {
+              "const": "exact-resource-ids"
+            },
+            "retainResourceGroup": {
+              "const": true
+            },
+            "freshInventoryRequired": {
+              "const": true
+            },
+            "retainBackupShare": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backupShare"
+      ],
+      "properties": {
+        "backupShare": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "enabled",
+            "driveLetter",
+            "quotaGiB",
+            "authentication",
+            "networkAccess"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "driveLetter": {
+              "type": "string",
+              "pattern": "^[D-Z]$"
+            },
+            "quotaGiB": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 102400
+            },
+            "authentication": {
+              "const": "managed-identity-smb-oauth"
+            },
+            "networkAccess": {
+              "const": "private-endpoint"
+            }
+          }
+        }
+      }
+    },
+    "solutionPacks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sqlVmBackupRestore"
+      ],
+      "properties": {
+        "sqlVmBackupRestore": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "enabled",
+            "restoreMode",
+            "replaceExistingDatabase"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "restoreMode": {
+              "const": "local-staging"
+            },
+            "replaceExistingDatabase": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "sqlVm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "sqlServerVersion",
+        "compute",
+        "network",
+        "software",
+        "sampleData"
+      ],
+      "properties": {
+        "platform": {
+          "enum": [
+            "windows",
+            "linux"
+          ]
+        },
+        "sqlServerVersion": {
+          "enum": [
+            "2022",
+            "2025"
+          ]
+        },
+        "compute": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "vmSize",
+            "securityType",
+            "encryptionAtHost"
+          ],
+          "properties": {
+            "vmSize": {
+              "type": "string",
+              "pattern": "^Standard_[A-Za-z0-9_]+$"
+            },
+            "securityType": {
+              "enum": [
+                "standard",
+                "trustedLaunch",
+                "confidentialVm"
+              ]
+            },
+            "encryptionAtHost": {
+              "type": "boolean"
+            },
+            "diskEncryptionSetId": {
+              "$ref": "#/$defs/resourceId"
+            }
+          }
+        },
+        "network": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "vmPublicIp"
+          ],
+          "properties": {
+            "vmPublicIp": {
+              "type": "boolean"
+            }
+          }
+        },
+        "software": {
+          "$ref": "#/$defs/catalogSelection"
+        },
+        "sampleData": {
+          "$ref": "#/$defs/catalogSelection"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "resourceId": {
+      "type": "string",
+      "pattern": "^/subscriptions/[0-9a-fA-F-]+/"
+    },
+    "catalogSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "catalogIds"
+      ],
+      "properties": {
+        "catalogIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(software|sample-data)\\.[a-z0-9][a-z0-9.-]+$"
+          }
+        }
+      }
+    }
+  }
+}

@@ -3,8 +3,11 @@ title: Security And Sensitive Data
 description: Security boundaries and control intent for identities, networks, secrets, artifacts, and data.
 ---
 
-:::danger[Heavy development: no security guarantee]
-Azure Data Lab Toolkit is not production-ready and does not yet implement the controls described here. This page records committed design intent and backlog requirements, not verified protection. A production release will need a published threat model, supported baseline, limitations, and test evidence.
+:::danger[Heavy development: no production security guarantee]
+The current alpha enforces offline plan safeguards only. It does not authenticate
+to Azure, verify live controls, deploy resources, or provide a production
+security baseline. A production release will need a published threat model,
+supported baseline, limitations, and live test evidence.
 :::
 
 <span class="status status-committed">Committed design</span>
@@ -43,6 +46,20 @@ implementation. The Key Vault capability records Azure RBAC, network
 restrictions, soft delete, purge protection, auditing, retention, ownership, and
 teardown behavior.
 
+Reused Key Vaults, Bastion hosts, resource groups, and disk encryption sets
+must use exact, type-correct ARM resource IDs in the configured subscription.
+The offline validator rejects a resource ID for the wrong Azure resource type,
+a different subscription, or a create intent that also claims an existing ID.
+Reused Bastion also requires a written administrative-access rationale.
+
+:::caution[Key Vault diagnostics are a blocker the live preflight must clear]
+The offline plan cannot verify Key Vault auditing, so it raises
+`policy.secret-store.diagnostics-unresolved` as a **blocking** finding rather
+than silently claiming that auditing exists. Authenticated live resolution
+clears it by proving the diagnostic setting and its approved destination; until
+it does, deployment authorization fails closed.
+:::
+
 The decision appears in Plan, WhatIf, cost, security, ownership, and teardown
 evidence. YAML, command history, normalized plans, run state, logs, and reports
 contain references rather than secret values. `not-applicable` is never an
@@ -51,9 +68,17 @@ implicit default and always needs a recorded rationale.
 Password creation and password display are separate high-risk choices:
 
 - `-GeneratePassword` opts in to toolkit-side generation when an approved secret does not already exist.
-- `-ShowPassword` independently opts in to printing the value in the shell.
+- `-ShowGeneratedPassword` independently opts in to printing the value in the shell.
 - one flag will never imply the other;
 - both default to off, and non-interactive runs must make either choice explicitly.
+
+:::danger[Password generation is plan intent only]
+The current alpha does not generate a password. Before a PowerShell generator
+can become available, it must use a cryptographically secure random source,
+write directly to the approved vault, keep plaintext out of plans, state, and
+logs, and pass an independent security review. A convenience generator based
+on predictable PowerShell randomness is not an acceptable production control.
+:::
 
 Shell output can survive in scrollback, transcripts, screenshots, support bundles, and CI logs. Outside the one explicitly requested interactive display, redaction must remain active in terminal messages, JSON, Markdown, and HTML outputs.
 
@@ -63,9 +88,11 @@ Public SQL, SSH, and RDP endpoints are not part of the intended default. A plan 
 
 Every Azure VM must emit an `administrativeAccessDecision`. The default is
 [Azure Bastion](https://learn.microsoft.com/en-us/azure/bastion/bastion-sku-comparison)
-with no public IP. Reusing an existing Bastion instance or opting out requires a
-rationale and explicit approval. The decision, selected tier, continuing cost,
-network effect, and public-access exception appear in Plan, WhatIf, cost, and
+Basic with no VM public IP in the current alpha plan. The dedicated Bastion
+public IP is Standard and static, and `AzureBastionSubnet` is `/26`. Reusing an
+existing Bastion instance or opting out requires a rationale and explicit
+approval. The decision, selected tier, continuing cost, network effect, and
+public-access exception appear in Plan and, when implemented, WhatIf, cost, and
 security evidence.
 
 Developer, Basic, Standard, and Premium tiers have different connection, scale,
@@ -106,6 +133,8 @@ A checksum mismatch must fail closed. Mutable URLs and artifacts without integri
 
 The committed GitHub design uses [OpenID Connect federation](https://docs.github.com/en/actions/concepts/security/openid-connect) instead of stored Azure client secrets. Trust conditions must bind the identity to the expected repository, branch or environment, and workflow context. Protected environments will gate live deployments and teardown.
 
-Secret scanning, dependency review, infrastructure scanning, PowerShell
-analysis, Pester, and vulnerability scanning remain backlog controls until their
+PowerShell analysis and Pester run in CI on every pull request across Linux,
+Windows, and macOS, with a build-tool lock, SPDX SBOM, and GitHub build
+provenance on release. Secret scanning, dependency review, infrastructure
+scanning, and vulnerability scanning remain backlog controls until their
 workflows exist and publish evidence. See [Git And CI/CD](../git-and-cicd/).

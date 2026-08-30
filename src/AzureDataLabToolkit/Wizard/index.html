@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    >
+    <meta name="color-scheme" content="dark light">
+    <title>Azure Data Lab Toolkit configuration wizard</title>
+    <link rel="stylesheet" href="./wizard.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <a class="brand" href="#lab" aria-label="Azure Data Lab Toolkit home">
+          <span class="brand-mark" aria-hidden="true">AD</span>
+          <span>Azure Data Lab Toolkit</span>
+        </a>
+        <div class="header-context">
+          <span class="profile-name">Locked SQL VM canary</span>
+          <span class="status-badge" id="header-status">
+            Configuration incomplete
+          </span>
+        </div>
+        <div class="privacy-note">
+          <span class="privacy-icon" aria-hidden="true">Local</span>
+          <span>
+            <strong>Configuration stays in this browser</strong>
+            <small>No data is sent anywhere.</small>
+          </span>
+        </div>
+        <div class="theme-control" role="group" aria-label="Color theme">
+          <button type="button" data-theme-choice="light">Light</button>
+          <button type="button" data-theme-choice="dark" aria-pressed="true">
+            Dark
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <nav class="step-nav" aria-label="Configuration steps">
+          <ol>
+            <li>
+              <button type="button" data-step-link="lab">
+                <span class="step-number">1</span>
+                <span>
+                  <strong>Lab</strong>
+                  <small>Identity and purpose</small>
+                </span>
+                <span class="step-state" aria-hidden="true"></span>
+              </button>
+            </li>
+            <li>
+              <button type="button" data-step-link="azure">
+                <span class="step-number">2</span>
+                <span>
+                  <strong>Azure scope</strong>
+                  <small>Tenant and resources</small>
+                </span>
+                <span class="step-state" aria-hidden="true"></span>
+              </button>
+            </li>
+            <li>
+              <button type="button" data-step-link="security">
+                <span class="step-number">3</span>
+                <span>
+                  <strong>Security</strong>
+                  <small>Key Vault and access</small>
+                </span>
+                <span class="step-state" aria-hidden="true"></span>
+              </button>
+            </li>
+            <li>
+              <button type="button" data-step-link="compute">
+                <span class="step-number">4</span>
+                <span>
+                  <strong>Compute</strong>
+                  <small>SQL VM profile</small>
+                </span>
+                <span class="step-state" aria-hidden="true"></span>
+              </button>
+            </li>
+            <li>
+              <button type="button" data-step-link="lifecycle">
+                <span class="step-number">5</span>
+                <span>
+                  <strong>Cost &amp; lifecycle</strong>
+                  <small>Limits and teardown</small>
+                </span>
+                <span class="step-state" aria-hidden="true"></span>
+              </button>
+            </li>
+            <li>
+              <button type="button" data-step-link="content">
+                <span class="step-number">6</span>
+                <span>
+                  <strong>Optional content</strong>
+                  <small>Catalog visibility</small>
+                </span>
+                <span class="step-state" aria-hidden="true"></span>
+              </button>
+            </li>
+            <li>
+              <button type="button" data-step-link="review">
+                <span class="step-number">7</span>
+                <span>
+                  <strong>Review</strong>
+                  <small>Validate and export</small>
+                </span>
+                <span class="step-state" aria-hidden="true"></span>
+              </button>
+            </li>
+          </ol>
+          <div class="nav-legend">
+            <p><span class="legend-dot ready"></span> Ready</p>
+            <p><span class="legend-dot attention"></span> Needs attention</p>
+            <p><span class="legend-dot planning"></span> Planning only</p>
+          </div>
+        </nav>
+
+        <main class="form-canvas">
+          <form id="wizard-form" novalidate>
+            <section class="wizard-step" data-step="lab" aria-labelledby="lab-title">
+              <div class="section-heading">
+                <div>
+                  <h1 id="lab-title">Define the lab</h1>
+                  <p>
+                    Name this bounded deployment canary. Broader lab profiles
+                    will be introduced only after their contracts are tested.
+                  </p>
+                </div>
+                <span class="section-index">1 of 7</span>
+              </div>
+
+              <div class="field-grid">
+                <label class="field field-wide">
+                  <span>Lab name</span>
+                  <input
+                    id="lab-name"
+                    name="labName"
+                    type="text"
+                    value="sqlvm-canary"
+                    maxlength="63"
+                    autocomplete="off"
+                    spellcheck="false"
+                    required
+                  >
+                  <small>
+                    2-63 letters, numbers, or hyphens. Used in Azure tags.
+                  </small>
+                  <span class="field-error" data-error-for="labName"></span>
+                </label>
+                <label class="field field-wide">
+                  <span>Description</span>
+                  <input
+                    id="description"
+                    name="description"
+                    type="text"
+                    value="Secure Azure SQL VM deployment canary"
+                    maxlength="500"
+                    autocomplete="off"
+                  >
+                </label>
+                <div class="locked-controls field-wide" aria-label="Locked purpose">
+                  <div>
+                    <strong>Purpose</strong>
+                    <span>Canary</span>
+                  </div>
+                  <div>
+                    <strong>Data classification</strong>
+                    <span>Non-sensitive only</span>
+                  </div>
+                  <div>
+                    <strong>Teardown</strong>
+                    <span>Separate approval, exact resources only</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section
+              class="wizard-step"
+              data-step="azure"
+              aria-labelledby="azure-title"
+              hidden
+            >
+              <div class="section-heading">
+                <div>
+                  <h1 id="azure-title">Set the Azure scope</h1>
+                  <p>
+                    The module verifies the signed-in process context against
+                    these immutable identifiers before it reads or changes Azure.
+                  </p>
+                </div>
+                <span class="section-index">2 of 7</span>
+              </div>
+
+              <div class="field-grid">
+                <label class="field">
+                  <span>Azure cloud</span>
+                  <select name="cloud" disabled>
+                    <option selected>AzureCloud</option>
+                  </select>
+                  <small>Public Azure is the deployable alpha profile.</small>
+                </label>
+                <label class="field">
+                  <span>Region</span>
+                  <input
+                    name="location"
+                    type="text"
+                    value="switzerlandnorth"
+                    maxlength="40"
+                    autocomplete="off"
+                    spellcheck="false"
+                    required
+                  >
+                  <small>Lowercase Azure location name.</small>
+                  <span class="field-error" data-error-for="location"></span>
+                </label>
+                <label class="field field-wide">
+                  <span>Tenant ID</span>
+                  <input
+                    name="tenantId"
+                    type="text"
+                    placeholder="00000000-0000-0000-0000-000000000000"
+                    autocomplete="off"
+                    spellcheck="false"
+                    required
+                  >
+                  <span class="field-error" data-error-for="tenantId"></span>
+                </label>
+                <label class="field field-wide">
+                  <span>Subscription ID</span>
+                  <input
+                    name="subscriptionId"
+                    type="text"
+                    placeholder="00000000-0000-0000-0000-000000000000"
+                    autocomplete="off"
+                    spellcheck="false"
+                    required
+                  >
+                  <span class="field-error" data-error-for="subscriptionId"></span>
+                </label>
+                <label class="field field-wide">
+                  <span>New resource group name</span>
+                  <input
+                    name="resourceGroupName"
+                    type="text"
+                    value="rg-adlt-sqlvm-canary"
+                    maxlength="90"
+                    autocomplete="off"
+                    spellcheck="false"
+                    required
+                  >
+                  <small>
+                    The deployable profile creates and exclusively owns this
+                    resource group.
+                  </small>
+                  <span
+                    class="field-error"
+                    data-error-for="resourceGroupName"
+                  ></span>
+                </label>
+              </div>
+            </section>
+
+            <section
+              class="wizard-step"
+              data-step="security"
+              aria-labelledby="security-title"
+              hidden
+            >
+              <div class="section-heading">
+                <div>
+                  <h1 id="security-title">Bind the security controls</h1>
+                  <p>
+                    Reference an existing hardened Key Vault secret. Never enter
+                    a password or secret value in this wizard.
+                  </p>
+                </div>
+                <span class="section-index">3 of 7</span>
+              </div>
+
+              <div class="security-banner" role="note">
+                <strong>Secret references only</strong>
+                <p>
+                  The generated YAML stores Azure resource IDs, a secret name,
+                  and an immutable version. The module resolves the value only at
+                  the protected Azure deployment boundary.
+                </p>
+              </div>
+
+              <div class="field-grid">
+                <label class="field field-wide">
+                  <span>Key Vault resource ID</span>
+                  <input
+                    name="keyVaultResourceId"
+                    type="text"
+                    placeholder="/subscriptions/.../resourceGroups/.../providers/Microsoft.KeyVault/vaults/..."
+                    autocomplete="off"
+                    spellcheck="false"
+                    required
+                  >
+                  <small>
+                    Existing vault with RBAC, purge protection, private network
+                    access, and deployment access configured.
+                  </small>
+                  <span
+                    class="field-error"
+                    data-error-for="keyVaultResourceId"
+                  ></span>
+                </label>
+                <label class="field field-wide">
+                  <span>Log Analytics workspace resource ID</span>
+                  <input
+                    name="diagnosticDestinationResourceId"
+                    type="text"
+                    placeholder="/subscriptions/.../resourceGroups/.../providers/Microsoft.OperationalInsights/workspaces/..."
+                    autocomplete="off"
+                    spellcheck="false"
+                    required
+                  >
+                  <small>
+                    Used to verify Key Vault AuditEvent diagnostics before
+                    deployment.
+                  </small>
+                  <span
+                    class="field-error"
+                    data-error-for="diagnosticDestinationResourceId"
+                  ></span>
+                </label>
+                <label class="field">
+                  <span>Secret name</span>
+                  <input
+                    name="secretName"
+                    type="text"
+                    value="vm-admin-password"
+                    maxlength="127"
+                    autocomplete="off"
+                    spellcheck="false"
+                    required
+                  >
+                  <span class="field-error" data-error-for="secretName"></span>
+                </label>
+                <label class="field">
+                  <span>Immutable secret version</span>
+                  <input
+                    name="secretVersion"
+                    type="text"
+                    placeholder="32 hexadecimal characters"
+                    maxlength="32"
+                    autocomplete="off"
+                    spellcheck="false"
+                    required
+                  >
+                  <span class="field-error" data-error-for="secretVersion"></span>
+                </label>
+              </div>
+
+              <div class="locked-controls">
+                <div>
+                  <strong>Azure Bastion Basic</strong>
+                  <span>Deployed with a dedicated subnet and public IP.</span>
+                </div>
+                <div>
+                  <strong>No VM public IP</strong>
+                  <span>Administrative access remains on the private network.</span>
+                </div>
+                <div>
+                  <strong>Shell password output disabled</strong>
+                  <span>The password is never printed by this profile.</span>
+                </div>
+              </div>
+            </section>
+
+            <section
+              class="wizard-step"
+              data-step="compute"
+              aria-labelledby="compute-title"
+              hidden
+            >
+              <div class="section-heading">
+                <div>
+                  <h1 id="compute-title">Review the compute profile</h1>
+                  <p>
+                    The first deployable profile is deliberately pinned while
+                    broader VM and SQL image validation is being built.
+                  </p>
+                </div>
+                <span class="section-index">4 of 7</span>
+              </div>
+
+              <div class="summary-table" role="table" aria-label="Compute profile">
+                <div role="row">
+                  <span role="cell">Platform</span>
+                  <strong role="cell">Windows Server</strong>
+                </div>
+                <div role="row">
+                  <span role="cell">SQL Server</span>
+                  <strong role="cell">SQL Server 2022 Developer</strong>
+                </div>
+                <div role="row">
+                  <span role="cell">VM size</span>
+                  <strong role="cell">Standard_D4s_v5</strong>
+                </div>
+                <div role="row">
+                  <span role="cell">Security type</span>
+                  <strong role="cell">Trusted Launch</strong>
+                </div>
+                <div role="row">
+                  <span role="cell">Host encryption</span>
+                  <strong role="cell">Enabled</strong>
+                </div>
+                <div role="row">
+                  <span role="cell">Managed identity</span>
+                  <strong role="cell">System-assigned</strong>
+                </div>
+              </div>
+
+              <div class="information-callout">
+                <strong>Why these values are locked</strong>
+                <p>
+                  The PowerShell compiler validates one known-good ARM contract
+                  before every deployment. More sizes and security profiles will
+                  be enabled only with matching live capability probes and tests.
+                </p>
+              </div>
+            </section>
+
+            <section
+              class="wizard-step"
+              data-step="lifecycle"
+              aria-labelledby="lifecycle-title"
+              hidden
+            >
+              <div class="section-heading">
+                <div>
+                  <h1 id="lifecycle-title">Set cost and lifecycle assumptions</h1>
+                  <p>
+                    Preflight rejects an estimate above your admission limit.
+                    This is not an Azure billing cap, and these times do not
+                    automatically stop or delete resources.
+                  </p>
+                </div>
+                <span class="section-index">5 of 7</span>
+              </div>
+
+              <div class="field-grid">
+                <label class="field">
+                  <span>Currency</span>
+                  <select name="currency">
+                    <option value="USD" selected>USD</option>
+                    <option value="CHF">CHF</option>
+                    <option value="EUR">EUR</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Estimate admission limit</span>
+                  <span class="number-input">
+                    <input
+                      name="maximumRunCost"
+                      type="number"
+                      value="50"
+                      min="1"
+                      max="10000000"
+                      step="1"
+                      required
+                    >
+                    <span>whole currency units</span>
+                  </span>
+                  <span
+                    class="field-error"
+                    data-error-for="maximumRunCost"
+                  ></span>
+                </label>
+                <label class="field">
+                  <span>Active compute estimate</span>
+                  <span class="number-input">
+                    <input
+                      name="maximumRuntimeMinutes"
+                      type="number"
+                      value="120"
+                      min="30"
+                      max="720"
+                      step="30"
+                      required
+                    >
+                    <span>minutes</span>
+                  </span>
+                  <span
+                    class="field-error"
+                    data-error-for="maximumRuntimeMinutes"
+                  ></span>
+                </label>
+                <label class="field">
+                  <span>Authorization and billing TTL</span>
+                  <span class="number-input">
+                    <input
+                      name="timeToLiveMinutes"
+                      type="number"
+                      value="180"
+                      min="60"
+                      max="1440"
+                      step="30"
+                      required
+                    >
+                    <span>minutes</span>
+                  </span>
+                  <span
+                    class="field-error"
+                    data-error-for="timeToLiveMinutes"
+                  ></span>
+                </label>
+              </div>
+
+              <div class="information-callout">
+                <strong>Manual cleanup remains required</strong>
+                <p>
+                  This version cannot generate a sensitive-data configuration.
+                  It prepares exact-resource teardown for public or synthetic
+                  test data, but no timer performs shutdown or deletion.
+                </p>
+              </div>
+            </section>
+
+            <section
+              class="wizard-step"
+              data-step="content"
+              aria-labelledby="content-title"
+              hidden
+            >
+              <div class="section-heading">
+                <div>
+                  <h1 id="content-title">Browse optional content</h1>
+                  <p>
+                    These catalog entries are visible for planning, but are not
+                    included in the deployable alpha YAML.
+                  </p>
+                </div>
+                <span class="section-index">6 of 7</span>
+              </div>
+
+              <div class="planning-callout">
+                <strong>Planning only</strong>
+                <p>
+                  Software installation and sample database staging require
+                  pinned assets, checksums, guest probes, and a separately
+                  reviewed execution path. The wizard will not pretend they are
+                  deployable before those controls exist.
+                </p>
+              </div>
+
+              <div class="catalog-toolbar">
+                <label>
+                  <span class="sr-only">Filter optional content</span>
+                  <input
+                    id="catalog-filter"
+                    type="search"
+                    placeholder="Filter by name or tag"
+                    autocomplete="off"
+                  >
+                </label>
+                <div class="segmented-control" role="group" aria-label="Catalog type">
+                  <button type="button" data-catalog-type="all" aria-pressed="true">
+                    All
+                  </button>
+                  <button type="button" data-catalog-type="software">
+                    Software
+                  </button>
+                  <button type="button" data-catalog-type="sample-data">
+                    Sample data
+                  </button>
+                </div>
+              </div>
+              <div id="catalog-list" class="catalog-list"></div>
+            </section>
+
+            <section
+              class="wizard-step"
+              data-step="review"
+              aria-labelledby="review-title"
+              hidden
+            >
+              <div class="section-heading">
+                <div>
+                  <h1 id="review-title">Review and export</h1>
+                  <p>
+                    A browser match is not deployment authorization. Export the
+                    YAML, then run the authoritative PowerShell validator and
+                    live Azure preflight.
+                  </p>
+                </div>
+                <span class="section-index">7 of 7</span>
+              </div>
+
+              <div id="review-errors" class="review-errors" role="alert"></div>
+              <div class="review-summary" id="review-summary"></div>
+
+              <div class="next-command">
+                <span>Next PowerShell command</span>
+                <code id="validation-command"></code>
+                <button type="button" id="copy-command">Copy command</button>
+              </div>
+            </section>
+          </form>
+        </main>
+
+        <aside class="review-rail" aria-label="Configuration review">
+          <div class="rail-heading">
+            <h2>Review</h2>
+            <span class="status-badge" id="rail-status">
+              Configuration incomplete
+            </span>
+          </div>
+          <div class="readiness" id="readiness-list"></div>
+          <div class="rail-divider"></div>
+          <div class="yaml-heading">
+            <div>
+              <h2>Review YAML</h2>
+              <small id="yaml-lines">0 lines</small>
+            </div>
+            <button type="button" id="copy-yaml">Copy</button>
+          </div>
+          <textarea
+            id="yaml-preview"
+            aria-label="Generated YAML"
+            readonly
+            spellcheck="false"
+          ></textarea>
+          <div class="yaml-state" id="yaml-state"></div>
+          <button type="button" class="download-button" id="download-yaml" disabled>
+            Download YAML
+          </button>
+          <button type="button" class="reset-button" id="reset-wizard">
+            Reset form
+          </button>
+        </aside>
+      </div>
+
+      <footer class="step-footer">
+        <button type="button" id="previous-step">Back</button>
+        <span id="footer-status" aria-live="polite"></span>
+        <button type="button" id="next-step">Continue</button>
+      </footer>
+    </div>
+
+    <script src="./wizard-core.js"></script>
+    <script src="./wizard-data.js"></script>
+    <script src="./wizard.js"></script>
+  </body>
+</html>

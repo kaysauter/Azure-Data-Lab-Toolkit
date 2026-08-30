@@ -1,0 +1,475 @@
+name: PowerShell module checks
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/module-ci.yml
+      - .editorconfig
+      - PSScriptAnalyzerSettings.psd1
+      - build.ps1
+      - examples/**
+      - src/**
+      - tests/**
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/module-ci.yml
+      - .editorconfig
+      - PSScriptAnalyzerSettings.psd1
+      - build.ps1
+      - examples/**
+      - src/**
+      - tests/**
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: module-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-contracts:
+    name: PowerShell 7.6 / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Verify PowerShell and stage pinned test dependencies
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($PSVersionTable.PSVersion -lt [version] '7.6.0') {
+            throw "PowerShell 7.6 or later is required; found $($PSVersionTable.PSVersion)."
+          }
+
+          $moduleRoot = Join-Path $env:RUNNER_TEMP 'adlt-modules'
+          if (Test-Path -LiteralPath $moduleRoot) {
+            Remove-Item -LiteralPath $moduleRoot -Recurse -Force
+          }
+          [void] (New-Item -ItemType Directory -Path $moduleRoot -Force)
+
+          $pinned = @(
+            @{ Name = 'Pester'; Version = '5.7.1' }
+            @{ Name = 'PSScriptAnalyzer'; Version = '1.25.0' }
+            @{ Name = 'powershell-yaml'; Version = '0.4.12' }
+            @{ Name = 'Az.Accounts'; Version = '5.5.0' }
+            @{ Name = 'Az.Resources'; Version = '10.0.0' }
+            @{ Name = 'Az.Compute'; Version = '11.6.0' }
+            @{ Name = 'Az.KeyVault'; Version = '6.5.0' }
+            @{ Name = 'Az.Monitor'; Version = '8.0.0' }
+          )
+          foreach ($dependency in $pinned) {
+            Save-PSResource `
+              -Name $dependency.Name `
+              -Version $dependency.Version `
+              -Repository PSGallery `
+              -TrustRepository `
+              -Path $moduleRoot `
+              -SkipDependencyCheck `
+              -ErrorAction Stop
+          }
+
+          # Both the build-tool lock and the module's runtime dependency lock
+          # require every locked dependency to resolve to exactly one manifest.
+          # Runner images preinstall some of these, which makes resolution
+          # ambiguous, so later steps narrow the search path to these staged
+          # copies plus the PowerShell built-ins.
+          #
+          # PSModulePath is set inside each pwsh session rather than exported
+          # through GITHUB_ENV: PowerShell re-adds the default user and shared
+          # module directories to an inherited PSModulePath at startup, which
+          # would reintroduce the duplicate.
+          "ADLT_MODULE_ROOT=$moduleRoot" |
+            Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+          $env:PSModulePath = @(
+            $moduleRoot
+            (Join-Path $PSHOME 'Modules')
+          ) -join [System.IO.Path]::PathSeparator
+
+          foreach ($dependency in $pinned) {
+            $found = @(Get-Module -ListAvailable -Name $dependency.Name)
+            "{0,-18} {1}" -f $dependency.Name, $found.Count
+            foreach ($candidate in $found) { "  $($candidate.Path)" }
+            if ($found.Count -ne 1) {
+              throw (
+                "Dependency '$($dependency.Name)' must resolve to exactly " +
+                "one manifest; found $($found.Count)."
+              )
+            }
+          }
+
+      # The Ubuntu runner image ships /opt/microsoft/powershell/7 as mode 0777.
+      # The toolkit refuses to bootstrap from a world-writable PowerShell
+      # installation, and it is right to: anything on the box could rewrite the
+      # module used to fetch every other dependency. Harden the directory
+      # rather than relaxing the check.
+      - name: Harden the Linux PowerShell installation
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo chmod -R go-w /opt/microsoft/powershell/7
+          stat -c '%a %n' /opt/microsoft/powershell/7
+
+      # Temporary. Prints the reviewed bootstrap identity for this platform so
+      # the values pinned in ReviewedContent are harvested from a real run
+      # instead of guessed. Remove once every supported platform is pinned.
+      - name: Report bootstrap content identity
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          . ./src/AzureDataLabToolkit/Install-AzureDataLabToolkitDependencies.ps1
+          $moduleBase = Join-Path `
+            $PSHOME `
+            'Modules/Microsoft.PowerShell.PSResourceGet'
+          $manifest = Import-PowerShellDataFile `
+            -LiteralPath (Join-Path $moduleBase 'Microsoft.PowerShell.PSResourceGet.psd1')
+          $content = Get-AdltDependencyInstallerContentDigest -ModuleBase $moduleBase
+          "REVIEWED-CONTENT-CANDIDATE"
+          "  Platform      : $([System.Runtime.InteropServices.RuntimeInformation]::OSDescription)"
+          "  ModuleBase    : $moduleBase"
+          "  Version       : $($manifest.ModuleVersion)"
+          "  Guid          : $($manifest.GUID)"
+          "  FileCount     : $($content.FileCount)"
+          "  ContentDigest : $($content.Digest)"
+
+      - name: Analyze, test, build, and package
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:PSModulePath = @(
+            $env:ADLT_MODULE_ROOT
+            (Join-Path $PSHOME 'Modules')
+          ) -join [System.IO.Path]::PathSeparator
+          ./build.ps1 -Task All
+
+      - name: Stage tested release package
+        if: >-
+          github.event_name == 'release' &&
+          github.event.action == 'published' &&
+          startsWith(github.event.release.tag_name, 'v') &&
+          matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tested-release-package
+          path: out/packages/*.zip
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  release-provenance:
+    name: Protected release provenance
+    if: >-
+      github.event_name == 'release' &&
+      github.event.action == 'published' &&
+      startsWith(github.event.release.tag_name, 'v') &&
+      github.event.release.draft == false
+    needs: offline-contracts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Checkout published release tag
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Download package that passed all platform checks
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: tested-release-package
+          path: release-input
+
+      - name: Verify protected release identity and generate evidence
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          git merge-base --is-ancestor HEAD origin/main
+          if ($LASTEXITCODE -ne 0) {
+            throw 'The published release tag is not reachable from main.'
+          }
+          $releaseCommit = @(
+            git rev-parse --verify "$env:RELEASE_TAG^{commit}"
+          )
+          $headCommit = @(git rev-parse --verify 'HEAD^{commit}')
+          if (
+            $LASTEXITCODE -ne 0 -or
+            $releaseCommit.Count -ne 1 -or
+            $headCommit.Count -ne 1 -or
+            [string] $releaseCommit[0] -cne [string] $headCommit[0]
+          ) {
+            throw 'The release tag does not identify the tested commit.'
+          }
+
+          $manifest = Import-PowerShellDataFile `
+            -LiteralPath src/AzureDataLabToolkit/AzureDataLabToolkit.psd1
+          $baseVersion = [string] $manifest.ModuleVersion
+          $version = $baseVersion
+          $prerelease = [string] $manifest.PrivateData.PSData.Prerelease
+          if (-not [string]::IsNullOrWhiteSpace($prerelease)) {
+            $version = "$version-$prerelease"
+          }
+          $expectedTag = "v$version"
+          if ($env:RELEASE_TAG -cne $expectedTag) {
+            throw "Release tag '$env:RELEASE_TAG' must equal '$expectedTag'."
+          }
+
+          $packages = @(
+            Get-ChildItem `
+              -LiteralPath release-input `
+              -Filter '*.zip' `
+              -File `
+              -Recurse
+          )
+          if ($packages.Count -ne 1) {
+            throw 'Exactly one tested release package is required.'
+          }
+          $package = $packages[0]
+          $expectedName = "AzureDataLabToolkit-$version.zip"
+          if ($package.Name -cne $expectedName) {
+            throw "Release package must be named '$expectedName'."
+          }
+
+          . ./build.ps1
+          $extractionRoot = Join-Path $PWD 'release-package'
+          Expand-Archive `
+            -LiteralPath $package.FullName `
+            -DestinationPath $extractionRoot
+          $provenanceFiles = @(
+            Get-ChildItem `
+              -LiteralPath $extractionRoot `
+              -Filter 'build-provenance.json' `
+              -File `
+              -Recurse
+          )
+          if ($provenanceFiles.Count -ne 1) {
+            throw 'The release package must contain one provenance file.'
+          }
+          $packagedModuleRoot = $provenanceFiles[0].Directory.FullName
+          $expectedModuleRoot = Join-Path `
+            $extractionRoot `
+            "AzureDataLabToolkit/$baseVersion"
+          if (
+            [System.IO.Path]::GetFullPath($packagedModuleRoot) -cne
+              [System.IO.Path]::GetFullPath($expectedModuleRoot)
+          ) {
+            throw 'The release package module layout is invalid.'
+          }
+          [void] (Test-AdltBuildProvenance `
+            -ModulePath $packagedModuleRoot `
+            -ExpectedSourceRevision ([string] $headCommit[0]) `
+            -ExpectedModuleVersion $version `
+            -RequireGit)
+
+          $evidenceRoot = Join-Path $PWD 'release-evidence'
+          [void] (New-Item -ItemType Directory -Path $evidenceRoot)
+          $packageHash = (
+            Get-FileHash -LiteralPath $package.FullName -Algorithm SHA256
+          ).Hash.ToLowerInvariant()
+          $checksumPath = Join-Path `
+            $evidenceRoot `
+            "$($package.Name).sha256"
+          [System.IO.File]::WriteAllText(
+            $checksumPath,
+            "$packageHash  $($package.Name)`n",
+            [System.Text.UTF8Encoding]::new($false)
+          )
+
+          $lock = Get-Content `
+            -LiteralPath `
+              src/AzureDataLabToolkit/Support/runtime-dependencies.lock.json `
+            -Raw |
+              ConvertFrom-Json -AsHashtable -Depth 20 -NoEnumerate
+          $buildToolLock = Get-Content `
+            -LiteralPath `
+              src/AzureDataLabToolkit/Support/build-tools.lock.json `
+            -Raw |
+              ConvertFrom-Json -AsHashtable -Depth 20 -NoEnumerate
+          $packages = [System.Collections.Generic.List[object]]::new()
+          $relationships = [System.Collections.Generic.List[object]]::new()
+          $relationships.Add([ordered]@{
+              spdxElementId = 'SPDXRef-DOCUMENT'
+              relationshipType = 'DESCRIBES'
+              relatedSpdxElement = 'SPDXRef-Package-AzureDataLabToolkit'
+            })
+          $packages.Add([ordered]@{
+              name = 'AzureDataLabToolkit'
+              SPDXID = 'SPDXRef-Package-AzureDataLabToolkit'
+              versionInfo = $version
+              downloadLocation = 'NOASSERTION'
+              filesAnalyzed = $false
+              checksums = @(
+                [ordered]@{
+                  algorithm = 'SHA256'
+                  checksumValue = $packageHash
+                }
+              )
+              licenseConcluded = 'NOASSERTION'
+              licenseDeclared = 'NOASSERTION'
+              copyrightText = 'NOASSERTION'
+            })
+          $index = 0
+          foreach ($dependency in @($lock.dependencies)) {
+            $index++
+            $spdxId = "SPDXRef-Package-RuntimeDependency-$index"
+            $dependencyHash = (
+              [string] $dependency.packageDigest
+            ).Substring('sha256:'.Length)
+            $packages.Add([ordered]@{
+                name = [string] $dependency.name
+                SPDXID = $spdxId
+                versionInfo = [string] $dependency.version
+                downloadLocation = [string] $dependency.packageUri
+                filesAnalyzed = $false
+                checksums = @(
+                  [ordered]@{
+                    algorithm = 'SHA256'
+                    checksumValue = $dependencyHash
+                  }
+                )
+                licenseConcluded = 'NOASSERTION'
+                licenseDeclared = 'NOASSERTION'
+                copyrightText = 'NOASSERTION'
+                externalRefs = @(
+                  [ordered]@{
+                    referenceCategory = 'PACKAGE-MANAGER'
+                    referenceType = 'purl'
+                    referenceLocator = (
+                      'pkg:nuget/{0}@{1}' -f
+                        [uri]::EscapeDataString(
+                          [string] $dependency.name
+                        ),
+                        [uri]::EscapeDataString(
+                          [string] $dependency.version
+                        )
+                    )
+                  }
+                )
+              })
+            $relationships.Add([ordered]@{
+                spdxElementId = 'SPDXRef-Package-AzureDataLabToolkit'
+                relationshipType = 'DEPENDS_ON'
+                relatedSpdxElement = $spdxId
+              })
+          }
+          $index = 0
+          foreach ($buildTool in @($buildToolLock.buildTools)) {
+            $index++
+            $spdxId = "SPDXRef-Package-BuildTool-$index"
+            $packages.Add([ordered]@{
+                name = [string] $buildTool.name
+                SPDXID = $spdxId
+                versionInfo = [string] $buildTool.version
+                downloadLocation = [string] $buildTool.packageUri
+                filesAnalyzed = $false
+                sourceInfo = (
+                  'Build-time dependency verified using the locked ' +
+                  'sha256-rfc8785-file-manifest-v1 content identity ' +
+                  [string] $buildTool.contentDigest +
+                  '. This is not the package-archive checksum.'
+                )
+                licenseConcluded = 'NOASSERTION'
+                licenseDeclared = 'NOASSERTION'
+                copyrightText = 'NOASSERTION'
+                externalRefs = @(
+                  [ordered]@{
+                    referenceCategory = 'PACKAGE-MANAGER'
+                    referenceType = 'purl'
+                    referenceLocator = (
+                      'pkg:nuget/{0}@{1}' -f
+                        [uri]::EscapeDataString(
+                          [string] $buildTool.name
+                        ),
+                        [uri]::EscapeDataString(
+                          [string] $buildTool.version
+                        )
+                    )
+                  }
+                )
+              })
+            $relationships.Add([ordered]@{
+                spdxElementId = $spdxId
+                relationshipType = 'BUILD_DEPENDENCY_OF'
+                relatedSpdxElement = 'SPDXRef-Package-AzureDataLabToolkit'
+              })
+          }
+
+          $documentNamespace = (
+            'https://github.com/{0}/actions/runs/{1}/attempts/{2}/sbom' -f
+              $env:REPOSITORY,
+              $env:RUN_ID,
+              $env:RUN_ATTEMPT
+          )
+          $sbom = [ordered]@{
+            spdxVersion = 'SPDX-2.3'
+            dataLicense = 'CC0-1.0'
+            SPDXID = 'SPDXRef-DOCUMENT'
+            name = "AzureDataLabToolkit-$version"
+            documentNamespace = $documentNamespace
+            creationInfo = [ordered]@{
+              created = [datetime]::UtcNow.ToString(
+                'yyyy-MM-ddTHH:mm:ssZ',
+                [Globalization.CultureInfo]::InvariantCulture
+              )
+              creators = @(
+                'Tool: AzureDataLabToolkit-release-workflow'
+              )
+            }
+            packages = @($packages.ToArray())
+            relationships = @($relationships.ToArray())
+          }
+          $sbomPath = Join-Path $evidenceRoot 'sbom.spdx.json'
+          [System.IO.File]::WriteAllText(
+            $sbomPath,
+            ($sbom | ConvertTo-Json -Depth 20),
+            [System.Text.UTF8Encoding]::new($false)
+          )
+          Copy-Item `
+            -LiteralPath $package.FullName `
+            -Destination (Join-Path $evidenceRoot $package.Name)
+
+      - name: Attest release build provenance
+        uses: actions/attest@36051bcae73b7c2a8a6945a48cbf80953c6baa35 # v4
+        with:
+          subject-path: release-evidence/AzureDataLabToolkit-*.zip
+
+      - name: Attest release SBOM
+        uses: actions/attest@36051bcae73b7c2a8a6945a48cbf80953c6baa35 # v4
+        with:
+          subject-path: release-evidence/AzureDataLabToolkit-*.zip
+          sbom-path: release-evidence/sbom.spdx.json
+
+      - name: Upload release package, checksum, and SBOM
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: AzureDataLabToolkit-${{ github.event.release.tag_name }}
+          path: release-evidence/*
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0

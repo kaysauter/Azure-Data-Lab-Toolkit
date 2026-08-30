@@ -3,7 +3,15 @@ title: Testing Strategy
 description: Planned verification from deterministic planning through live Azure cleanup proof.
 ---
 
-<span class="status status-committed">Committed strategy, automation backlog</span>
+<span class="status status-current">Offline automation current; live automation backlog</span>
+
+The current local gate runs PowerShell parsing, PSScriptAnalyzer, 76 Pester
+tests, an enforced 80% command-coverage minimum, a clean built-module import,
+and ZIP packaging. The latest local run reached 87.19%. GitHub
+pull requests run the offline gate on Linux, Windows, and macOS without Azure
+credentials. Pester, PSScriptAnalyzer, and powershell-yaml are imported at their
+exact checked versions by the build script, not merely installed alongside
+whatever version happens to be active.
 
 Testing must prove creation, useful behavior, failure recovery, and cleanup. A deployment that appears successful but leaks resources is a failed lab run.
 
@@ -25,7 +33,11 @@ credit merely because an earlier provider or engine passed.
 | `-Plan` | None | The same YAML and catalog versions produce the same normalized actions, derived values, warnings, policy decisions, and report data |
 | `-WhatIf` | Required | The resolved plan is compared with permitted live Azure resources and reports create, reuse, update, replace, conflict, drift, or no-change without mutation |
 
-Plan tests use fixtures and snapshots. WhatIf tests use a protected identity with read and validation permissions appropriate to the provider. A WhatIf test must fail if it mutates Azure or silently treats an unreadable resource as absent.
+Plan tests use fixtures and snapshots. The minimal SQL VM fixture includes a
+checked SHA-256 plan hash, so every CI operating system must produce the same
+canonical result. WhatIf tests use a protected identity with read and validation
+permissions appropriate to the provider. A WhatIf test must fail if it mutates
+Azure or silently treats an unreadable resource as absent.
 
 ## Test layers
 
@@ -61,6 +73,14 @@ SQL VM planning tests also assert an explicit `secretStoreDecision` and
 `administrativeAccessDecision`. The secure default is a Key Vault decision plus
 Azure Bastion with no public IP. Reuse or opt-out must carry rationale, approval,
 cost, and security evidence.
+
+Current contract tests also verify typed desired resource properties, explicit
+API versions, contributor dependency cycles, private Key Vault and Azure Files
+DNS, managed-identity role intent, the no-plaintext credential gate, structured
+policy blockers, targeted acknowledgements, and separation of local script
+rendering from future remote staging. They also verify scope-correct action
+preconditions, exact typed ARM IDs for reused resources, long-name collision
+resistance, and complete contributor contract metadata.
 
 ## Failure injection
 

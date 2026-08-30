@@ -1,0 +1,278 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "AzureDataLabModuleScriptLock",
+  "files": [
+    {
+      "path": "Private/00-Object.ps1",
+      "sha256": "1fab359a959cd045f471ad575efc89c0da625609dfc1e4bac2de3e8885ef9e5f"
+    },
+    {
+      "path": "Private/01-DependencyLock.ps1",
+      "sha256": "4cc67b07caca1c308bec97d6b83d18ec5bc465e435f891f974b451bd89fb6b72"
+    },
+    {
+      "path": "Private/05-ExtensionRegistry.ps1",
+      "sha256": "0efd1692f52e0a93bbb76b65299af78e0eda12d81fdd62d77563421a0736181b"
+    },
+    {
+      "path": "Private/10-Yaml.ps1",
+      "sha256": "e0eada25a40f197ad2e553d118925bc6bfffdfd71b6ff5302398833f030f1c13"
+    },
+    {
+      "path": "Private/12-DeploymentProfile.ps1",
+      "sha256": "499d46c2fd26ae53508ac0a6909d4af40f5ca4511c50cfbe64c99eaf13c39106"
+    },
+    {
+      "path": "Private/20-Validation.ps1",
+      "sha256": "2b61bed30738294758fa2eb1634ec08a250774ca96483180f155a2c4c9e08c63"
+    },
+    {
+      "path": "Private/22-SensitiveValue.ps1",
+      "sha256": "893a0ab078c1a114edad64c40267aba9c57a7856cd376f39381d19aa1ec66685"
+    },
+    {
+      "path": "Private/30-Configuration.ps1",
+      "sha256": "b940984b7c6477132a05bd21892502ce04fc33ed6d4de33cb1a903c5bd3b24a0"
+    },
+    {
+      "path": "Private/40-Canonical.ps1",
+      "sha256": "55bc587bcae5d9f990a0d0692cca827db3cf84aebbad10e651b03bc6e20f9f2f"
+    },
+    {
+      "path": "Private/42-PlanModel.ps1",
+      "sha256": "597cf7e57885a1859f1ad28064e14f4d06b87f5575a3047beed6c8a58a67f909"
+    },
+    {
+      "path": "Private/45-PlanValidation.ps1",
+      "sha256": "5e78bc2e402a0098fa17ccffc7a62718dacee700886ac28ea1272065bcadc219"
+    },
+    {
+      "path": "Private/46-ArtifactValidation.ps1",
+      "sha256": "7aefe447feb1df6e8e717000d0d0925e89c10db5d8a4e92d0ab9dbe3b675b3f9"
+    },
+    {
+      "path": "Private/47-PlanContract.ps1",
+      "sha256": "b490573f106ccc2e67382e5a0bc5ec938b60972713fd99a66d9c278cb3329afe"
+    },
+    {
+      "path": "Private/50-Catalog.ps1",
+      "sha256": "d3cc57213776d326858a5d82feeac381f0f27784098096d32e237a3e9c6645dc"
+    },
+    {
+      "path": "Private/58-AtomicFile.ps1",
+      "sha256": "63ebb45a26960888a21285a9024b2f4b380837d7eb7adf2a6b3d77919452db6a"
+    },
+    {
+      "path": "Private/60-RunStateModel.ps1",
+      "sha256": "37885184b8e15e7225553acb9c7db6e430ec89d518f79a1cc408e9d29238d9c1"
+    },
+    {
+      "path": "Private/62-LocalRunStore.ps1",
+      "sha256": "eb114dec1a1b4e7deeb066b927f163be95f6a8b205bc1553328112f51fc7702e"
+    },
+    {
+      "path": "Private/63-EvidenceContracts.ps1",
+      "sha256": "1b82f397aca6d571258b4119fed11ddf18289f7791274718539078d1b80a1efd"
+    },
+    {
+      "path": "Private/64-EvidenceModel.ps1",
+      "sha256": "c1bff36c095e1b922b511adc9660202a4cdf52d546b2c43a08cf5eb107e23704"
+    },
+    {
+      "path": "Private/65-EvidenceRendering.ps1",
+      "sha256": "a5b04f6b7490b02658f48ebf97835dcf7ee73aeb9e9a6fe4a7d1180e4f28031a"
+    },
+    {
+      "path": "Private/65-ExecutionEvidenceBinding.ps1",
+      "sha256": "842543de56405056332b32f5615f7337659ff5f77d8dfca418d9ea0754d22f68"
+    },
+    {
+      "path": "Private/66-AuthorizationModel.ps1",
+      "sha256": "27caf0ebe3021267576e706a47c9868d1efc59ef51905c6b949ef8fb40d3a7a2"
+    },
+    {
+      "path": "Private/67-RuntimeIdentity.ps1",
+      "sha256": "bda893a296c6b76a7f0e906c74394400150aa4c70900f6ba792cad33fa776630"
+    },
+    {
+      "path": "Private/68-RunOrchestration.ps1",
+      "sha256": "39518083bdbd83edf47bb66b4c1f9e2ee2aa9d823fabf02255052db235975402"
+    },
+    {
+      "path": "Private/69-ExecutionRecord.ps1",
+      "sha256": "ab2071e0fd6bb9a33b421f79fdb6d7247e07f8c32ec90fb2f38e5873f60405c6"
+    },
+    {
+      "path": "Private/70-AzureCommand.ps1",
+      "sha256": "d9548f007a347d13cb7e8caeacf173aab8dbc9e21d9befc9d25f56188138f8de"
+    },
+    {
+      "path": "Private/72-AzureContext.ps1",
+      "sha256": "862b8ec31fa89ae5101b13166577705e0f76eee9e92a2740863c5c090bb819e7"
+    },
+    {
+      "path": "Private/74-AzureResourceId.ps1",
+      "sha256": "82f8d522d57a40fc9f3631a48855664cfebcea27d333d98e05f9c5a90825afad"
+    },
+    {
+      "path": "Private/76-AzureRead.ps1",
+      "sha256": "dfb3cf467b6022e0461135caa17b3e6da86f9619f21322db1ef26cff4e808aa4"
+    },
+    {
+      "path": "Private/78-LiveResolution.ps1",
+      "sha256": "4715d77f66b3a3ff9ee9e2a4ba6a1a532d205dbd0158e65f9989d39877316915"
+    },
+    {
+      "path": "Private/80-CostEstimate.ps1",
+      "sha256": "af10634b9cd262ec3b51f0699ff55a3852a8d619d8231f282f5a5ecedd3549b8"
+    },
+    {
+      "path": "Private/82-SqlVmArmTemplate.ps1",
+      "sha256": "18ff4e434fd810ecc2e91e624b2239ef46e678fc32d5785b86eb8af37a0ee545"
+    },
+    {
+      "path": "Private/84-NativeWhatIf.ps1",
+      "sha256": "0f3169cefde677829d8b1c149ad03d23a91ead51ec41eef418134896cb65a1be"
+    },
+    {
+      "path": "Private/86-Deployment.ps1",
+      "sha256": "9ce2673a5cfeeb95850c9598e4ca81a7bfdad5df53ab9c1db4615ec21386cc92"
+    },
+    {
+      "path": "Private/87-TeardownInventory.ps1",
+      "sha256": "77fc64129d9d326bd5342b5997220289e37f183e3b1c67869b724660371d9549"
+    },
+    {
+      "path": "Private/88-TeardownOperation.ps1",
+      "sha256": "6a3aa11ce9853c08defe5dab23c48a4bc2b8a2ff4528447d7822586839f879d3"
+    },
+    {
+      "path": "Private/89-DeploymentProbe.ps1",
+      "sha256": "46fef9308a8369116875ddabe415535cedae576852d66c09e81a5680a97410ed"
+    },
+    {
+      "path": "Private/90-Wizard.ps1",
+      "sha256": "b17d63e06e5214945cb53e2796584e6a27623e22e75fcf06d4f1c63525e518ec"
+    },
+    {
+      "path": "Providers/SqlVm/SqlVm.Plan.ps1",
+      "sha256": "0f9378db39b74e4fc5fef0345ba1ad5974cfb2ddc02d18ab95792f4769b0c3fb"
+    },
+    {
+      "path": "Capabilities/AzureFilesBackup/AzureFilesBackup.Plan.ps1",
+      "sha256": "e7ba70ec641142686bea643f3e1bddaa76dd7d52dae12c8c7ceffb2fef1bbe52"
+    },
+    {
+      "path": "Capabilities/Bastion/Bastion.Plan.ps1",
+      "sha256": "fb79c67f373954e9dc24c5b7341187c432f10254549bbde781b95c454d339e9e"
+    },
+    {
+      "path": "Capabilities/KeyVault/KeyVault.Plan.ps1",
+      "sha256": "47ea5780ef66929d1c561d71c4028165a6ce7872a6d79a4eef0d77e348f92cae"
+    },
+    {
+      "path": "Capabilities/Networking/Networking.Plan.ps1",
+      "sha256": "c6f598c5b1eeb0938facae7aba61b3c7a33ddd11fbe1a3a3329a38e468f54d53"
+    },
+    {
+      "path": "SolutionPacks/SqlVmBackupRestore/SqlVmBackupRestore.Plan.ps1",
+      "sha256": "1ce57b621562cf948afef49860d629ebe30b40a20ebdcd05883645c44a8e8e40"
+    },
+    {
+      "path": "Public/Connect-AzureDataLabAccount.ps1",
+      "sha256": "3ce60382cdc6b89343eed97889d4b976cef5b753efc92d74d921bad2f9d02a27"
+    },
+    {
+      "path": "Public/Export-AzureDataLabEvidence.ps1",
+      "sha256": "bd8781b8ff1c6a955e723c10a94678d76e3d827cf6f9cb23c5b6bb58fafe99b7"
+    },
+    {
+      "path": "Public/Export-AzureDataLabPlan.ps1",
+      "sha256": "85dc983ca95c0d10716f13722fa41d4c5d29f7bd6cf11379206b913f836031ec"
+    },
+    {
+      "path": "Public/Find-AzureDataLabCatalogItem.ps1",
+      "sha256": "2a333c8fb31a51d8168fb09c8e8c29a6bed1d541f0ec0ca32d7e10ec66994c24"
+    },
+    {
+      "path": "Public/Get-AzureDataLabEvidence.ps1",
+      "sha256": "5a7df0e615fe864013528b355e0e1b55e2eaf87c2feee22f06cf5a2da96cdd74"
+    },
+    {
+      "path": "Public/Get-AzureDataLabRun.ps1",
+      "sha256": "3e52c46f8658bf592f1988204a21510bf085c2619d03cd73cd2b7413ea7737ab"
+    },
+    {
+      "path": "Public/Get-AzureDataLabSupportMatrix.ps1",
+      "sha256": "b4f0e98a1c87f69b84d960c0c5dca2bacf995ffc752dff97d6202a21832019ea"
+    },
+    {
+      "path": "Public/Get-AzureDataLabTemplate.ps1",
+      "sha256": "91f3569244b73b8032694baf7df3ac87cda89ea8d7dfc3e860ac54b84f3a658b"
+    },
+    {
+      "path": "Public/Invoke-AzureDataLabPreflight.ps1",
+      "sha256": "8ef769aa3203bb66997b9055a5234c481a090f70e1180230b1d13379498c81f2"
+    },
+    {
+      "path": "Public/New-AzureDataLabPlan.ps1",
+      "sha256": "f427d0bacef9ac348fa6377018925247835568ee71be1fc1892690592e30bc85"
+    },
+    {
+      "path": "Public/New-AzureDataLabRun.ps1",
+      "sha256": "e20c84fcfa399ebcfa0254d0b8b9584b35c44eefbbf552953c98a4da90c1d80b"
+    },
+    {
+      "path": "Public/Resolve-AzureDataLabDeployment.ps1",
+      "sha256": "e849fd193dc233f53966175afaae2332dce1c110cd9e1dd93d3b8beb917a9af0"
+    },
+    {
+      "path": "Public/Resolve-AzureDataLabPlan.ps1",
+      "sha256": "195c1d8803e85c9831ecbd27ed58cdb3bbd6c66c8e9eb2c9d3203f4e59033a3a"
+    },
+    {
+      "path": "Public/Resolve-AzureDataLabTeardown.ps1",
+      "sha256": "e06e25e4141e67a92351c6615d2bfe9250981c7f41802dd514a45264e2fdbdc7"
+    },
+    {
+      "path": "Public/Resume-AzureDataLabDeployment.ps1",
+      "sha256": "3dda404eb99ab2d8aba545c03aa3ac0c86b2af471910227380050fbb60eaf8ce"
+    },
+    {
+      "path": "Public/Resume-AzureDataLabTeardown.ps1",
+      "sha256": "dccfd2c276c5b3efcc8d3ba47c0cfc72c9dcfb34f9b5ebc85e8b64ded773ae81"
+    },
+    {
+      "path": "Public/Start-AzureDataLabConfigurationWizard.ps1",
+      "sha256": "548f15762eb0090d7656f961f4396b617f7dae9f33372f809ae182e2542a33aa"
+    },
+    {
+      "path": "Public/Start-AzureDataLabDeployment.ps1",
+      "sha256": "3bf949086c1b76198c10c4acae7289a534ca870f689b881f8948c7bb3ed461e4"
+    },
+    {
+      "path": "Public/Start-AzureDataLabTeardown.ps1",
+      "sha256": "f6c10409bd859b5be3db0dff985f1e08d700c096674c11945020810403866468"
+    },
+    {
+      "path": "Public/Test-AzureDataLabAzureContext.ps1",
+      "sha256": "54c55e28ea9d68300d03fad26e0e8dcf79ff8169ab7ecf463a2725c9688a745c"
+    },
+    {
+      "path": "Public/Test-AzureDataLabConfiguration.ps1",
+      "sha256": "b0bf76f41744dbf9139533952225bf9262368238d2eccc61b242d31415771fa4"
+    },
+    {
+      "path": "Public/Test-AzureDataLabDeployment.ps1",
+      "sha256": "15f852f80841d57614f1ad62f46acebf381e7c4d8b485d32f5b8cebbb6fd92a7"
+    },
+    {
+      "path": "Public/Test-AzureDataLabDeploymentConfiguration.ps1",
+      "sha256": "aa3b983723fcf837d1516a612abf4211402e54754abc4f29e89decf11bf31f65"
+    },
+    {
+      "path": "Public/Test-AzureDataLabWhatIf.ps1",
+      "sha256": "9f18e3c6facecc13ba9d587b982d42fe0e32398196e544ebffbcc75e3f572bb6"
+    }
+  ]
+}

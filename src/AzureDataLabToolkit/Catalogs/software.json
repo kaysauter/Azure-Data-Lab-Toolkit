@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "AzureDataLabCatalog",
+  "catalogType": "software",
+  "items": [
+    {
+      "id": "software.dbatools",
+      "displayName": "dbatools",
+      "version": "2.8.2",
+      "publisher": "dbatools community",
+      "home": "https://dbatools.io/",
+      "attribution": "https://github.com/dataplat/dbatools",
+      "platforms": [
+        "windows"
+      ],
+      "tags": [
+        "powershell",
+        "restore",
+        "sql-server",
+        "sqlvm"
+      ],
+      "source": {
+        "type": "powershell-gallery",
+        "uri": "https://www.powershellgallery.com/packages/dbatools/2.8.2"
+      },
+      "license": {
+        "spdx": "MIT",
+        "uri": "https://github.com/dataplat/dbatools/blob/development/LICENSE"
+      },
+      "integrity": {
+        "status": "required-before-deployment",
+        "algorithm": "sha256"
+      },
+      "privileges": {
+        "requiresElevation": false
+      },
+      "sensitivity": {
+        "classification": "not-applicable"
+      },
+      "compatibility": {
+        "targetTypes": [
+          "sqlVm"
+        ]
+      },
+      "probes": [
+        "powershell-command:Restore-DbaDatabase"
+      ],
+      "supportStatus": "metadata-only"
+    },
+    {
+      "id": "software.git-for-windows",
+      "displayName": "Git for Windows",
+      "version": "2.53.0.windows.3",
+      "publisher": "Git for Windows project",
+      "home": "https://gitforwindows.org/",
+      "attribution": "https://github.com/git-for-windows/git",
+      "platforms": [
+        "windows"
+      ],
+      "tags": [
+        "developer-tools",
+        "git",
+        "sqlvm"
+      ],
+      "source": {
+        "type": "github-release",
+        "uri": "https://github.com/git-for-windows/git/releases/tag/v2.53.0.windows.3"
+      },
+      "license": {
+        "spdx": "GPL-2.0-only",
+        "uri": "https://gitforwindows.org/"
+      },
+      "integrity": {
+        "status": "required-before-deployment",
+        "algorithm": "sha256"
+      },
+      "privileges": {
+        "requiresElevation": true
+      },
+      "sensitivity": {
+        "classification": "not-applicable"
+      },
+      "compatibility": {
+        "targetTypes": [
+          "sqlVm"
+        ]
+      },
+      "probes": [
+        "executable:git.exe"
+      ],
+      "supportStatus": "metadata-only"
+    }
+  ]
+}

@@ -3,7 +3,7 @@ title: Plan And State
 description: Versioned plan, evidence, ownership, and recovery contracts.
 ---
 
-<span class="status status-committed">Committed design</span>
+<span class="status status-current">Plan, state, and live reconciliation current; unreleased and unverified against live Azure</span>
 
 The normalized plan is the immutable contract between user intent, extensions,
 policy, deployment engines, and evidence. Run state records what happened to an
@@ -16,39 +16,40 @@ but canonical JSON serialization is used for hashing and interchange.
 
 | Field | Contract |
 | --- | --- |
-| `contractVersion` | Normalized-plan schema version |
-| `runIntentId` | Stable identifier for the requested lab intent |
-| `toolkitVersion` | Toolkit version that resolved the plan |
-| `schemaVersion` | Input YAML schema version |
-| `providerVersions` | Exact target-provider contract and implementation versions |
-| `engine` | Explicit engine ID, adapter version, and tool version requirement |
-| `catalogVersions` | Resolved catalog source revisions |
-| `inputs` | Typed resolved values with provenance and redacted secret references |
-| `resources` | Stable resource IDs, desired properties, ownership, risks, and teardown intent |
-| `actions` | Stable action IDs, dependencies, capability requirements, and idempotency rules |
-| `outputs` | Declared non-secret outputs and secret-reference outputs |
-| `policies` | Findings, required acknowledgements, and denied conditions |
-| `secretStoreDecisions` | One explicit decision per target and solution pack, with rationale, ownership, cost, and teardown references |
-| `administrativeAccessDecisions` | One explicit decision per Azure VM, including Bastion or approved alternative, public-IP outcome, rationale, and approval requirement |
+| `planSchemaVersion` and `kind` | Version and document type for the normalized plan |
+| `toolkit` | Toolkit name and prerelease version that resolved the plan |
+| `contracts` | Input, plan, catalog, target-provider, capability, solution-pack, and selected-engine contracts |
+| `canonicalization` and `intentHash` | RFC 8785 profile and hash of complete resolved intent |
+| `target` and `context` | Target support plus explicit Azure tenant, subscription, cloud, and location context |
+| `configuration` and `provenance` | Fully resolved typed input and source or derivation for every leaf |
+| `resources` | Stable IDs, Azure type and API version, desired properties, external ID, ownership, and teardown intent |
+| `actions` | Stable IDs, execution scope, dependencies, mutation, idempotency, preconditions, postconditions, and reconciliation |
+| `catalogSelections` and `supportEvaluation` | Exact metadata choices and structured support-matrix results |
+| `decisions` | Authentication, secret, access, identity, disk, licensing, cost, data, backup, and lifecycle decisions |
+| `policyFindings` and `approval` | Structured findings, blockers, acknowledgements, and plan-hash binding requirements |
 | `unverifiedFacts` | External facts unavailable during offline planning |
 | `planHash` | Hash of the canonical envelope excluding the hash field itself |
 
 Resource and action IDs are stable across repeated planning when semantic input
 is unchanged. They do not depend on array position, timestamp, machine path, or
 random generation. Their format is
-`<extension-id>/<resource|action>/<logical-key>`, using lowercase
-`a-z`, `0-9`, `.`, `_`, `-`, and `/`. The extension namespace prevents
-collisions; the logical key comes from configuration identity rather than the
-eventual Azure resource ID. Each action declares:
+dot-delimited semantic IDs such as `azure.compute.virtual-machine.primary` and
+`action.compute.virtual-machine.primary`. The logical key comes from
+configuration identity rather than an eventual Azure resource ID. Each current
+action declares:
 
 - directed acyclic graph dependencies;
+- an `offline`, `azure`, or `guest` execution scope;
 - preconditions and postconditions;
-- provider and required capability;
 - expected mutation and retry class;
-- risks and policy references;
 - ownership effect and teardown intent;
-- provenance back to resolved inputs and catalog entries;
-- expected evidence and outputs.
+- scope-specific state sources and stop-on-unknown reconciliation.
+
+Offline rendering actions are non-mutating and reconcile against local artifact
+state. Azure actions require live control-plane observation. Guest actions
+require target readiness, explicit guest-execution authorization, and a guest
+probe. A local renderer therefore cannot inherit a misleading Azure
+precondition merely because its artifact will eventually be used by a VM.
 
 The plan is rejected if dependencies contain a cycle, IDs collide, a secret
 value is embedded, ownership is ambiguous, or the selected engine lacks a
@@ -65,6 +66,26 @@ algorithm requires a new normalized-plan contract version.
 
 Approval, engine exports, state events, and reports bind to `planHash`. Any
 semantic change creates a different hash and invalidates approval.
+
+Action idempotency keys bind to `intentHash`. The current intent hash includes
+the toolkit version, active provider, capability, and solution-pack contract
+and implementation versions, the selected engine contract, content hashes for
+the bundled catalogs, resolved configuration, and exact catalog selections.
+Changing any of those inputs changes every action key; a newer contributor
+cannot accidentally reuse an older implementation's execution identity.
+
+`desiredProperties` is an engine-facing normalized contract, not permission to
+send arbitrary fields to Azure. Resource-specific schemas tighten the shape as
+each provider reaches implementation. The current SQL IaaS resource uses the
+Microsoft `2023-10-01` property names, records the underlying VM's full ARM
+resource ID, and rejects unknown or incorrectly typed properties.
+
+Generated Azure Storage account and Key Vault names reserve the final 12
+characters for a 48-bit hash of the complete naming intent. Human-readable
+names are shortened before that suffix, so two names with the same visible
+prefix do not silently collapse to the same planned global name. Live
+collision checks still fail closed because a hash reduces collision risk but
+cannot prove that a globally unique Azure name is available.
 
 ## Plan and WhatIf
 
@@ -120,10 +141,12 @@ Every operation emits a versioned envelope:
 - findings, risks, approvals, diagnostics, and redacted outputs;
 - integrity hash and references to attachments.
 
-Plan, what-if, cost, deployment, probe, teardown, and cleanup-proof reports are
-typed payloads inside this common envelope. Console, JSON, Markdown, and HTML
-render the same payload. Rendering is backlog work; these formats are not claimed
-as current functionality.
+The current plan can be exported as canonical JSON, Markdown, or standalone
+script-free HTML. Markdown and HTML include desired properties, external
+resource IDs, teardown intent, action dependencies and postconditions, RBAC
+details, blockers, and acknowledgement IDs for human review. WhatIf, cost,
+deployment, probe, teardown, cleanup-proof, and their evidence envelopes remain
+committed design or backlog.
 
 ## Local run state
 

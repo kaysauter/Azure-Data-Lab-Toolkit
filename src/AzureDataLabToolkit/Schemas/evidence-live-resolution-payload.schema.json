@@ -1,0 +1,502 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Azure Data Lab Toolkit live-resolution evidence payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "context",
+    "providerStates",
+    "imageResolution",
+    "skuResolution",
+    "keyVaultResolution",
+    "secretMetadata",
+    "diagnosticResolution",
+    "principalObjectId",
+    "principalType",
+    "requiredAuthorizations",
+    "resources",
+    "resolvedPolicyFindingIds"
+  ],
+  "properties": {
+    "context": {
+      "type": "object",
+      "required": [
+        "cloud",
+        "tenantId",
+        "subscriptionId"
+      ],
+      "properties": {
+        "cloud": {
+          "const": "AzureCloud"
+        },
+        "tenantId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "subscriptionId": {
+          "$ref": "#/$defs/uuid"
+        }
+      },
+      "additionalProperties": true
+    },
+    "providerStates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "namespace",
+          "registrationState"
+        ],
+        "properties": {
+          "namespace": {
+            "type": "string",
+            "pattern": "^Microsoft\\.[A-Za-z0-9.]+$"
+          },
+          "registrationState": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "imageResolution": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/imageResolution"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "skuResolution": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/skuResolution"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "principalObjectId": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "principalType": {
+      "oneOf": [
+        {
+          "const": "user"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "keyVaultResolution": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/keyVaultResolution"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "secretMetadata": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/secretMetadata"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "diagnosticResolution": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/diagnosticResolution"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "requiredAuthorizations": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "action",
+          "validationStage"
+        ],
+        "properties": {
+          "action": {
+            "const": "Microsoft.KeyVault/vaults/deploy/action"
+          },
+          "validationStage": {
+            "const": "native-provider-what-if"
+          }
+        }
+      }
+    },
+    "resources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/resolvedResource"
+      }
+    },
+    "resolvedPolicyFindingIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/policyId"
+      }
+    }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "resourceId": {
+      "type": "string",
+      "pattern": "^/subscriptions/[0-9a-fA-F-]+/"
+    },
+    "policyId": {
+      "type": "string",
+      "pattern": "^policy\\.[a-z0-9][a-z0-9.-]+$"
+    },
+    "imageResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publisher",
+        "offer",
+        "sku",
+        "version",
+        "hyperVGeneration",
+        "trustedLaunchSupported",
+        "imageMetadataHash"
+      ],
+      "properties": {
+        "publisher": {
+          "type": "string",
+          "minLength": 1
+        },
+        "offer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sku": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+(?:\\.[0-9]+){2,3}$"
+        },
+        "hyperVGeneration": {
+          "const": "V2"
+        },
+        "trustedLaunchSupported": {
+          "const": true
+        },
+        "imageMetadataHash": {
+          "$ref": "#/$defs/hash"
+        }
+      }
+    },
+    "skuResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "location",
+        "available",
+        "encryptionAtHostSupported",
+        "trustedLaunchSupported",
+        "hyperVGenerationV2",
+        "capabilities",
+        "restrictions",
+        "resourceSkuHash"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "encryptionAtHostSupported": {
+          "type": "boolean"
+        },
+        "trustedLaunchSupported": {
+          "type": "boolean"
+        },
+        "hyperVGenerationV2": {
+          "type": "boolean"
+        },
+        "capabilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "value"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "restrictions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "reasonCode",
+              "type",
+              "locations",
+              "zones"
+            ],
+            "properties": {
+              "reasonCode": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "locations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "zones": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "resourceSkuHash": {
+          "$ref": "#/$defs/hash"
+        }
+      }
+    },
+    "keyVaultResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resourceId",
+        "apiVersion",
+        "tenantId",
+        "provisioningState",
+        "enableRbacAuthorization",
+        "enabledForTemplateDeployment",
+        "purgeProtectionEnabled",
+        "softDeleteRetentionDays",
+        "publicNetworkAccess",
+        "networkDefaultAction",
+        "approvedPrivateEndpointCount",
+        "resourceStateHash"
+      ],
+      "properties": {
+        "resourceId": {
+          "$ref": "#/$defs/resourceId"
+        },
+        "apiVersion": {
+          "const": "2026-02-01"
+        },
+        "tenantId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "provisioningState": {
+          "const": "Succeeded"
+        },
+        "enableRbacAuthorization": {
+          "const": true
+        },
+        "enabledForTemplateDeployment": {
+          "const": true
+        },
+        "purgeProtectionEnabled": {
+          "const": true
+        },
+        "softDeleteRetentionDays": {
+          "type": "integer",
+          "minimum": 7,
+          "maximum": 90
+        },
+        "publicNetworkAccess": {
+          "const": "Disabled"
+        },
+        "networkDefaultAction": {
+          "const": "Deny"
+        },
+        "approvedPrivateEndpointCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "resourceStateHash": {
+          "$ref": "#/$defs/hash"
+        }
+      }
+    },
+    "secretMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vaultResourceId",
+        "secretName",
+        "version",
+        "enabled",
+        "notBeforeSatisfied",
+        "expiresAfterMinimumWindow",
+        "notBeforeAt",
+        "expiresAt",
+        "metadataHash"
+      ],
+      "properties": {
+        "vaultResourceId": {
+          "$ref": "#/$defs/resourceId"
+        },
+        "secretName": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9-]{1,127}$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{32}$"
+        },
+        "enabled": {
+          "const": true
+        },
+        "notBeforeSatisfied": {
+          "const": true
+        },
+        "expiresAfterMinimumWindow": {
+          "const": true
+        },
+        "notBeforeAt": {
+          "$ref": "#/$defs/nullableTimestamp"
+        },
+        "expiresAt": {
+          "$ref": "#/$defs/nullableTimestamp"
+        },
+        "metadataHash": {
+          "$ref": "#/$defs/hash"
+        }
+      }
+    },
+    "diagnosticResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "settingName",
+        "destinationResourceId",
+        "enabledLogSelectors",
+        "auditEnabled",
+        "settingsHash"
+      ],
+      "properties": {
+        "settingName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "destinationResourceId": {
+          "$ref": "#/$defs/resourceId"
+        },
+        "enabledLogSelectors": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(category|categoryGroup):"
+          }
+        },
+        "auditEnabled": {
+          "const": true
+        },
+        "settingsHash": {
+          "$ref": "#/$defs/hash"
+        }
+      }
+    },
+    "resolvedResource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stableId",
+        "resourceId",
+        "resourceType",
+        "plannedOwnership"
+      ],
+      "properties": {
+        "stableId": {
+          "type": "string",
+          "pattern": "^azure\\.[a-z0-9][a-z0-9.-]+$"
+        },
+        "resourceId": {
+          "$ref": "#/$defs/resourceId"
+        },
+        "resourceType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "plannedOwnership": {
+          "enum": [
+            "owned",
+            "adopted",
+            "reused",
+            "external"
+          ]
+        }
+      }
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "nullableTimestamp": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

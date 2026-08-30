@@ -1,0 +1,192 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "AzureDataLabSupportMatrix",
+  "targetType": "sqlVm",
+  "contractStatus": "implemented",
+  "deploymentStatus": "available",
+  "axes": {
+    "authentication": {
+      "interactive-user": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "managed-identity": {
+        "plan": "supported",
+        "deployment": "unavailable"
+      },
+      "oidc": {
+        "plan": "supported",
+        "deployment": "unavailable"
+      }
+    },
+    "engine": {
+      "powershell": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "bicep": {
+        "plan": "unsupported",
+        "deployment": "backlog"
+      },
+      "terraform": {
+        "plan": "unsupported",
+        "deployment": "backlog"
+      }
+    },
+    "platform": {
+      "windows": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "linux": {
+        "plan": "unsupported",
+        "deployment": "backlog"
+      }
+    },
+    "sqlServerVersion": {
+      "2022": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "2025": {
+        "plan": "unsupported",
+        "deployment": "backlog"
+      }
+    },
+    "securityType": {
+      "standard": {
+        "plan": "supported-with-warning",
+        "deployment": "unavailable"
+      },
+      "trustedLaunch": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "confidentialVm": {
+        "plan": "unsupported",
+        "deployment": "research"
+      }
+    },
+    "encryptionAtHost": {
+      "enabled": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "disabled": {
+        "plan": "supported-with-warning",
+        "deployment": "unavailable"
+      }
+    },
+    "diskEncryption": {
+      "platform-managed": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "customer-managed-existing": {
+        "plan": "supported-with-warning",
+        "deployment": "unavailable"
+      }
+    },
+    "secretStore": {
+      "deploy-key-vault": {
+        "plan": "supported",
+        "deployment": "unavailable"
+      },
+      "reuse-key-vault": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "approved-external-store": {
+        "plan": "unsupported",
+        "deployment": "research"
+      },
+      "not-applicable": {
+        "plan": "unsupported",
+        "deployment": "refused"
+      }
+    },
+    "credentialSource": {
+      "key-vault-secret": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "generate-during-deployment": {
+        "plan": "supported-with-warning",
+        "deployment": "unavailable"
+      }
+    },
+    "shellPasswordOutput": {
+      "disabled": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "enabled": {
+        "plan": "supported-with-warning",
+        "deployment": "unavailable"
+      }
+    },
+    "administrativeAccess": {
+      "deploy-bastion": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "reuse-bastion": {
+        "plan": "supported",
+        "deployment": "unavailable"
+      },
+      "opt-out": {
+        "plan": "supported-with-warning",
+        "deployment": "unavailable"
+      }
+    },
+    "bastionSku": {
+      "developer": {
+        "plan": "unsupported",
+        "deployment": "research"
+      },
+      "basic": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "standard": {
+        "plan": "unsupported",
+        "deployment": "backlog"
+      },
+      "premium": {
+        "plan": "unsupported",
+        "deployment": "backlog"
+      }
+    },
+    "vmPublicIp": {
+      "disabled": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "enabled": {
+        "plan": "unsupported",
+        "deployment": "refused"
+      }
+    },
+    "backupShare": {
+      "disabled": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "managed-identity-smb-oauth-private-endpoint-local-staging": {
+        "plan": "supported",
+        "deployment": "unavailable"
+      },
+      "direct-unc-experimental": {
+        "plan": "unsupported",
+        "deployment": "research"
+      }
+    }
+  },
+  "guarantees": {
+    "offlinePlan": true,
+    "azureMutation": false,
+    "vmPublicIp": false,
+    "secretValuesInPlan": false,
+    "automaticRestore": false
+  }
+}
