@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/SECURITY.md
+    about: Do not open a public issue. Email kay@kayondata.com instead.
+  - name: Documentation
+    url: https://kaysauter.github.io/Azure-Data-Lab-Toolkit/
+    about: Architecture, project status, and what is actually implemented.
+  - name: Roadmap and delivery order
+    url: https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/FEATURE_REQUESTS.md
+    about: Check here before requesting a feature. Delivery order has exit gates.

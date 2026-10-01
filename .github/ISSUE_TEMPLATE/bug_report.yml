@@ -1,0 +1,100 @@
+name: Bug report
+description: Something behaves differently from what the documentation says.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Not for security problems.** If this could be exploited, do not file it here —
+        see [SECURITY.md](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/SECURITY.md).
+
+        **This is an unreleased alpha.** No version has been published and nothing has been
+        verified against a live Azure subscription. Behaviour documented as absent — guest
+        software installation, database restore, Bicep, Terraform — is not a bug.
+
+  - type: checkboxes
+    id: preconditions
+    attributes:
+      label: Before filing
+      options:
+        - label: This is not a security vulnerability.
+          required: true
+        - label: I checked the documented status, and this is meant to work.
+          required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: Commit SHA
+      description: "`git rev-parse --short HEAD`. There are no releases, so the commit is the only version."
+      placeholder: cbde0ee
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Platform
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+
+  - type: input
+    id: psversion
+    attributes:
+      label: PowerShell version
+      description: "`$PSVersionTable.PSVersion`"
+      placeholder: 7.6.5
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and where it says so
+      description: Link the documentation, ADR, or schema that sets the expectation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: |
+        Paste the full error. Redact subscription and tenant IDs, resource names, and
+        anything else identifying — but say that you redacted, so a missing value is not
+        mistaken for the bug.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: The exact commands. Please include the YAML if it is relevant, with secrets removed.
+      render: powershell
+    validations:
+      required: true
+
+  - type: dropdown
+    id: azure
+    attributes:
+      label: Did this involve a live Azure subscription?
+      description: Offline failures are far easier to act on. Live failures are expected territory — nothing here has been field-tested.
+      options:
+        - "No — offline commands only"
+        - "Yes — it reached Azure"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: gate
+    attributes:
+      label: Local gate result, if you ran it
+      description: "Output of `pwsh -NoProfile -File ./build.ps1 -Task All`: tests passed/failed and the coverage line."
+      render: text
