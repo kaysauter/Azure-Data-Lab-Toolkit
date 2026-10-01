@@ -127,28 +127,6 @@ jobs:
           sudo chmod -R go-w /opt/microsoft/powershell/7
           stat -c '%a %n' /opt/microsoft/powershell/7
 
-      # Temporary. Prints the reviewed bootstrap identity for this platform so
-      # the values pinned in ReviewedContent are harvested from a real run
-      # instead of guessed. Remove once every supported platform is pinned.
-      - name: Report bootstrap content identity
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          . ./src/AzureDataLabToolkit/Install-AzureDataLabToolkitDependencies.ps1
-          $moduleBase = Join-Path `
-            $PSHOME `
-            'Modules/Microsoft.PowerShell.PSResourceGet'
-          $manifest = Import-PowerShellDataFile `
-            -LiteralPath (Join-Path $moduleBase 'Microsoft.PowerShell.PSResourceGet.psd1')
-          $content = Get-AdltDependencyInstallerContentDigest -ModuleBase $moduleBase
-          "REVIEWED-CONTENT-CANDIDATE"
-          "  Platform      : $([System.Runtime.InteropServices.RuntimeInformation]::OSDescription)"
-          "  ModuleBase    : $moduleBase"
-          "  Version       : $($manifest.ModuleVersion)"
-          "  Guid          : $($manifest.GUID)"
-          "  FileCount     : $($content.FileCount)"
-          "  ContentDigest : $($content.Digest)"
-
       - name: Analyze, test, build, and package
         shell: pwsh
         run: |

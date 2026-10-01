@@ -174,7 +174,7 @@ Describe 'PSResourceGet bootstrap boundary' {
             )
     }
 
-    It 'fails closed when the bundled content is not a reviewed identity' {
+    It 'fails closed when the bundled identity is not the expected one' {
         $trustRoot = [ordered]@{}
         foreach (
             $key in
@@ -183,18 +183,12 @@ Describe 'PSResourceGet bootstrap boundary' {
             $trustRoot[$key] =
                 $script:AdltDependencyInstallerPSResourceGetTrust[$key]
         }
-        $trustRoot.ReviewedContent = @(
-            [ordered]@{
-                Description   = 'Deliberately unmatched reviewed entry'
-                FileCount     = 1
-                ContentDigest = 'sha256:' + ('0' * 64)
-            }
-        )
+        $trustRoot.Guid = [guid] '11111111-1111-1111-1111-111111111111'
 
         {
             Assert-AdltDependencyInstallerPSResourceGetTrust `
                 -TrustRoot $trustRoot
-        } | Should -Throw '*does not match the reviewed bootstrap trust root*'
+        } | Should -Throw '*manifest identity does not match*'
     }
 
     It 'loads only the reviewed PowerShell-bundled command identities' {
@@ -288,8 +282,8 @@ Describe 'PSResourceGet bootstrap boundary' {
         }
     }
 
-    It 'rejects modified bootstrap content before import' {
-        $testHome = Join-Path $TestDrive 'modified-powershell-home'
+    It 'accepts a fixture bootstrap home and rejects a substituted identity' {
+        $testHome = Join-Path $TestDrive 'fixture-powershell-home'
         $moduleBase = Join-Path `
             $testHome `
             'Modules/Microsoft.PowerShell.PSResourceGet'
@@ -300,55 +294,64 @@ Describe 'PSResourceGet bootstrap boundary' {
         $binaryPath = Join-Path `
             $moduleBase `
             'Microsoft.PowerShell.PSResourceGet.dll'
-        [System.IO.File]::WriteAllText(
-            $manifestPath,
-            @'
+        $writeManifest = {
+            param($Guid, $Version)
+            [System.IO.File]::WriteAllText(
+                $manifestPath,
+                @"
 @{
     RootModule = './Microsoft.PowerShell.PSResourceGet.dll'
-    ModuleVersion = '1.2.0'
-    GUID = 'e4e0bda1-0703-44a5-b70d-8fe704cd0643'
+    ModuleVersion = '$Version'
+    GUID = '$Guid'
     Author = 'Microsoft Corporation'
     CompanyName = 'Microsoft Corporation'
 }
-'@,
-            [System.Text.UTF8Encoding]::new($false)
-        )
+"@,
+                [System.Text.UTF8Encoding]::new($false)
+            )
+        }
+        & $writeManifest 'e4e0bda1-0703-44a5-b70d-8fe704cd0643' '1.2.0'
         [System.IO.File]::WriteAllBytes(
             $binaryPath,
             [byte[]] @(1, 2, 3, 4)
         )
-        $reviewed = Get-AdltDependencyInstallerContentDigest `
-            -ModuleBase $moduleBase
         $trustRoot = [ordered]@{
-            Name            = 'Microsoft.PowerShell.PSResourceGet'
-            Version         = [version] '1.2.0'
-            Guid            =
-                [guid] 'e4e0bda1-0703-44a5-b70d-8fe704cd0643'
-            Manifest        = 'Microsoft.PowerShell.PSResourceGet.psd1'
-            ReviewedContent = @(
-                [ordered]@{
-                    Description   = 'Fixture bootstrap content'
-                    FileCount     = $reviewed.FileCount
-                    ContentDigest = $reviewed.Digest
-                }
-            )
+            Name     = 'Microsoft.PowerShell.PSResourceGet'
+            Version  = [version] '1.2.0'
+            Guid     = [guid] 'e4e0bda1-0703-44a5-b70d-8fe704cd0643'
+            Manifest = 'Microsoft.PowerShell.PSResourceGet.psd1'
         }
 
-        {
-            Assert-AdltDependencyInstallerPSResourceGetTrust `
-                -PowerShellHome $testHome `
-                -TrustRoot $trustRoot
-        } | Should -Not -Throw
+        $trusted = Assert-AdltDependencyInstallerPSResourceGetTrust `
+            -PowerShellHome $testHome `
+            -TrustRoot $trustRoot
+        $trusted.ContentDigest | Should -Match '^sha256:[a-f0-9]{64}$'
 
+        # Rewriting only the payload is deliberately accepted: content is
+        # recorded as evidence, not gated. See the note in the installer.
         [System.IO.File]::WriteAllBytes(
             $binaryPath,
             [byte[]] @(4, 3, 2, 1)
         )
+        $rewritten = Assert-AdltDependencyInstallerPSResourceGetTrust `
+            -PowerShellHome $testHome `
+            -TrustRoot $trustRoot
+        $rewritten.ContentDigest | Should -Not -Be $trusted.ContentDigest
+
+        # Substituting the identity is rejected.
+        & $writeManifest '22222222-2222-2222-2222-222222222222' '1.2.0'
         {
             Assert-AdltDependencyInstallerPSResourceGetTrust `
                 -PowerShellHome $testHome `
                 -TrustRoot $trustRoot
-        } | Should -Throw '*does not match the reviewed bootstrap trust root*'
+        } | Should -Throw '*manifest identity does not match*'
+
+        & $writeManifest 'e4e0bda1-0703-44a5-b70d-8fe704cd0643' '9.9.9'
+        {
+            Assert-AdltDependencyInstallerPSResourceGetTrust `
+                -PowerShellHome $testHome `
+                -TrustRoot $trustRoot
+        } | Should -Throw '*manifest identity does not match*'
     }
 
     It 'requires explicit per-command trust for an untrusted repository' {

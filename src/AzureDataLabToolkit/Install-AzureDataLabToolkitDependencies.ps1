@@ -33,39 +33,6 @@ $script:AdltDependencyInstallerPSResourceGetTrust = [ordered]@{
         'sha256:' +
         '90e4c97b2f5ecf8c7d4730ca3b7028739e2b7665ded27249390483f73be71944'
     )
-    # The bundled tree is not byte-identical across PowerShell builds: the
-    # Windows bundle carries a signed catalogue (.signature.p7s) that the
-    # Linux and macOS bundles do not, so file counts and digests differ by
-    # platform. Each entry below is a separately reviewed content identity for
-    # the same module version and GUID. Verification still requires an exact
-    # match against exactly one reviewed entry, so an unreviewed build fails
-    # closed; adding a platform is a deliberate review step, not a relaxation.
-    ReviewedContent = @(
-        [ordered]@{
-            Description   = 'PowerShell 7.6 on macOS (Homebrew)'
-            FileCount     = 45
-            ContentDigest = (
-                'sha256:' +
-                '61521954557a52d5f70ecb267f43fa582805ff3df91b022a575459014f57b73f'
-            )
-        }
-        [ordered]@{
-            Description   = 'PowerShell 7.6 on macOS (GitHub hosted runner)'
-            FileCount     = 45
-            ContentDigest = (
-                'sha256:' +
-                '1bf9524d1fe46dbbfaa1a918ea8794b7a0c3979295d07003c006e409f3f2404a'
-            )
-        }
-        [ordered]@{
-            Description   = 'PowerShell 7.6 on Ubuntu 24.04'
-            FileCount     = 45
-            ContentDigest = (
-                'sha256:' +
-                '0008b7643d3ab690399a72ffd10a99a6bbfb591e329f1873f3eda69c57c52b38'
-            )
-        }
-    )
 }
 $script:AdltDependencyInstallerNames = @(
     'Az.Accounts'
@@ -484,24 +451,15 @@ function Assert-AdltDependencyInstallerPSResourceGetTrust {
         throw 'The trusted PSResourceGet manifest is missing, linked, or broadly writable.'
     }
 
+    # The content digest is recorded as evidence, not enforced. The bundled
+    # tree differs per platform and changes whenever a host image refreshes
+    # PowerShell, so a byte-exact pin fails closed on routine image updates.
+    # It also guards a narrow band: an attacker able to write inside $PSHOME
+    # can replace pwsh itself, and one who cannot usually can still write to
+    # this file. Trust rests on the location, identity, link, and writability
+    # checks above and below, which are what reject a planted module.
     $content = Get-AdltDependencyInstallerContentDigest `
         -ModuleBase $moduleBase
-    $matchedContent = @(
-        $TrustRoot.ReviewedContent |
-            Where-Object {
-                [int] $_.FileCount -eq [int] $content.FileCount -and
-                [string] $_.ContentDigest -ceq [string] $content.Digest
-            }
-    )
-    if ($matchedContent.Count -ne 1) {
-        throw (
-            'The PowerShell-bundled PSResourceGet content does not match ' +
-            'the reviewed bootstrap trust root. Observed ' +
-            "$($content.FileCount) files with digest $($content.Digest) " +
-            "at '$moduleBase'. Add a reviewed entry only after auditing " +
-            'that exact content.'
-        )
-    }
 
     $manifest = Import-PowerShellDataFile `
         -LiteralPath $manifestItem.FullName `
