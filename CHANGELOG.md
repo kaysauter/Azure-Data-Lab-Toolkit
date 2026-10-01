@@ -36,7 +36,7 @@ This file records notable changes to Azure Data Lab Toolkit. The project has not
 - Azure sign-in through `Connect-AzureDataLabAccount` with process-scoped
   context, disabled autosave, secure-string ARM tokens, and identity plus
   token-cache re-verification on every Azure call.
-- A fail-closed Azure command boundary allowlisting four modules and seventeen
+- A fail-closed Azure command boundary allowlisting four modules and nineteen
   cmdlets with per-command parameter-shape enforcement against a locked module
   manifest.
 - Live resolution and native ARM `-WhatIf` reconciliation via

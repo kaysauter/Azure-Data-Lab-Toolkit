@@ -5,9 +5,10 @@ description: Planned verification from deterministic planning through live Azure
 
 <span class="status status-current">Offline automation current; live automation backlog</span>
 
-The current local gate runs PowerShell parsing, PSScriptAnalyzer, 76 Pester
-tests, an enforced 80% command-coverage minimum, a clean built-module import,
-and ZIP packaging. The latest local run reached 87.19%. GitHub
+The current local gate runs PowerShell parsing, PSScriptAnalyzer, over 360
+Pester tests, an enforced 80% command-coverage minimum, a clean built-module
+import, and ZIP packaging. Coverage currently clears that gate by a narrow
+margin, so new error branches need tests to keep the build green. GitHub
 pull requests run the offline gate on Linux, Windows, and macOS without Azure
 credentials. Pester, PSScriptAnalyzer, and powershell-yaml are imported at their
 exact checked versions by the build script, not merely installed alongside
