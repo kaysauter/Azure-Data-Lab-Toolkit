@@ -338,10 +338,17 @@
                       "type": "boolean"
                     },
                     "sqlImageOffer": {
-                      "const": "SQL2022-WS2022"
+                      "enum": [
+                        "SQL2022-WS2022"
+                      ]
                     },
                     "sqlImageSku": {
-                      "const": "Developer"
+                      "enum": [
+                        "Developer",
+                        "Express",
+                        "Standard",
+                        "Enterprise"
+                      ]
                     },
                     "assessmentSettings": {
                       "type": "object",

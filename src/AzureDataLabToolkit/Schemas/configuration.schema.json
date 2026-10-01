@@ -456,6 +456,7 @@
       "required": [
         "platform",
         "sqlServerVersion",
+        "sqlEdition",
         "compute",
         "network",
         "software",
@@ -472,6 +473,14 @@
           "enum": [
             "2022",
             "2025"
+          ]
+        },
+        "sqlEdition": {
+          "enum": [
+            "Developer",
+            "Express",
+            "Standard",
+            "Enterprise"
           ]
         },
         "compute": {

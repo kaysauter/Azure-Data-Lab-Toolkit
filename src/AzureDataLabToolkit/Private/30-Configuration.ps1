@@ -82,6 +82,7 @@ function Get-AdltSchemaDefault {
         sqlVm         = [ordered]@{
             platform        = 'windows'
             sqlServerVersion = '2022'
+            sqlEdition      = 'Developer'
             compute  = [ordered]@{
                 vmSize           = 'Standard_D4s_v5'
                 securityType      = 'trustedLaunch'

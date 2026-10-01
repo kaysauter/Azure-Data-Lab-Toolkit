@@ -48,6 +48,7 @@ solutionPacks:
 sqlVm:
   platform: windows
   sqlServerVersion: "2022"
+  sqlEdition: Developer
   compute:
     vmSize: Standard_D4s_v5
     securityType: trustedLaunch

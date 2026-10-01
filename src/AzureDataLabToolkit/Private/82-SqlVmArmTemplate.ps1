@@ -589,16 +589,12 @@ function Assert-AdltSqlVmArmPlanProfile {
             encryptionAtHost  = $true
         }) `
         -Path 'virtualMachine.securityProfile'
+    $expectedImage = Get-AdltSqlVmImageReference -Configuration $configuration
     Assert-AdltSqlVmArmValue `
         -Actual $virtualMachineProperties.imageReference `
-        -Expected ([ordered]@{
-            publisher       = 'MicrosoftSQLServer'
-            offer           = 'sql2022-ws2022'
-            sku             = 'sqldev-gen2'
-            version         = 'unresolved'
-            sourceAlias     = 'latest'
-            resolutionStage = 'what-if'
-        }) `
+        -Expected (
+            New-AdltSqlVmImageReferenceProperty -Image $expectedImage
+        ) `
         -Path 'virtualMachine.imageReference'
     Assert-AdltSqlVmArmValue `
         -Actual $virtualMachineProperties.networkProfile `
@@ -671,8 +667,8 @@ function Assert-AdltSqlVmArmPlanProfile {
             sqlServerLicenseType     = 'PAYG'
             leastPrivilegeMode       = 'Enabled'
             enableAutomaticUpgrade   = $true
-            sqlImageOffer            = 'SQL2022-WS2022'
-            sqlImageSku              = 'Developer'
+            sqlImageOffer            = [string] $expectedImage.SqlImageOffer
+            sqlImageSku              = [string] $expectedImage.SqlImageSku
             assessmentSettings       = [ordered]@{
                 enable         = $false
                 runImmediately = $false

@@ -360,3 +360,124 @@ Describe 'Guided selection handoff contract' {
             Should -BeTrue
     }
 }
+
+Describe 'SQL Server edition selection' {
+    It 'resolves every schema-permitted edition to a distinct marketplace sku' {
+        $expected = [ordered]@{
+            Developer  = 'sqldev-gen2'
+            Express    = 'express-gen2'
+            Standard   = 'standard-gen2'
+            Enterprise = 'enterprise-gen2'
+        }
+
+        foreach ($edition in $expected.Keys) {
+            $plan = New-AzureDataLabPlan `
+                $script:MinimalConfigurationPath `
+                -SqlServerEdition $edition
+            $vm = $plan.resources |
+                Where-Object id -EQ 'azure.compute.virtual-machine.primary'
+            $sqlVm = $plan.resources |
+                Where-Object id -EQ 'azure.sql.virtual-machine.primary'
+
+            $vm.desiredProperties.imageReference.publisher |
+                Should -BeExactly 'MicrosoftSQLServer'
+            $vm.desiredProperties.imageReference.sku |
+                Should -BeExactly $expected[$edition]
+            $vm.desiredProperties.imageReference.version |
+                Should -BeExactly 'unresolved'
+            $sqlVm.desiredProperties.sqlImageSku | Should -BeExactly $edition
+        }
+    }
+
+    It 'requires acknowledgement only for per-core charged editions' {
+        foreach ($edition in @('Developer', 'Express')) {
+            $plan = New-AzureDataLabPlan `
+                $script:MinimalConfigurationPath `
+                -SqlServerEdition $edition
+            $plan.approval.requiredAcknowledgementIds |
+                Should -Not -Contain 'policy.licensing.sql-edition-charged-per-core'
+        }
+        foreach ($edition in @('Standard', 'Enterprise')) {
+            $plan = New-AzureDataLabPlan `
+                $script:MinimalConfigurationPath `
+                -SqlServerEdition $edition
+            $plan.approval.requiredAcknowledgementIds |
+                Should -Contain 'policy.licensing.sql-edition-charged-per-core'
+        }
+    }
+
+    It 'fails closed when no reviewed image matches the combination' {
+        $module = Get-Module AzureDataLabToolkit
+        foreach ($case in @(
+            @{ Platform = 'windows'; Version = '2025'; Edition = 'Standard' }
+            @{ Platform = 'linux'; Version = '2022'; Edition = 'Developer' }
+        )) {
+            {
+                & $module {
+                    param($Case)
+                    Get-AdltSqlVmImageReference -Configuration ([ordered]@{
+                        sqlVm = [ordered]@{
+                            platform         = $Case.Platform
+                            sqlServerVersion = $Case.Version
+                            sqlEdition       = $Case.Edition
+                        }
+                    })
+                } $case
+            } | Should -Throw '*No reviewed SQL VM marketplace image matches*'
+        }
+    }
+
+    It 'keeps the image matrix internally consistent and schema valid' {
+        $module = Get-Module AzureDataLabToolkit
+        $matrix = & $module { Get-AdltSqlVmImageMatrix }
+
+        $matrix.publisher | Should -BeExactly 'MicrosoftSQLServer'
+        @($matrix.images).Count | Should -BeGreaterThan 0
+
+        $seen = [System.Collections.Generic.HashSet[string]]::new()
+        foreach ($image in $matrix.images) {
+            # The sku carries the edition, so the two must agree.
+            $image.sqlImageSku | Should -BeExactly $image.sqlEdition
+            # The offer fuses the OS and SQL versions, so it must name both.
+            $image.offer |
+                Should -BeExactly (
+                    'sql{0}-ws{1}' -f $image.sqlServerVersion, $image.windowsServerVersion
+                )
+            # One image per (platform, OS version, SQL version, edition).
+            $key = '{0}/{1}/{2}/{3}' -f
+                $image.platform,
+                $image.windowsServerVersion,
+                $image.sqlServerVersion,
+                $image.sqlEdition
+            $seen.Add($key) | Should -BeTrue
+        }
+    }
+
+    It 'covers every schema-permitted edition in the support matrix' {
+        # Guards the step most easily skipped: a new schema enum value without a
+        # support-matrix entry would default to unsupported and throw at plan time.
+        $schemaPath = Join-Path `
+            $script:RepositoryRoot `
+            'src/AzureDataLabToolkit/Schemas/configuration.schema.json'
+        $schema = Get-Content -LiteralPath $schemaPath -Raw | ConvertFrom-Json -Depth 100
+        $schemaEditions = @(
+            $schema.properties.sqlVm.properties.sqlEdition.enum
+        )
+        $schemaEditions.Count | Should -BeGreaterThan 0
+
+        $matrixPath = Join-Path `
+            $script:RepositoryRoot `
+            'src/AzureDataLabToolkit/Support/sqlvm-support-matrix.json'
+        $matrix = Get-Content -LiteralPath $matrixPath -Raw |
+            ConvertFrom-Json -Depth 100
+        $axis = $matrix.axes.sqlEdition
+        $axis | Should -Not -BeNullOrEmpty
+
+        foreach ($edition in $schemaEditions) {
+            $entry = $axis.$edition
+            $entry | Should -Not -BeNullOrEmpty -Because "edition '$edition' needs a support-matrix entry"
+            $entry.plan |
+                Should -BeIn @('supported', 'supported-with-warning', 'unsupported')
+        }
+    }
+}

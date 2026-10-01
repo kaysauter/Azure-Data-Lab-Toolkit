@@ -78,6 +78,9 @@ function New-AzureDataLabPlan {
         [ValidateSet('2022', '2025')]
         [string] $SqlServerVersion,
 
+        [ValidateSet('Developer', 'Express', 'Standard', 'Enterprise')]
+        [string] $SqlServerEdition,
+
         [string[]] $SoftwareId,
 
         [string[]] $SampleDataId,
@@ -142,6 +145,7 @@ function New-AzureDataLabPlan {
             VmSecurityType           = 'sqlVm.compute.securityType'
             DiskEncryptionSetResourceId = 'sqlVm.compute.diskEncryptionSetId'
             SqlServerVersion         = 'sqlVm.sqlServerVersion'
+            SqlServerEdition         = 'sqlVm.sqlEdition'
             SoftwareId               = 'sqlVm.software.catalogIds'
             SampleDataId             = 'sqlVm.sampleData.catalogIds'
             MonthlyBudget            = 'cost.budget.monthlyLimit'

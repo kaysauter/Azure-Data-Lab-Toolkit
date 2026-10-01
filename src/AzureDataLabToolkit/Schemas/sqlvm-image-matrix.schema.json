@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/sqlvm-image-matrix-1.0.json",
+  "title": "Azure Data Lab Toolkit SQL VM marketplace image matrix",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "publisher",
+    "images"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "AzureDataLabSqlVmImageMatrix"
+    },
+    "publisher": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "images": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "platform",
+          "windowsServerVersion",
+          "sqlServerVersion",
+          "sqlEdition",
+          "offer",
+          "sku",
+          "sqlImageOffer",
+          "sqlImageSku",
+          "licenseCharge"
+        ],
+        "properties": {
+          "platform": {
+            "enum": [
+              "windows",
+              "linux"
+            ]
+          },
+          "windowsServerVersion": {
+            "type": "string",
+            "pattern": "^[0-9]{4}$"
+          },
+          "sqlServerVersion": {
+            "type": "string",
+            "pattern": "^[0-9]{4}$"
+          },
+          "sqlEdition": {
+            "enum": [
+              "Developer",
+              "Express",
+              "Standard",
+              "Enterprise"
+            ]
+          },
+          "offer": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+          },
+          "sku": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+          },
+          "sqlImageOffer": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+          },
+          "sqlImageSku": {
+            "enum": [
+              "Developer",
+              "Express",
+              "Standard",
+              "Enterprise"
+            ]
+          },
+          "licenseCharge": {
+            "enum": [
+              "none",
+              "per-core"
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

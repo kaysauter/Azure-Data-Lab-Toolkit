@@ -13,6 +13,7 @@ function Get-AdltPlanSupportEvaluation {
         [pscustomobject]@{ Axis = 'authentication'; Value = $Configuration.azure.authentication.mode }
         [pscustomobject]@{ Axis = 'platform'; Value = $Configuration.sqlVm.platform }
         [pscustomobject]@{ Axis = 'sqlServerVersion'; Value = $Configuration.sqlVm.sqlServerVersion }
+        [pscustomobject]@{ Axis = 'sqlEdition'; Value = $Configuration.sqlVm.sqlEdition }
         [pscustomobject]@{ Axis = 'securityType'; Value = $Configuration.sqlVm.compute.securityType }
         [pscustomobject]@{ Axis = 'encryptionAtHost'; Value = $(if ($Configuration.sqlVm.compute.encryptionAtHost) { 'enabled' } else { 'disabled' }) }
         [pscustomobject]@{ Axis = 'diskEncryption'; Value = $(if ((Get-AdltPathValue -InputObject $Configuration -Path 'sqlVm.compute.diskEncryptionSetId')) { 'customer-managed-existing' } else { 'platform-managed' }) }
@@ -155,6 +156,7 @@ function New-AdltSqlVmPlan {
     $diskEncryptionSetId = Get-AdltPathValue `
         -InputObject $Configuration `
         -Path 'sqlVm.compute.diskEncryptionSetId'
+    $resolvedImage = Get-AdltSqlVmImageReference -Configuration $Configuration
     $resources = [System.Collections.Generic.List[object]]::new()
     $actions = [System.Collections.Generic.List[object]]::new()
     $warnings = [System.Collections.Generic.List[string]]::new()
@@ -305,14 +307,8 @@ function New-AdltSqlVmPlan {
                     virtualTpmEnabled    = $Configuration.sqlVm.compute.securityType -eq 'trustedLaunch'
                     encryptionAtHost     = [bool] $Configuration.sqlVm.compute.encryptionAtHost
                 }
-                imageReference = [ordered]@{
-                    publisher       = 'MicrosoftSQLServer'
-                    offer           = 'sql2022-ws2022'
-                    sku             = 'sqldev-gen2'
-                    version         = 'unresolved'
-                    sourceAlias     = 'latest'
-                    resolutionStage = 'what-if'
-                }
+                imageReference = New-AdltSqlVmImageReferenceProperty `
+                    -Image $resolvedImage
                 osProfile = [ordered]@{
                     computerName                   = $names.virtualMachine
                     administratorUsername          = 'adltadmin'
@@ -372,8 +368,8 @@ function New-AdltSqlVmPlan {
                 sqlServerLicenseType     = 'PAYG'
                 leastPrivilegeMode       = 'Enabled'
                 enableAutomaticUpgrade   = $true
-                sqlImageOffer            = 'SQL2022-WS2022'
-                sqlImageSku              = 'Developer'
+                sqlImageOffer            = [string] $resolvedImage.SqlImageOffer
+                sqlImageSku              = [string] $resolvedImage.SqlImageSku
                 assessmentSettings       = [ordered]@{
                     enable         = $false
                     runImmediately = $false
@@ -596,6 +592,32 @@ function New-AdltSqlVmPlan {
         -Effect acknowledge `
         -ConfigurationPath 'sqlVm.sqlServerVersion' `
         -Message 'The user must verify current Microsoft licensing terms for the selected SQL Server image and intended use.'))
+
+    if ([string] $resolvedImage.LicenseCharge -ceq 'per-core') {
+        $policyFindings.Add((New-AdltPolicyFinding `
+            -Id 'policy.licensing.sql-edition-charged-per-core' `
+            -Severity high `
+            -Effect acknowledge `
+            -ConfigurationPath 'sqlVm.sqlEdition' `
+            -Message (
+                "SQL Server $($resolvedImage.SqlImageSku) edition is charged " +
+                'per vCore on top of compute under pay-as-you-go licensing. ' +
+                'Developer edition is free for development and test. Confirm ' +
+                'the edition and licensing model are intended before deploying.'
+            )))
+    }
+    if ([string] $resolvedImage.SqlImageSku -ceq 'Developer') {
+        $warnings.Add(
+            'Developer edition is licensed for development and test only. It ' +
+            'may not be used for production workloads.'
+        )
+    }
+    if ([string] $resolvedImage.SqlImageSku -ceq 'Express') {
+        $warnings.Add(
+            'Express edition caps each database at 10 GB and limits buffer ' +
+            'pool and CPU. Sample databases may not fit.'
+        )
+    }
 
     $resourcesArray = @($resources.ToArray() | Sort-Object { $_.id })
     $actionsArray = @($actions.ToArray() | Sort-Object { $_.id })

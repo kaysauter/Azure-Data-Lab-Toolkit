@@ -32,7 +32,7 @@
     },
     {
       "path": "Private/30-Configuration.ps1",
-      "sha256": "b940984b7c6477132a05bd21892502ce04fc33ed6d4de33cb1a903c5bd3b24a0"
+      "sha256": "012252fbe6162f7365ac502b13a1c5e394c2865a81df262790b30714006732cc"
     },
     {
       "path": "Private/40-Canonical.ps1",
@@ -57,6 +57,10 @@
     {
       "path": "Private/50-Catalog.ps1",
       "sha256": "d3cc57213776d326858a5d82feeac381f0f27784098096d32e237a3e9c6645dc"
+    },
+    {
+      "path": "Private/52-SqlVmImage.ps1",
+      "sha256": "cb31e3e62a5faaa580ce79b04096f13bb311b61a52a910767306ac1cf7005fd0"
     },
     {
       "path": "Private/58-AtomicFile.ps1",
@@ -128,7 +132,7 @@
     },
     {
       "path": "Private/82-SqlVmArmTemplate.ps1",
-      "sha256": "18ff4e434fd810ecc2e91e624b2239ef46e678fc32d5785b86eb8af37a0ee545"
+      "sha256": "d820a76ee454a383149906f3f466309b6fb0241e5602e8d7538d11c692a2d8a9"
     },
     {
       "path": "Private/84-NativeWhatIf.ps1",
@@ -156,7 +160,7 @@
     },
     {
       "path": "Providers/SqlVm/SqlVm.Plan.ps1",
-      "sha256": "0f9378db39b74e4fc5fef0345ba1ad5974cfb2ddc02d18ab95792f4769b0c3fb"
+      "sha256": "ea230a3336eb2383bfa42f6d4d27f0b6b50029853d3b7a8ebefa34a2395379a0"
     },
     {
       "path": "Capabilities/AzureFilesBackup/AzureFilesBackup.Plan.ps1",
@@ -216,7 +220,7 @@
     },
     {
       "path": "Public/New-AzureDataLabPlan.ps1",
-      "sha256": "f427d0bacef9ac348fa6377018925247835568ee71be1fc1892690592e30bc85"
+      "sha256": "f84a67b9ccba2c67d804fd8b3a20e81cc22823f0720244bf7d507bb14177e2c4"
     },
     {
       "path": "Public/New-AzureDataLabRun.ps1",

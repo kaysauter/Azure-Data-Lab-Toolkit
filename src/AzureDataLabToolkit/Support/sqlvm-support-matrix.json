@@ -53,6 +53,24 @@
         "deployment": "backlog"
       }
     },
+    "sqlEdition": {
+      "Developer": {
+        "plan": "supported",
+        "deployment": "available"
+      },
+      "Express": {
+        "plan": "supported-with-warning",
+        "deployment": "available"
+      },
+      "Standard": {
+        "plan": "supported-with-warning",
+        "deployment": "available"
+      },
+      "Enterprise": {
+        "plan": "supported-with-warning",
+        "deployment": "available"
+      }
+    },
     "securityType": {
       "standard": {
         "plan": "supported-with-warning",
