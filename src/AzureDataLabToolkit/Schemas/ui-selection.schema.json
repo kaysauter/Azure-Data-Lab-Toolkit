@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/ui-selection-1.0.json",
+  "title": "Azure Data Lab Toolkit guided selection handoff",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "template",
+    "softwareIds",
+    "sampleDataIds",
+    "overrides"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "AzureDataLabUiSelection"
+    },
+    "template": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+    },
+    "softwareIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^software\\.[a-z0-9][a-z0-9.-]+$"
+      }
+    },
+    "sampleDataIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^sample-data\\.[a-z0-9][a-z0-9.-]+$"
+      }
+    },
+    "overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "location": {
+          "type": "string"
+        },
+        "vmSize": {
+          "type": "string"
+        },
+        "securityType": {
+          "enum": [
+            "standard",
+            "trustedLaunch",
+            "confidentialVm"
+          ]
+        },
+        "bastionSku": {
+          "enum": [
+            "developer",
+            "basic",
+            "standard",
+            "premium"
+          ]
+        },
+        "diskEncryptionSetResourceId": {
+          "type": "string",
+          "pattern": "^/subscriptions/[0-9a-fA-F-]+/"
+        },
+        "enableBackupShare": {
+          "type": "boolean"
+        },
+        "containsSensitiveData": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

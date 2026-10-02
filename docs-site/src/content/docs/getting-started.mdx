@@ -1,0 +1,109 @@
+---
+title: Try The Alpha
+description: Install, validate, plan, and export the current SQL VM alpha, and what happens when you go live.
+---
+
+:::danger[The commands on this page are offline; the module is not]
+Everything below runs without Azure access and changes nothing. The same module
+also ships `Connect-AzureDataLabAccount`, `Test-AzureDataLabWhatIf`,
+`Start-AzureDataLabDeployment`, and `Start-AzureDataLabTeardown`, which sign in,
+create real Azure resources, and delete them.
+
+None of that has been verified against a live subscription and no release has
+been published. Stay on the offline commands unless you accept that risk.
+:::
+
+## Prerequisites
+
+- PowerShell 7.6 or later
+- `powershell-yaml` 0.4.12
+- a local clone of the repository
+
+```powershell
+Install-PSResource powershell-yaml -Version 0.4.12 -Repository PSGallery
+Import-Module ./src/AzureDataLabToolkit/AzureDataLabToolkit.psd1
+```
+
+## Validate and plan
+
+The minimal example selects the fixed secure SQL VM alpha profile: Trusted
+Launch, Secure Boot, vTPM, encryption at host, a system-assigned managed
+identity, private VM networking, Key Vault, and Azure Bastion Basic.
+
+```powershell
+Test-AzureDataLabConfiguration ./examples/sqlvm-minimal.yaml
+
+$plan = New-AzureDataLabPlan ./examples/sqlvm-minimal.yaml
+$plan.approval.blockingFindingIds
+$plan.approval.requiredAcknowledgementIds
+```
+
+The default plan is intentionally blocked until authenticated WhatIf resolves an
+immutable marketplace image version and an approved secure workflow supplies
+the referenced VM administrator secret.
+
+An existing customer-managed-key disk encryption set can be selected with
+`-DiskEncryptionSetResourceId`. The plan treats it as reused, wires it into the
+OS and SQL data disks, and requires live verification of region, key, and
+identity compatibility.
+
+## Export a readable report
+
+```powershell
+Export-AzureDataLabPlan $plan -Format Json
+Export-AzureDataLabPlan $plan -Format Markdown -Path ./sqlvm-plan.md
+Export-AzureDataLabPlan $plan -Format Html -Path ./sqlvm-plan.html
+```
+
+Files are not overwritten unless `-Force` is explicit. HTML is standalone and
+contains no script.
+
+## Password opt-ins
+
+:::danger[Generation is not implemented]
+`-GeneratePassword` and `-ShowGeneratedPassword` record plan intent only. The
+alpha does not generate or print a password. `-ShowGeneratedPassword` sets
+`allowShellOutput`, which raises a `high` acknowledge-required policy finding;
+nothing consumes it to write a value to the host.
+
+During deployment the VM administrator password never enters the toolkit
+process: it is an ARM `secureString` fed by a Key Vault reference with a pinned
+secret version. A future generator must use a cryptographically secure source,
+write directly to the approved vault, keep plaintext out of plans, state, and
+logs, and pass security review before this can be called available.
+:::
+
+```powershell
+$plan = New-AzureDataLabPlan `
+  ./examples/sqlvm-minimal.yaml `
+  -GeneratePassword
+```
+
+`-ShowGeneratedPassword` is a second, independent opt-in. It is accepted only
+with `-GeneratePassword` and creates a high-severity, plan-hash-bound
+acknowledgement requirement because shell output can remain in scrollback,
+transcripts, screenshots, and captured logs.
+
+## Optional backup share
+
+```powershell
+$plan = New-AzureDataLabPlan ./examples/sqlvm-backup-share.yaml
+```
+
+This plans Azure Files with SMB OAuth, private endpoint and DNS, VM managed
+identity authorization, and drive-mount preparation. It also selects the
+manual SQL VM backup-restore solution pack and its exact dbatools catalog
+dependency. Catalog integrity is unresolved, so deployment remains blocked.
+The plan also carries a dedicated blocker until acquisition, integrity
+verification, installation, credential refresh, and probing for Microsoft's
+`AzFilesSmbMIClient` are implemented. Local mount and restore script rendering
+has no dependency on future Azure or guest operations; staging is modeled as a
+separate action. No file is uploaded, no drive is mounted, and no database is
+restored.
+
+## What comes next
+
+Authenticated `-WhatIf`, cost estimation, PowerShell deployment, guest
+operations, probes, state, and teardown are later delivery segments. See
+[Project Status](../status/) and [Testing Strategy](../testing/) for the
+boundary between current code and committed design.

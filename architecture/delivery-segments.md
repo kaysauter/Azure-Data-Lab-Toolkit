@@ -1,12 +1,18 @@
 # Delivery Segments
 
 This document is the authoritative delivery plan for Azure Data Lab Toolkit. It
-defines implementation order, segment exit criteria, and quality gates. It does
-not claim that any segment is implemented or released.
+defines implementation order, segment exit criteria, and quality gates. A
+partial implementation does not make a segment complete.
 
-> **Current state:** The repository contains architecture, documentation, a
-> pitch deck, and backlog artifacts. It has no installable module, deployable
-> cmdlets, released providers, or production-ready behavior.
+> **Current state:** S0 is documented and S1 is implemented in the repository:
+> an installable module validates YAML, creates deterministic SQL VM plans,
+> discovers metadata-only catalogs, reads a support matrix, exports plan
+> reports, and carries local run-state and evidence contracts. Azure sign-in,
+> live resolution, `-WhatIf` reconciliation, the PowerShell deployment engine,
+> post-deployment probes, and teardown are implemented and test-covered as well.
+> None of it has been exercised against a live subscription and no release has
+> been published, so no segment has passed its Live or Release gate and nothing
+> is production-ready.
 
 ## How To Read The Plan
 
@@ -75,7 +81,7 @@ for planning, security policy, cost estimation, or an initial deployment.
 | Segment | User-visible outcome | Included feature work | Entry criteria | Exit criteria | Gate | Explicitly deferred |
 | --- | --- | --- | --- | --- | --- | --- |
 | **S0 Architecture and contract spine** | A decision-complete product model and delivery graph that contributors can implement without inventing new boundaries. | FR-001, FR-004; design records for FR-033 through FR-044. | Repository scaffold and latest product vision are available. | Seven-part architecture, status vocabulary, technical dependencies, segment order, security decisions, engine boundary, state boundary, and quality gates are accepted and internally consistent. | C | Runtime implementation, Azure mutation, provider claims. |
-| **S1 Installable offline core** | Users can install the module, validate versioned YAML, resolve flags and templates, produce deterministic Plan output, and render HTML without Azure access. | FR-002, FR-003, FR-005, FR-006 local-state slice, FR-008 policy slice, FR-009 offline slice, FR-010 template slice, FR-011 metadata slice, FR-013 contract slice, FR-033 offline/export slice, FR-034. | S0 accepted. | Module imports on supported PowerShell versions; schemas reject invalid input; identical inputs produce the same canonical plan hash; provenance, secret-store and access decisions, ownership, cost intent, and teardown intent are represented; local state and evidence fixtures pass Contract tests. | C | Azure authentication or mutation, polished TUI, live prices, live provider behavior. |
+| **S1 Installable offline core** | Users can install the module, validate versioned YAML, resolve flags and templates, produce deterministic Plan output, and render HTML without Azure access. | FR-002, FR-003, FR-005, FR-006 local-state slice, FR-008 policy slice, FR-009 offline slice, FR-010 template slice, FR-011 metadata slice, FR-013 contract slice, FR-033 offline/export slice, FR-034. | S0 accepted. | Module imports on supported PowerShell versions; schemas reject invalid input; identical inputs produce the same canonical plan hash; provenance, secret-store and access decisions, ownership, cost intent, and teardown intent are represented; local state and evidence fixtures pass Contract tests. | C | Azure authentication or mutation, live prices, live provider behavior. |
 | **S2 GitHub engineering CI baseline** | Every change to the toolkit receives repeatable build, test, documentation, dependency, secret, and vulnerability checks. | FR-012 and the CI-facing test slice of FR-013. | S1 contracts and package layout are stable enough to test. | GitHub pull requests run pinned PowerShell, schema, Pester, analysis, docs, link, dependency, secret, and vulnerability checks without cloud credentials; release and live lanes are defined but protected. | C | User-facing Git providers, unapproved Azure deployment, broad live matrices. |
 | **S3 Read-only SQL VM plan** | A user can run Plan, WhatIf, and CostEstimate for one secure SQL VM profile without changing Azure. | Read-only slices of FR-008, FR-009, FR-013, FR-014, FR-033, FR-034, FR-043, and FR-044. | S1 and S2 pass; a permitted test subscription exists for authenticated reads. | Offline Plan and Azure-aware WhatIf agree on stable IDs; `secretStoreDecision` and `administrativeAccessDecision` are explicit; default access is Bastion with no public IP; prices include source, timestamp, currency, confidence, and unknowns; denied access is not treated as absence; no Azure mutation occurs. | C | VM creation, guest operations, SQL configuration, data and tools. |
 | **S4 Secure Azure VM canary** | A user can deploy, access, stop, resume, and remove a private Windows VM through the guarded PowerShell path. | Mutating slices of FR-006, FR-008, FR-009, FR-013, FR-014, FR-033, FR-034, FR-035, FR-043, and FR-044. | S3 plan is approved; isolated subscription, quota, interactive identity, budget, and cleanup owner are available. | Private VM, managed identity, Key Vault decision, Bastion decision, protected local run state, interactive resume, probes, shutdown, teardown preview, confirmed deletion, orphan query, and still-billable-resource report pass in an isolated run. | L | Remote unattended execution, SQL readiness, sample data, community tools, broad image or region support. |

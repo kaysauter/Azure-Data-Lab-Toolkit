@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/support-matrix-1.0.json",
+  "title": "Azure Data Lab Toolkit support matrix",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "targetType",
+    "contractStatus",
+    "deploymentStatus",
+    "axes",
+    "guarantees"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "AzureDataLabSupportMatrix"
+    },
+    "targetType": {
+      "type": "string"
+    },
+    "contractStatus": {
+      "enum": [
+        "implemented",
+        "draft"
+      ]
+    },
+    "deploymentStatus": {
+      "enum": [
+        "unavailable",
+        "available"
+      ]
+    },
+    "axes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "plan",
+            "deployment"
+          ],
+          "properties": {
+            "plan": {
+              "enum": [
+                "supported",
+                "supported-with-warning",
+                "unsupported"
+              ]
+            },
+            "deployment": {
+              "enum": [
+                "available",
+                "unavailable",
+                "backlog",
+                "research",
+                "refused"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "guarantees": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    }
+  }
+}

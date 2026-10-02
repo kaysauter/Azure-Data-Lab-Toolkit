@@ -1,0 +1,73 @@
+name: Feature request
+description: Suggest a capability or a change to an accepted contract.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check [FEATURE_REQUESTS.md](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/FEATURE_REQUESTS.md)
+        and [architecture/delivery-segments.md](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/architecture/delivery-segments.md)
+        first. Delivery runs in segments with exit gates, so a good idea that jumps the order
+        may still be declined — that is sequencing, not a judgement on the idea.
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: The outcome you want
+      description: What should a user be able to do? Describe the outcome, not the implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why the current behaviour is insufficient
+      description: What do you do today instead, and what does that cost you?
+    validations:
+      required: true
+
+  - type: input
+    id: existing
+    attributes:
+      label: Existing roadmap entry
+      description: An `FR-nnn` ID or segment this relates to, if you found one.
+      placeholder: FR-012 / S4 / none found
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Target provider (a new deployable platform)
+        - Capability module (networking, Key Vault, Bastion, storage)
+        - Catalog entry (software or sample data)
+        - Deployment engine (Bicep, Terraform)
+        - Guest operations (software install, database restore)
+        - Configuration surface (a new selectable option)
+        - Browser wizard
+        - Documentation
+        - Build, CI, or release
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: security
+    attributes:
+      label: Security and cost implications
+      description: |
+        This project fails closed by design: unknown input is rejected, mutation needs a typed
+        approval phrase, and secrets are references rather than values. Does your request widen
+        any of that, or add a cost the user should acknowledge? An honest answer here makes the
+        request much easier to accept.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contract
+    attributes:
+      label: Contract impact
+      options:
+        - label: This may need a new or changed architecture decision record.
+        - label: This may change the plan contract (`planHash`) or the engine identity digest.
+        - label: I do not know.

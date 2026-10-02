@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "AzureDataLabCatalog",
+  "catalogType": "sample-data",
+  "items": [
+    {
+      "id": "sample-data.adventureworks-2022",
+      "displayName": "AdventureWorks 2022",
+      "version": "2022",
+      "publisher": "Microsoft",
+      "home": "https://learn.microsoft.com/en-us/sql/samples/adventureworks-install-configure",
+      "attribution": "https://github.com/microsoft/sql-server-samples/tree/master/samples/databases/adventure-works",
+      "platforms": [
+        "sql-server-2022",
+        "sql-server-2025"
+      ],
+      "tags": [
+        "microsoft",
+        "oltp",
+        "sample",
+        "sql-server",
+        "sqlvm"
+      ],
+      "source": {
+        "type": "github-release",
+        "uri": "https://github.com/microsoft/sql-server-samples/releases/tag/adventureworks"
+      },
+      "license": {
+        "spdx": "MIT",
+        "uri": "https://github.com/microsoft/sql-server-samples/blob/master/license.txt"
+      },
+      "integrity": {
+        "status": "required-before-deployment",
+        "algorithm": "sha256"
+      },
+      "sensitivity": {
+        "classification": "public-sample"
+      },
+      "privileges": {
+        "requiresElevation": false
+      },
+      "compatibility": {
+        "targetTypes": [
+          "sqlVm"
+        ]
+      },
+      "probes": [
+        "sql-database:AdventureWorks2022"
+      ],
+      "supportStatus": "metadata-only"
+    }
+  ]
+}

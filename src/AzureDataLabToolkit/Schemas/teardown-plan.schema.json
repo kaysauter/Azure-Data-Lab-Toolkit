@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/teardown-plan-1.0.json",
+  "title": "Azure Data Lab Toolkit teardown plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "canonicalization",
+    "runId",
+    "scope",
+    "sourcePlanHash",
+    "intentHash",
+    "observedStateEvidenceHash",
+    "resourceGroupId",
+    "strategy",
+    "retainResourceGroup",
+    "freshInventoryRequired",
+    "plannedOwnedResourceIds",
+    "futureOwnedResourceIds",
+    "ownershipProofRequiredResourceIds",
+    "retainedResourceIds",
+    "blockers",
+    "createdAt",
+    "expiresAt",
+    "teardownPlanHash"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "AzureDataLabTeardownPlan"
+    },
+    "canonicalization": {
+      "const": "rfc8785"
+    },
+    "runId": {
+      "$ref": "#/$defs/uuid"
+    },
+    "scope": {
+      "$ref": "#/$defs/azureScope"
+    },
+    "sourcePlanHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "intentHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "observedStateEvidenceHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "resourceGroupId": {
+      "$ref": "#/$defs/resourceId"
+    },
+    "strategy": {
+      "const": "exact-resource-ids"
+    },
+    "retainResourceGroup": {
+      "const": true
+    },
+    "freshInventoryRequired": {
+      "const": true
+    },
+    "plannedOwnedResourceIds": {
+      "$ref": "#/$defs/resourceIdSet"
+    },
+    "futureOwnedResourceIds": {
+      "$ref": "#/$defs/resourceIdSet"
+    },
+    "ownershipProofRequiredResourceIds": {
+      "$ref": "#/$defs/resourceIdSet"
+    },
+    "retainedResourceIds": {
+      "$ref": "#/$defs/resourceIdSet"
+    },
+    "blockers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "code",
+          "resourceId",
+          "message"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^blocker\\.[a-z0-9][a-z0-9.-]+$"
+          },
+          "code": {
+            "enum": [
+              "authorization-required",
+              "delete-protection",
+              "dependency-blocked",
+              "ownership-unverified",
+              "resource-drift",
+              "retention-required",
+              "scope-mismatch",
+              "unknown-live-state"
+            ]
+          },
+          "resourceId": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/resourceId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "teardownPlanHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "createdAt": {
+      "$ref": "#/$defs/utcTimestamp"
+    },
+    "expiresAt": {
+      "$ref": "#/$defs/utcTimestamp"
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "azureScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cloud",
+        "tenantId",
+        "subscriptionId",
+        "resourceGroupName",
+        "location"
+      ],
+      "properties": {
+        "cloud": {
+          "const": "AzureCloud"
+        },
+        "tenantId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "subscriptionId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "resourceGroupName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90,
+          "pattern": "^[^<>%&:\\\\?/#]+[^.\\s]$"
+        },
+        "location": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+$",
+          "minLength": 2,
+          "maxLength": 40
+        }
+      }
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]{1,9})?Z$"
+    },
+    "resourceId": {
+      "type": "string",
+      "pattern": "^/subscriptions/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/resourceGroups/[^/]+(?:/providers/[A-Za-z0-9.]+/[A-Za-z0-9]+/[^/]+(?:/[A-Za-z0-9]+/[^/]+)*)?$"
+    },
+    "resourceIdSet": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/resourceId"
+      }
+    }
+  }
+}
