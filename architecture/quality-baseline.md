@@ -45,7 +45,14 @@ is almost entirely weighting, not disagreement about facts:
 
 ### Per-dimension notes
 
-**Security — 8.** Verified: the VM administrator password structurally cannot enter the process
+**Security — 8, pending an adversarial re-review.** The first security pass failed on a tooling
+error (structured-output retry cap, not an analysis failure) and has been relaunched as three
+adversarial passes that attempt to falsify the invariants rather than confirm them. One finding
+from the test review already bears on this score: `Invoke-AdltAzCommand`, the gate in front of
+every Azure mutation, is itself only ~60% executed, so the *assurance* behind the design is
+weaker than the design. Expect this number to settle at 7–8 rather than rise.
+
+Verified: the VM administrator password structurally cannot enter the process
 (ARM `secureString` + Key Vault reference with a pinned `secretVersion`); teardown re-verifies
 etag, observation fingerprint and proof hash *inside* the deletion loop; closed-world module
 script lock, dependency lock, build-tool lock, SPDX SBOM, SHA-pinned actions. Held below 9 by
@@ -53,12 +60,49 @@ the allowlist's fail-open default — 10 of 19 cmdlets have no parameter clamp a
 allowlist/contract parity — and by the removal of the bundled-PSResourceGet content digest,
 which was justified but is a real reduction in tamper detection.
 
-**Tests — 6.** 367 tests, ~80.16% command coverage, architecture rules enforced by tests rather
-than convention, and a cross-platform golden-hash determinism guard. The gate demonstrably
-works: it caught a 59-failure regression that a 20-test subset had passed. Held down because
-the uncovered fraction clusters in the Azure-facing error paths — precisely the ones that matter
-mid-deployment — because five tests asserted against ambient host state and passed locally while
-failing on three CI platforms, and because there is no fault injection.
+**Tests — 6.** Independently reviewed and scored 6, matching the initial estimate. What exists
+is unusually disciplined: 224 `BeExactly` assertions, 66 message-pinned `Should -Throw`,
+tamper-after-rehash mutation-style tests, real resume/idempotency/lease/drift scenarios, and
+injected seams for git and the clock. The gate demonstrably works — it caught a 59-failure
+regression that a 20-test subset had passed.
+
+Held at 6 by findings that are worse than first assumed, each verified:
+
+- **The Azure fake is circular.** Every Az object and Az exception in the suite is a hand-built
+  `pscustomobject` written by the same author as the code that reads it. None has ever been
+  checked against a real Az response or a real Az error type. Passing tests therefore establish
+  that the code agrees with itself, not that it agrees with Azure — which is the property a live
+  deployment needs.
+- **The security gate is the least-tested part of the security boundary.**
+  `Private/70-AzureCommand.ps1` is ~60% covered, with 136 missed commands inside
+  `Invoke-AdltAzCommand` itself. Scenario tests mock *above* the validator, so the
+  caller→validator path never executes.
+- **The 80% coverage figure is partly an artifact.** Excluding the 16 tests that run `build.ps1`
+  and package the module, coverage is **79.05%** — below the gate. The headline number is
+  carried by build-running tests rather than by unit coverage of the module.
+- **Recovery paths are the least covered.** `Resolve-AzureDataLabTeardown` 34.9%,
+  `Resolve-AzureDataLabDeployment` 42.2%, `Resume-AzureDataLabDeployment` 47.9%,
+  `Resume-AzureDataLabTeardown` 55.3%, `Start-AzureDataLabDeployment` 57.9% — exactly the
+  branches a live deployment hits when something goes wrong.
+- **One security test passes for the wrong reason.** `tests/Unit/AzureRead.Tests.ps1:648`
+  asserts that Key Vault secret retrieval is refused, but passes `-ModuleName Az.KeyVault`,
+  which is not in the `[ValidateSet]`. The bare `Should -Throw` is satisfied by parameter
+  binding and never reaches the allowlist. It would still pass if the allowlist were deleted.
+- **Canonical JSON diverges from RFC 8785**, which the documentation claims. Verified: `U+001F`
+  is emitted as `\u001F` where the RFC requires lowercase hex, and `U+007F` is escaped where the
+  RFC leaves it raw. Low practical risk while plan strings stay pattern-constrained, but the
+  point of canonicalisation is cross-implementation agreement on bytes — a second engine
+  canonicalising per the actual RFC would compute different hashes.
+- Host coupling remains: `tests/Unit/Module.Tests.ps1:53` asserts session-global state
+  (`@(Get-Module -Name 'Az.*').Count | Should -Be 0`), which fails on any machine with an Az
+  module already loaded.
+- No ARM template validation, no recorded-response tier, no multi-process concurrency tests on
+  the run store, no property-based or mutation testing. The suite takes 41–45 minutes on CI,
+  which rules it out as a development loop.
+
+A 7 is roughly a week away: contract-check the fakes against the real Az modules CI already
+stages, and unit-test the recovery branches. A 9–10 additionally needs a live tier with
+recorded real responses.
 
 **Architecture — 6.** The plan-side seam genuinely works: contributors have measured zero fan-in
 from Core, so the registry indirection is never bypassed. Held down because the provider rather

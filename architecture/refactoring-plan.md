@@ -246,6 +246,29 @@ require a typed approval phrase — and document each phrase's format in the hel
 that demands it, since a user currently has to run the command once to discover it. Add a test
 asserting every exported command has at least one `.EXAMPLE`.
 
+**Fix the three test defects that undermine their own claims.**
+`tests/Unit/AzureRead.Tests.ps1:648` passes `-ModuleName Az.KeyVault`, which is outside the
+`[ValidateSet]`, so its bare `Should -Throw` is satisfied by parameter binding and never reaches
+the allowlist it claims to test — pin the message and use an allowlisted module with a
+non-allowlisted command. `tests/Unit/Module.Tests.ps1:53` asserts session-global state
+(`@(Get-Module -Name 'Az.*').Count`) and fails on any machine with an Az module loaded. And
+`40-Canonical.ps1` is documented as RFC 8785 but emits uppercase `\uXXXX` hex and escapes
+`U+007F`, which the RFC leaves raw — either conform or correct the claim to "RFC 8785-style",
+and add a test pinning the chosen behaviour.
+
+**Make the Azure fakes non-circular.** Every Az object and exception in the suite is hand-built
+and has never been compared against a real one, so passing tests prove self-consistency rather
+than agreement with Azure. CI already stages the real pinned Az modules — add contract checks
+that assert the fake shapes match the real cmdlets' output types and that the error types raised
+match what Azure actually throws. This is the highest-value test work available and it does not
+need a subscription.
+
+**Cover the gate and the recovery paths.** `Private/70-AzureCommand.ps1` sits at ~60% with 136
+missed commands inside `Invoke-AdltAzCommand`, because scenario tests mock above the validator;
+and the Resolve/Resume commands sit at 35–58%, which is exactly what a failed live deployment
+exercises. Note also that overall coverage is **79.05% without the 16 build-running tests** —
+below the gate — so the headline figure overstates unit coverage of the module.
+
 **Decompose the large functions** along the phase boundaries that already exist in the code,
 guarded by the two hash tripwires. Then add a function-length and complexity budget to the
 Analyze task so the gain cannot silently erode.
