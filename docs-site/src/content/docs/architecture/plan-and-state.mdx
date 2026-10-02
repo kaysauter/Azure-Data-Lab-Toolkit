@@ -9,6 +9,52 @@ The normalized plan is the immutable contract between user intent, extensions,
 policy, deployment engines, and evidence. Run state records what happened to an
 approved plan; it does not replace the plan.
 
+## YAML, JSON, Markdown, and HTML are not alternatives
+
+These formats appear at opposite ends of the pipeline and are easy to confuse.
+
+```
+your YAML  ──►  resolve + plan  ──►  Export-AzureDataLabPlan
+ 19 lines        21-key plan         Json │ Markdown │ Html
+ 6 keys                              (renderings of the plan)
+```
+
+**YAML is the authoring format — input only.** You write it; the toolkit never produces it.
+`examples/sqlvm-minimal.yaml` is 19 lines with six top-level keys, roughly "a SQL VM, in this
+subscription, in this region".
+
+**JSON, Markdown and HTML are renderings of the resolved plan — output only.** They are three
+views of one artifact, not three ways to say the same thing as the YAML. The plan has 21
+top-level keys, and almost none of them appear in your YAML:
+
+| In the plan | Not in your YAML |
+| --- | --- |
+| `resources`, `actions` | the exact Azure resources and the ordered action graph |
+| `provenance` | per-leaf value, type, source and derivation — which layer set what |
+| `decisions` | resolved secret-store, access, compute-security and sensitivity decisions |
+| `policyFindings`, `approval` | blocking findings and what you must acknowledge |
+| `planHash`, `intentHash`, `contracts` | determinism and contract-version bindings |
+| `unverifiedFacts` | what could not be proven without Azure access |
+| `supportEvaluation` | which support-matrix axes were checked |
+| `context` | derived deterministic resource names |
+
+Put plainly: **your YAML states intent; the plan states consequences.** Markdown and HTML are
+curated human-review documents — they deliberately omit the subscription and tenant
+identifiers. JSON is the complete machine-readable plan and does carry them.
+
+### Why the plan is not exported as YAML
+
+YAML admits many valid serializations of the same data, which is exactly what the canonical
+form exists to prevent — `planHash` is only meaningful because two serializations of one plan
+are byte-identical. The toolkit already treats YAML as a format to parse defensively rather
+than to produce: anchors and aliases are rejected outright, along with duplicate keys, explicit
+tags and multiple documents. Emitting the plan as YAML would either weaken the determinism
+guarantee or require a second canonicalization story. JSON is the machine format.
+
+So if you want a richer authoring experience, that work belongs on the **input** surface — the
+configuration schema, templates, selectable options, and the browser wizard that writes YAML.
+The export formats are a separate concern.
+
 ## Normalized plan envelope
 
 The plan uses a versioned JSON-compatible schema. YAML is the authoring format,
