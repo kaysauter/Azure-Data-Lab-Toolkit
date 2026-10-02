@@ -107,3 +107,61 @@ Describe 'Complete plan contract verification' {
         }
     }
 }
+
+Describe 'Plan report distribution boundary' {
+    BeforeAll {
+        $script:MinimalConfigurationPath = Join-Path `
+            $script:RepositoryRoot `
+            'examples/sqlvm-minimal.yaml'
+    }
+
+    It 'refuses to render a plan that carries a literal secret' {
+        InModuleScope AzureDataLabToolkit -Parameters @{
+            ConfigurationPath = $script:MinimalConfigurationPath
+            ExportPath        = Join-Path $TestDrive 'leaking-plan.json'
+        } {
+            param($ConfigurationPath, $ExportPath)
+
+            $leaking = Copy-AdltValue -InputObject (
+                New-AzureDataLabPlan $ConfigurationPath
+            )
+            $leaking.resources[0].desiredProperties.password =
+                'Contoso-Literal-Secret-1'
+            $leaking.planHash = Get-AdltPlanHash -Plan $leaking
+
+            # The hash is honest, so the pre-existing gate is satisfied and
+            # only the secret-free boundary can stop the export.
+            { Assert-AdltPlanHash -Plan $leaking } | Should -Not -Throw
+
+            foreach ($format in 'Json', 'Markdown', 'Html') {
+                {
+                    Export-AzureDataLabPlan $leaking -Format $format
+                } | Should -Throw -ExpectedMessage (
+                    "*Secret values are forbidden in plan. Remove field " +
+                    "'resources*desiredProperties.password' and use a " +
+                    'secret reference.*'
+                )
+            }
+
+            {
+                Export-AzureDataLabPlan `
+                    -Plan $leaking `
+                    -Format Json `
+                    -Path $ExportPath
+            } | Should -Throw -ExpectedMessage '*Secret values are forbidden*'
+            Test-Path -LiteralPath $ExportPath | Should -BeFalse
+        }
+    }
+
+    It 'still exports a clean plan to stdout and to a path' {
+        $plan = New-AzureDataLabPlan $script:MinimalConfigurationPath
+        $exportPath = Join-Path $TestDrive 'clean-plan.json'
+
+        Export-AzureDataLabPlan $plan -Format Json |
+            Should -Match '"planHash":'
+        Export-AzureDataLabPlan $plan -Format Json -Path $exportPath |
+            Should -Be ([System.IO.Path]::GetFullPath($exportPath))
+        Get-Content -LiteralPath $exportPath -Raw |
+            Should -Match '"planHash":'
+    }
+}

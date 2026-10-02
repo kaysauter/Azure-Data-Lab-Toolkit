@@ -301,6 +301,20 @@ function Export-AzureDataLabPlan {
 
     process {
         $planDictionary = ConvertTo-AdltDictionary -InputObject $Plan
+
+        # A plan report is designed to be distributed: it is attached to change
+        # records, pasted into reviews, and committed next to the configuration
+        # it describes, which is why the written file keeps the ordinary 0644
+        # mode instead of being created private. That makes this the last
+        # boundary before plan content leaves the machine, so the secret-free
+        # check runs here even though the caller already passed it when the plan
+        # was built. The hash check alone cannot stand in for it: a hash proves
+        # only that the plan is unchanged since it was hashed, and a plan
+        # carrying a literal secret with a correctly recomputed planHash is
+        # internally consistent. Every other persistence path writes artifacts
+        # that stay local, so this one gate is what keeps a shared report from
+        # being the cheapest way to exfiltrate a credential.
+        Assert-AdltSecretFreeBoundary -InputObject $planDictionary -Boundary plan
         Assert-AdltPlanHash -Plan $planDictionary
 
         $content = switch ($Format) {

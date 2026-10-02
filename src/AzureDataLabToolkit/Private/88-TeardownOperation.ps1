@@ -752,29 +752,35 @@ function Test-AdltApprovedResourceUnchanged {
             'teardown approval.'
         )
     }
+    $expectedMatches = @(
+        Get-AdltSqlVmTeardownExpectedResourceSet `
+            -Plan $Plan `
+            -Compilation $Compilation |
+            Where-Object {
+                [string]::Equals(
+                    [string] $_.resourceId,
+                    [string] $Resource.resourceId,
+                    [System.StringComparison]::OrdinalIgnoreCase
+                )
+            }
+    )
+    if ($expectedMatches.Count -ne 1) {
+        throw 'Approved resource no longer has one compiler proof contract.'
+    }
+    $expected = ConvertTo-AdltDictionary `
+        -InputObject $expectedMatches[0]
     if (
-        $Resource.relationship -in @(
+        [string] $expected.relationship -cne
+            [string] $Resource.relationship
+    ) {
+        throw 'Approved resource no longer has its approved relationship.'
+    }
+    if (
+        $Resource.relationship -cin @(
             'planned-taggable'
             'planned-descendant'
         )
     ) {
-        $expectedMatches = @(
-            Get-AdltSqlVmTeardownExpectedResourceSet `
-                -Plan $Plan `
-                -Compilation $Compilation |
-                Where-Object {
-                    [string]::Equals(
-                        [string] $_.resourceId,
-                        [string] $Resource.resourceId,
-                        [System.StringComparison]::OrdinalIgnoreCase
-                    )
-                }
-        )
-        if ($expectedMatches.Count -ne 1) {
-            throw 'Approved resource no longer has one compiler proof contract.'
-        }
-        $expected = ConvertTo-AdltDictionary `
-            -InputObject $expectedMatches[0]
         $planResources = Get-AdltSqlVmArmResourceMap -Plan $Plan
         $compiledResources =
             Get-AdltSqlVmCompiledNestedResourceMap `
@@ -797,6 +803,151 @@ function Test-AdltApprovedResourceUnchanged {
                 'material-state proof changed before deletion.'
             )
         }
+    }
+    elseif ($Resource.relationship -ceq 'sql-iaas-agent-extension') {
+        # This recomputes the inventory-time extension proof byte for byte, so
+        # the ordered members, their values and the pinned profile version must
+        # stay identical to the 'sql-iaas-agent-extension' arm of the switch in
+        # Get-AdltSqlVmTeardownInventory (87-TeardownInventory.ps1). The
+        # recomputation is possible here because the whole proof is derivable
+        # from the extension itself plus the presence of its parent VM, and the
+        # parent is observable whenever the extension is: deleting the VM takes
+        # its extensions with it, and Get-AdltTeardownDeletionOrder deletes
+        # every extension before that VM. A future divergence between the two
+        # proof formulas fails this gate closed rather than silently skipping
+        # it.
+        $parentResourceId = [string] $expected.expectedProperties.
+            parentResourceId
+        if (
+            [string]::IsNullOrWhiteSpace($parentResourceId) -or
+            -not $listedIds.Contains($parentResourceId)
+        ) {
+            throw (
+                "SQL IaaS extension '$($Resource.resourceId)' lacks its " +
+                'owned VM before deletion.'
+            )
+        }
+        $observedPublisher = [string] (
+            Get-AdltObservedNestedValue `
+                -Observed $observed `
+                -CandidatePaths @(
+                    'Properties.Publisher'
+                    'Publisher'
+                )
+        )
+        $observedExtensionType = [string] (
+            Get-AdltObservedNestedValue `
+                -Observed $observed `
+                -CandidatePaths @(
+                    'Properties.Type'
+                    'Properties.ExtensionType'
+                )
+        )
+        $freshProof = Get-AdltSha256Identifier -Value (
+            ConvertTo-AdltCanonicalJson -InputObject ([ordered]@{
+                resourceId = [string] $Resource.resourceId
+                parentResourceId = $parentResourceId
+                producerResourceId = [string] $expected.producerResourceId
+                publisher = $observedPublisher
+                type = $observedExtensionType
+                profileVersion = 'sql-iaas-windows-2023-10-01-v1'
+            })
+        )
+        if ($freshProof -cne [string] $Resource.proofHash) {
+            throw (
+                "Approved resource '$($Resource.resourceId)' ownership or " +
+                'material-state proof changed before deletion.'
+            )
+        }
+    }
+    elseif ($Resource.relationship -ceq 'vm-managed-disk') {
+        # The inventory-time disk proof (Assert-AdltSqlVmDiskOwnership in
+        # 87-TeardownInventory.ps1) hashes managedBy, the owning VM's
+        # storage-profile entry for this disk and that entry's DeleteOption
+        # together with the disk size and storage type. Only the disk-intrinsic
+        # half of that proof is derivable here. The VM storage-profile entry
+        # that carries attachedId and DeleteOption lives on the owning VM, and
+        # Get-AdltTeardownDeletionOrder deletes that VM before its disks, so by
+        # the time a disk is actually deleted the profile is gone and Azure has
+        # cleared the disk's ManagedBy back-reference with it. Recomputing the
+        # whole proof hash would therefore fail every legitimate disk deletion,
+        # and the attachment coupling stays proven only as of inventory time.
+        # What is re-proven here is everything that outlives the VM: the disk
+        # still carries the planned VM's ManagedBy back-reference, or no
+        # back-reference at all once that VM is no longer listed, and its size
+        # and storage type still match the compiler contract. None of those are
+        # covered by the id/type/etag/fingerprint comparison above, because the
+        # fingerprint of an implicitly created disk carries neither an etag nor
+        # tags. Note that this function is also the remaining-set predicate for
+        # resume re-approval (Get-AdltRemainingApprovedResourceSet), where the
+        # owning VM is normally still alive, so nothing here may assume that
+        # deletion has already begun.
+        $producerResourceId = [string] $expected.producerResourceId
+        if ([string]::IsNullOrWhiteSpace($producerResourceId)) {
+            throw (
+                "Managed disk '$($Resource.resourceId)' lacks its owned VM " +
+                'before deletion.'
+            )
+        }
+        $observedManagedBy = [string] (
+            Get-AdltObservedNestedValue `
+                -Observed $observed `
+                -CandidatePaths @(
+                    'ManagedBy'
+                    'Properties.ManagedBy'
+                )
+        )
+        if (
+            -not [string]::Equals(
+                $observedManagedBy,
+                $producerResourceId,
+                [System.StringComparison]::OrdinalIgnoreCase
+            ) -and
+            (
+                $listedIds.Contains($producerResourceId) -or
+                -not [string]::IsNullOrWhiteSpace($observedManagedBy)
+            )
+        ) {
+            throw (
+                "Managed disk '$($Resource.resourceId)' is not managed by " +
+                'the planned VM.'
+            )
+        }
+        $observedDiskSize = Get-AdltObservedNestedValue `
+            -Observed $observed `
+            -CandidatePaths @(
+                'DiskSizeGB'
+                'Properties.DiskSizeGB'
+            )
+        $observedStorageType = [string] (
+            Get-AdltObservedNestedValue `
+                -Observed $observed `
+                -CandidatePaths @(
+                    'Sku.Name'
+                    'Properties.AccountType'
+                )
+        )
+        if (
+            $null -eq $observedDiskSize -or
+            [int] $observedDiskSize -ne
+                [int] $expected.expectedProperties.sizeGiB -or
+            -not [string]::Equals(
+                $observedStorageType,
+                [string] $expected.expectedProperties.storageType,
+                [System.StringComparison]::OrdinalIgnoreCase
+            )
+        ) {
+            throw (
+                "Approved resource '$($Resource.resourceId)' ownership or " +
+                'material-state proof changed before deletion.'
+            )
+        }
+    }
+    else {
+        throw (
+            "Teardown relationship '$($Resource.relationship)' is " +
+            'unsupported before deletion.'
+        )
     }
     return $true
 }

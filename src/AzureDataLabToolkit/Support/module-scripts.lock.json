@@ -148,7 +148,7 @@
     },
     {
       "path": "Private/88-TeardownOperation.ps1",
-      "sha256": "6a3aa11ce9853c08defe5dab23c48a4bc2b8a2ff4528447d7822586839f879d3"
+      "sha256": "37f05163e07d8697138ad61f8edc4c0be1c6007d27787d677d9d21589700d683"
     },
     {
       "path": "Private/89-DeploymentProbe.ps1",
@@ -192,7 +192,7 @@
     },
     {
       "path": "Public/Export-AzureDataLabPlan.ps1",
-      "sha256": "85dc983ca95c0d10716f13722fa41d4c5d29f7bd6cf11379206b913f836031ec"
+      "sha256": "747b27cd04bc89225799d8e9805e3461ea25e32270372c7d3ef7d3008ca34891"
     },
     {
       "path": "Public/Find-AzureDataLabCatalogItem.ps1",

@@ -2,7 +2,17 @@ BeforeAll {
     $script:RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).ProviderPath
     $script:ModulePath = Join-Path $script:RepositoryRoot 'src/AzureDataLabToolkit/AzureDataLabToolkit.psd1'
     Remove-Module AzureDataLabToolkit -ErrorAction SilentlyContinue
+    $script:AzureModulesBeforeImport = @(
+        Get-Module -Name 'Az.*' |
+            Select-Object -ExpandProperty Name |
+            Sort-Object
+    )
     Import-Module $script:ModulePath -Force -ErrorAction Stop
+    $script:AzureModulesAfterImport = @(
+        Get-Module -Name 'Az.*' |
+            Select-Object -ExpandProperty Name |
+            Sort-Object
+    )
 }
 
 Describe 'AzureDataLabToolkit module contract' {
@@ -11,6 +21,43 @@ Describe 'AzureDataLabToolkit module contract' {
         $manifest.Name | Should -Be 'AzureDataLabToolkit'
         $manifest.Version.ToString() | Should -Be '0.1.0'
         $manifest.PowerShellVersion.ToString() | Should -Be '7.6'
+    }
+
+    It 'declares no manifest field that loads code outside the root module' {
+        # The module script lock covers .ps1 and .psm1 content only:
+        # Support/module-scripts.lock.json holds no .psd1 entry, so the
+        # manifest sits outside every content digest the psm1 verifies.
+        # ScriptsToProcess, NestedModules, RequiredAssemblies,
+        # FormatsToProcess and TypesToProcess are all loaded by the engine
+        # before or instead of RootModule, so anything named in them runs
+        # without ever reaching the closed-world check - the lock would still
+        # report success. This test, not the script lock, is what keeps that
+        # surface empty. A future reader must not assume the lock covers it.
+        $manifest = Import-PowerShellDataFile `
+            -LiteralPath $script:ModulePath `
+            -ErrorAction Stop
+
+        # Absence, not emptiness. An empty declaration is a slot a later edit
+        # fills without anyone noticing the security meaning of the key, so
+        # the manifest must not name these fields at all.
+        $loadingFields = @(
+            'ScriptsToProcess'
+            'NestedModules'
+            'RequiredAssemblies'
+            'FormatsToProcess'
+            'TypesToProcess'
+        )
+        foreach ($loadingField in $loadingFields) {
+            $manifest.Contains($loadingField) |
+                Should -BeFalse `
+                    -Because (
+                        "'$loadingField' loads code that the module script " +
+                        'lock does not cover'
+                    )
+        }
+
+        [string] $manifest.RootModule |
+            Should -BeExactly 'AzureDataLabToolkit.psm1'
     }
 
     It 'exports only the implemented commands' {
@@ -50,7 +97,18 @@ Describe 'AzureDataLabToolkit module contract' {
     }
 
     It 'loads no Azure modules as an import side effect' {
-        @(Get-Module -Name 'Az.*').Count | Should -Be 0
+        # Compare the snapshots taken around the single import in BeforeAll
+        # rather than asserting that the session holds no Az module at all.
+        # Loaded modules are session-global state this test does not own: a
+        # developer machine, or any earlier test in the run, may already have
+        # imported one, and a global count check would fail there for reasons
+        # that say nothing about this module. The delta still fails closed -
+        # any Az module the import pulls in appears here.
+        $importedAzureModules = @(
+            $script:AzureModulesAfterImport |
+                Where-Object { $_ -cnotin $script:AzureModulesBeforeImport }
+        )
+        $importedAzureModules | Should -BeNullOrEmpty
     }
 
     It 'keeps the offline core free of cloud or web invocation' {
@@ -74,8 +132,16 @@ Describe 'AzureDataLabToolkit module contract' {
             }
 
         foreach ($pattern in $literalPatterns) {
-            $matches = @($sourceFiles | Select-String -Pattern $pattern -SimpleMatch)
-            $matches | Should -BeNullOrEmpty -Because "'$pattern' is outside the offline core"
+            # Not $matches: that is the automatic variable the -match operator
+            # writes, so assigning to it here would be overwritten by the next
+            # regex comparison in this test and the assertion would read a
+            # value it did not set.
+            $patternHits = @(
+                $sourceFiles | Select-String -Pattern $pattern -SimpleMatch
+            )
+            $patternHits |
+                Should -BeNullOrEmpty `
+                    -Because "'$pattern' is outside the offline core"
         }
 
         $azCommandInvocations = foreach ($sourceFile in $sourceFiles) {
@@ -95,7 +161,11 @@ Describe 'AzureDataLabToolkit module contract' {
             ) |
                 ForEach-Object { $_.GetCommandName() } |
                 Where-Object {
-                    $_ -match '^(Connect|Disconnect|Get|New|Set|Remove|Invoke)-Az(?!ureDataLab)'
+                    # Any verb, not an enumerated few. The earlier list of
+                    # seven verbs let Update-AzVM, Stop-AzVM, Start-AzVM,
+                    # Move-AzResource and Register-AzResourceProvider through
+                    # the gate while the suite stayed green.
+                    $_ -match '^[A-Z][A-Za-z]+-Az(?!ureDataLab)'
                 }
         }
 
