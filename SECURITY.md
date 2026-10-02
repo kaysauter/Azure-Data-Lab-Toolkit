@@ -73,9 +73,11 @@ Out of scope:
   not implemented; saying so is not a vulnerability.
 - Cost. An expensive but correctly approved deployment is a licensing or sizing choice, not a
   security issue. `Start-AzureDataLabDeployment` tells you what it will create.
-- `-ShowGeneratedPassword` writing a password to your own terminal. That is its documented
-  purpose; it is gated, blocked on the deployable profile, and raises a high-severity
-  acknowledge-required finding. Reports that it *also* leaks somewhere else are in scope.
+- `-GeneratePassword` and `-ShowGeneratedPassword` not doing anything. They record plan intent
+  only — there is no password generator in this module and nothing writes a value to the host.
+  `-ShowGeneratedPassword` sets `allowShellOutput`, which raises a high-severity
+  acknowledge-required finding and nothing consumes. If you find a path that *does* emit a
+  credential, that is firmly in scope.
 - Findings that require an attacker who can already write to the repository, your PowerShell
   installation, or your Azure subscription. Those attackers defeat everything here by simpler
   means.

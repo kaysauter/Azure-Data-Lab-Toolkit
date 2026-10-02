@@ -6,7 +6,7 @@ when a dimension genuinely moves, and keep the old rows — the trend is the use
 Local assessment write-ups live in `assessments/`, which is git-ignored. This file is the
 tracked summary.
 
-## 2026-10-02 — **6.5 / 10**
+## 2026-10-02 — **6.2 / 10**
 
 Measured at commit `5a0b055`. Derived from five parallel independent reviews (architecture,
 code quality, tests, security, release readiness) with every load-bearing claim verified
@@ -14,13 +14,18 @@ against source before being accepted.
 
 | Dimension | Weight | Score | Contribution |
 | --- | --- | --- | --- |
-| Security engineering | 25% | 8 | 2.00 |
+| Security engineering | 25% | 7 | 1.75 |
 | Correctness confidence (tests) | 20% | 6 | 1.20 |
 | Architecture / changeability | 15% | 6 | 0.90 |
 | Code quality | 15% | 7 | 1.05 |
 | Release & delivery readiness | 15% | 5 | 0.75 |
-| Documentation accuracy | 10% | 6 | 0.60 |
-| **Total** | | | **6.50** |
+| Documentation accuracy | 10% | 5 | 0.50 |
+| **Total** | | | **6.15** |
+
+Security was 8 before the adversarial re-review falsified two documented invariants, and
+documentation accuracy was 6 before those same findings showed a published invariant was
+false. Both revisions are downward on evidence, which is the intended behaviour of this
+document.
 
 ### Why these weights
 
@@ -45,7 +50,10 @@ is almost entirely weighting, not disagreement about facts:
 
 ### Per-dimension notes
 
-**Security — 8, pending an adversarial re-review.** The first security pass failed on a tooling
+**Security — 7.** Revised down from 8 after an adversarial re-review that falsified two stated
+invariants. See the security findings section below.
+
+**Security (original assessment basis, retained for comparison) —** The first security pass failed on a tooling
 error (structured-output retry cap, not an analysis failure) and has been relaunched as three
 adversarial passes that attempt to falsify the invariants rather than confirm them. One finding
 from the test review already bears on this score: `Invoke-AdltAzCommand`, the gate in front of
@@ -54,7 +62,8 @@ weaker than the design. Expect this number to settle at 7–8 rather than rise.
 
 Verified: the VM administrator password structurally cannot enter the process
 (ARM `secureString` + Key Vault reference with a pinned `secretVersion`); teardown re-verifies
-etag, observation fingerprint and proof hash *inside* the deletion loop; closed-world module
+etag and observation fingerprint *inside* the deletion loop — **but not the proof hash for
+every relationship**, see below; closed-world module
 script lock, dependency lock, build-tool lock, SPDX SBOM, SHA-pinned actions. Held below 9 by
 the allowlist's fail-open default — 10 of 19 cmdlets have no parameter clamp and nothing tests
 allowlist/contract parity — and by the removal of the bundled-PSResourceGet content digest,
@@ -140,3 +149,103 @@ three dimensions at once. Every other item in either plan is secondary to it.
 6. Single-source the version; add a documentation-consistency test
 7. Engine contract extraction — **last**, and scoped per `refactoring-plan.md` R0–R8 rather
    than as a naive file move
+
+---
+
+## Security findings — adversarial re-review, 2026-10-02
+
+Three adversarial passes attempted to **falsify** the stated invariants rather than confirm
+them. The core claims survived: no path was found to extract a secret the module itself
+produces, and no way to mint a mutation without a matching typed phrase, the live-verified
+approver, a valid lease and an intact hash chain. Replay across runs and across plans, and a
+second execution of the same run, are all genuinely blocked.
+
+Two documented invariants were **falsified**, both verified against source. Score revised 8 → 7.
+
+### Blocks a public alpha
+
+**B1 — The proof hash is not re-verified before every delete.**
+`Private/88-TeardownOperation.ps1:755-760` gates the fresh proof-hash recomputation on
+`$Resource.relationship -in @('planned-taggable','planned-descendant')`. Four deletable
+relationships exist; `vm-managed-disk` and `sql-iaas-agent-extension` are deleted on an
+id/type/etag/fingerprint match alone — and for an implicitly created managed disk that
+fingerprint is near-empty, carrying neither etag nor tags.
+
+Both this document and `assessments/assessment-2026-30-08-12.44.md:86` previously claimed the
+proof hash is re-verified before **each** delete. That claim was wrong and is corrected above.
+For a tool that has never run live, the documented invariants are the primary assurance
+artifact, so a false one is worse than a missing one. Either extend the gate to all four
+relationships — mirroring the inventory-time switch at
+`Private/87-TeardownInventory.ps1:1213-1310` — or state precisely which relationships are
+covered. Add a per-relationship test either way; there is none today.
+
+**B2 — The module manifest bypasses the closed-world script lock.**
+`AzureDataLabToolkit.psd1` is outside every content digest (`module-scripts.lock.json` contains
+zero `.psd1` entries), and `RootModule`, `ScriptsToProcess`, `NestedModules`,
+`RequiredAssemblies`, `FormatsToProcess` and `TypesToProcess` all execute before or instead of
+the psm1's closed-world check. Demonstrated three ways, with the lock reporting success while
+injected code ran at import.
+
+This is not a privilege crossing — it needs write access to the module directory, the same
+primitive as editing the psm1 — so it is medium, not critical. What makes it matter is that the
+published claim *"only locked, hash-verified module scripts load"* is demonstrably false, and
+the lock's own machinery says OK. Fix: a ~10-line contract test asserting the manifest declares
+none of those fields and that `RootModule` is exactly `AzureDataLabToolkit.psm1`.
+
+**B3 — The single-gate architecture test has an incomplete verb regex.**
+`tests/Unit/Module.Tests.ps1:98` matches
+`^(Connect|Disconnect|Get|New|Set|Remove|Invoke)-Az(?!ureDataLab)`. The invariant holds at this
+commit, but `Update-AzVM`, `Stop-AzVM`, `Start-AzVM`, `Move-AzResource` and
+`Register-AzResourceProvider` would all pass the suite today. One-line fix to
+`^[A-Z][A-Za-z]+-Az(?!ureDataLab)`. This is the test that keeps the headline allowlist claim
+true as pull requests land on a public repository.
+
+### Other verified findings
+
+**S1 — `Export-AzureDataLabPlan` is the only persistence boundary with no secret-free gate.**
+It calls `Assert-AdltPlanHash` alone (`:304`), skipping `Assert-AdltPlanContract` — which is
+what invokes `Assert-AdltSecretFreeBoundary` (`Private/47-PlanContract.ps1:8`) — and skipping
+plan schema validation. Demonstrated by execution: a planted literal secret appeared verbatim
+in both stdout and the written file. It is also the only export written non-privately
+(`Write-AdltAtomicText` without `-Private`, mode 0644), where `Export-AzureDataLabEvidence`
+passes `-Private` and gets 0600. Not currently reachable through module-produced plans, so
+defence in depth — but it is the last gate before data leaves the tool, and it is the one
+missing. **Open question for the owner:** plan reports are *meant* to be shared, so 0600 may be
+wrong for their purpose; the inconsistency with evidence export should be resolved deliberately
+rather than by copying the flag.
+
+**S2 — `packageDigest` is a false attestation.** It is compared against itself at
+`Install-AzureDataLabToolkitDependencies.ps1:909-910` and never computed from any artifact, then
+written into the evidence record as a verified value (`Private/67-RuntimeIdentity.ps1:309`).
+`contentDigest` provides the real guarantee. Either verify `packageDigest` against the
+downloaded package or remove it — shipping an evidence record asserting a digest nothing
+checked undercuts the auditability the project is built on.
+
+**S3 — The secret detectors are narrower than the claim.** Broken five ways: the forbidden-key
+regex is anchored to exactly ten names (`adminPassword`, `apiKey`, `privateKey` and similar all
+evade it); both detectors only recurse into `IDictionary`/`IList`, so a `PSObject` terminates
+the walk; `char[]`/`byte[]` payloads evade detection *and* survive canonicalisation; and the
+bearer-token detector is reachable only from the `configuration`|`plan` boundaries, not from
+evidence, artifact or compilation assertions. None is reachable today, because the configuration
+schema admits no free-form object (25 `additionalProperties: false`) and `ConvertTo-AdltDictionary`
+normalises `PSObject` at every entry point. Defence in depth, not a vulnerability.
+
+**S4 — Read-only run-store reads mutate without the lock.**
+`Get-AdltVerifiedLocalRunContext` takes no lock yet deletes unreferenced pending execution
+records, which can permanently wedge a run and strand live Azure resources.
+
+**S5 — Teardown authorization is not bound to runtime identity**, unlike deploy.
+`Assert-AdltRuntimeAuthorizationBinding` is called only on the deploy path.
+
+**S6 — The `cbde0ee` digest-removal reasoning was sound but one premise was false**, and the
+"recorded as evidence" claim in that comment does not hold — the digest is computed and
+discarded, not recorded. The comment should be corrected.
+
+### Confirmed intact
+
+No way found to unwrap a `SecureString` (no `AsPlainText`, `ConvertFrom-SecureString`,
+`NetworkCredential` or `SecureStringToBSTR` anywhere), no Key Vault read cmdlet reachable,
+`Get-AzAccessToken` clamped to `Arm` + `AsSecureString`, no literal ARM password parameter
+constructible, all 12 run-store persistence sites gated, run-event payloads key-allowlisted
+regardless of a permissive schema, and the teardown lease and approver genuinely re-asserted
+per resource inside the deletion loop.

@@ -123,6 +123,25 @@ Each of these makes the existing attestation machinery mean what it appears to m
 
 ---
 
+## Security items that gate the alpha
+
+From the adversarial re-review recorded in [`quality-baseline.md`](quality-baseline.md). All
+three are small; the reason they gate is that each one makes a *published claim* false, and for
+software that has never run live the documented invariants are the main assurance artifact.
+
+1. **Proof-hash re-verification** (`88-TeardownOperation.ps1:755-760`) covers 2 of 4 deletable
+   relationships. Either extend it to all four or state precisely which are covered — and add a
+   per-relationship test. Documents claiming "before each delete" are already corrected.
+2. **Manifest-surface contract test** — ~10 lines asserting `AzureDataLabToolkit.psd1` declares
+   no `ScriptsToProcess`, `NestedModules`, `RequiredAssemblies`, `FormatsToProcess` or
+   `TypesToProcess`, and that `RootModule` is exactly `AzureDataLabToolkit.psm1`. Until then
+   "only locked, hash-verified module scripts load" is demonstrably false.
+3. **Single-gate verb regex** (`tests/Unit/Module.Tests.ps1:98`) — one line, from
+   `^(Connect|Disconnect|Get|New|Set|Remove|Invoke)-Az` to `^[A-Z][A-Za-z]+-Az`. This is the
+   test that keeps the headline allowlist claim true as pull requests land on a public repo.
+4. **`packageDigest`** is written into the evidence record as verified but is never computed
+   from any artifact. Verify it or remove it before shipping an attestation that asserts it.
+
 ## The alpha gate
 
 Write this down as its own tier, distinct from the Release (R) gate in
