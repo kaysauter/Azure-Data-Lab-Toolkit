@@ -23,8 +23,9 @@ So if you added, moved, renamed, or deleted a `.ps1` under `src/AzureDataLabTool
 1. Hand-edit the `files` array in `Support/module-scripts.lock.json` first — add, move, or
    remove the `{ "path": ..., "sha256": ... }` entry. **Position matters**: a file that
    registers something (a contributor, an engine) must be ordered after what it depends on. Put
-   a new `Private/NN-*.ps1` in numeric position; the numeric prefixes are decorative, the array
-   is authoritative.
+   a new `Private/NN-*.ps1` in numeric position. The array is authoritative; the numeric
+   prefixes currently agree with it exactly across all 69 entries, but nothing asserts that, so
+   keep both in agreement.
 2. Then refresh hashes and the pinned lock digest:
 
 ```bash
@@ -115,11 +116,11 @@ Import-Module ./src/AzureDataLabToolkit/AzureDataLabToolkit.psd1 -Force
 & \$m { (Get-AdltSqlVmArmEngineIdentity).digest }"
 ```
 
-Recorded baselines, verified at commit `cbde0ee` on `codex/powershell-foundation`:
+Recorded baselines, verified at commit `5a0b055` on `codex/powershell-foundation`:
 
 | Value | Baseline |
 | --- | --- |
-| `planHash` for `examples/sqlvm-minimal.yaml` | `sha256:2d07fb8f04253b30d508a4c0545e900440fb1e1e31937e0ef06fb10843284a00` |
+| `planHash` for `examples/sqlvm-minimal.yaml` | `sha256:bec0be2b060e597e3319b5a2c4b03200dcc2ed5ddbb3c3601077cb5d86f7f523` |
 | engine identity digest | `sha256:37da0b677925699b8f10ca7cde77e43f5bae9f0d58e1b638574cbc84873a7906` |
 
 Update this table in the same commit that deliberately changes either value, so the table is

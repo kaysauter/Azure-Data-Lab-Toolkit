@@ -45,8 +45,10 @@ a pull request.
 2. **If you add, move, rename or delete any `.ps1` under `src/AzureDataLabToolkit/`, edit the
    lock first.** The module performs a closed-world check: every script must be listed in
    `src/AzureDataLabToolkit/Support/module-scripts.lock.json`, and the `files` array is the
-   authoritative **load order** — the numeric filename prefixes are decorative. Add your
-   `{ "path": ..., "sha256": ... }` entry in the right position by hand, then:
+   authoritative **load order**. Today that order agrees exactly with the numeric filename
+   prefixes within `Private/`, but nothing asserts it, so keep them in agreement rather than
+   relying on either alone. Add your `{ "path": ..., "sha256": ... }` entry in the correct
+   position by hand, then:
 
    ```bash
    . ./build.ps1
