@@ -82,7 +82,7 @@ layout: default
   <span>Report</span>
 </div>
 
-<div class="candidate-note">Reconcile compares the resolved plan against live Azure resources. It needs sign-in, changes nothing, and reports create, reuse, update, replace, conflict, or drift. Assessment adds evidence before or after planning when it is useful; it is not a blocker for every lab.</div>
+<div class="candidate-note">Reconcile compares the resolved plan against live Azure resources. It needs sign-in, changes nothing, and reports create, reuse, no-change, update, conflict, denied, or unverified. Assessment will add evidence before or after planning when it is useful; it is designed not to be a blocker for every lab.</div>
 
 <div class="two-col compact-top">
   <div>
@@ -91,11 +91,11 @@ layout: default
   </div>
   <div>
     <h3>Durable evidence</h3>
-    <p>Versioned console, JSON, Markdown, and HTML outputs record decisions, costs, probes, failures, and cleanup.</p>
+    <p>Versioned JSON plus Markdown and HTML renderings record decisions, costs, probes, failures, and cleanup.</p>
   </div>
 </div>
 
-<div class="decision-line">Then shut down, resume, or tear down only after ownership and impact are reviewed.</div>
+<div class="decision-line">Then resume or tear down only after ownership and impact are reviewed. Scheduled shutdown is planned, not built: runtime and TTL limits are recorded, never enforced.</div>
 
 ---
 layout: default
@@ -111,9 +111,9 @@ layout: default
   <span>Networking<b class="item-status is-done">built</b></span>
   <span>Managed identity<b class="item-status is-done">built</b></span>
   <span>Key Vault decision<b class="item-status is-done">built</b></span>
-  <span>Bastion decision<b class="item-status is-done">built</b></span>
+  <span>Bastion host<b class="item-status is-done">deployed</b></span>
   <span>Probes and teardown<b class="item-status is-done">built</b></span>
-  <span>Storage and restore<b class="item-status is-planned">planned</b></span>
+  <span>Backup share and restore<b class="item-status is-planned">planned</b></span>
   <span>Guest configuration<b class="item-status is-planned">planned</b></span>
   <span>Software delivery<b class="item-status is-planned">planned</b></span>
 </div>
@@ -131,7 +131,7 @@ layout: default
 
 # What exists today
 
-<div class="status-chip status-done">24 commands · 385 tests · CI green on Linux, Windows, macOS</div>
+<div class="status-chip status-done">24 commands · 386 tests · CI green on Linux, Windows, macOS</div>
 
 <div class="four-col">
   <div class="plain-panel">
@@ -195,8 +195,8 @@ layout: default
       <li>Azure-authenticated live reconciliation</li>
       <li>No mutation or approval</li>
       <li>Compares immutable plan, run state, and resources</li>
-      <li>Reports create, reuse, update, replace, or conflict</li>
-      <li>Surfaces drift and unknown ownership</li>
+      <li>Reports create, reuse, no-change, update, conflict, denied, or unverified</li>
+      <li>Surfaces unknown ownership and unverifiable facts</li>
     </ul>
   </section>
 </div>
@@ -231,13 +231,13 @@ layout: default
 # A deliberate delivery sequence
 
 <ol class="target-sequence">
-  <li v-click><strong>SQL Server on Azure VM</strong><b class="item-status is-done">built, unverified live</b><span>Plan → canary → useful lab → release</span></li>
-  <li v-click><strong>Azure SQL Database and SQL MI</strong><b class="item-status is-planned">planned</b><span>Managed SQL paths</span></li>
-  <li v-click><strong>PostgreSQL</strong><b class="item-status is-planned">planned</b><span>Azure managed → VM → container</span></li>
-  <li v-click><strong>Bicep and Terraform</strong><b class="item-status is-planned">planned</b><span>Independent engine gates</span></li>
-  <li v-click><strong>Git and CI/CD adapters</strong><b class="item-status is-planned">planned</b><span>GitHub, Azure DevOps, GitLab, Gitea, Forgejo</span></li>
-  <li v-click><strong>Microsoft Fabric</strong><b class="item-status is-planned">planned</b><span>Guidance → items → CI/CD + solution-pack lanes</span></li>
-  <li v-click><strong>Later platforms</strong><b class="item-status is-planned">planned</b><span>Databricks, more data targets, SQL Linux, Kubernetes</span></li>
+  <li v-click><strong>SQL Server on Azure VM<b class="item-status is-done">built, unverified live</b></strong><span>Plan → canary → useful lab → release</span></li>
+  <li v-click><strong>Azure SQL Database and SQL MI<b class="item-status is-planned">planned</b></strong><span>Managed SQL paths</span></li>
+  <li v-click><strong>PostgreSQL<b class="item-status is-planned">planned</b></strong><span>Azure managed → VM → container</span></li>
+  <li v-click><strong>Bicep and Terraform<b class="item-status is-planned">planned</b></strong><span>Independent engine gates</span></li>
+  <li v-click><strong>Git and CI/CD adapters<b class="item-status is-planned">planned</b></strong><span>GitHub, Azure DevOps, GitLab, Gitea, Forgejo</span></li>
+  <li v-click><strong>Microsoft Fabric<b class="item-status is-planned">planned</b></strong><span>Guidance → items → CI/CD + solution-pack lanes</span></li>
+  <li v-click><strong>Later platforms<b class="item-status is-planned">planned</b></strong><span>Databricks, more data targets, SQL Linux, Kubernetes</span></li>
 </ol>
 
 <div class="backlog-line">
@@ -249,6 +249,8 @@ layout: default
 ---
 
 # Assessment adds evidence. Migration remains separate.
+
+<div class="status-chip status-planned">Planned · segment S6 · no assessment command exists yet</div>
 
 <div class="three-col">
   <div class="plain-panel">
@@ -292,7 +294,7 @@ layout: default
   </div>
   <div class="plain-panel">
     <h3>Cost</h3>
-    <p>A separate estimate operation with assumptions, uncertainty, budget limits, and HTML output.</p>
+    <p>A dedicated estimate stage inside preflight, with declared scope, typed unknowns, and budget limits that block the run.</p>
   </div>
   <div class="plain-panel">
     <h3>Ownership</h3>
@@ -386,8 +388,8 @@ layout: default
 <div class="two-col compact-top">
   <div>
     <h3>Toolkit repository CI</h3>
-    <p><b class="item-status is-done">running</b> PSScriptAnalyzer, Pester with an enforced coverage gate, schemas, docs and links, packaging, Dependabot, secret scanning, plus SBOM and build attestation on release.</p>
-    <p><b class="item-status is-planned">planned</b> Dependency review, and Checkov once Bicep or Terraform exists. CodeQL does not analyze PowerShell.</p>
+    <p><b class="item-status is-done">running</b> PSScriptAnalyzer, Pester with an enforced 80% coverage gate, schema validation, docs and links, and packaging — on three operating systems per pull request. Dependabot and GitHub secret scanning are enabled on the repository.</p>
+    <p><b class="item-status is-planned">planned</b> Dependency review, and Checkov once Bicep or Terraform exists. SBOM and build attestation are implemented but have never run, because there is no release yet. CodeQL does not analyze PowerShell.</p>
   </div>
   <div>
     <h3>User-facing pipeline intent</h3>
@@ -472,12 +474,12 @@ class: final-slide
   <span>1. Decision-complete contracts<b class="item-status is-done">done</b></span>
   <span>2. Installable Core<b class="item-status is-done">done</b></span>
   <span>3. GitHub engineering CI<b class="item-status is-done">done</b></span>
-  <span>4. SQL VM plan and secure canary<b class="item-status is-planned">plan built, canary unrun</b></span>
+  <span>4. SQL VM plan and secure canary<b class="item-status is-planned">canary unrun</b></span>
   <span>5. Useful lab and release evidence<b class="item-status is-planned">next</b></span>
 </div>
 
 <div class="final-links">
   <a href="/Azure-Data-Lab-Toolkit/architecture/">Architecture</a>
   <a href="https://github.com/kaysauter/Azure-Data-Lab-Toolkit" target="_blank" rel="noreferrer">Repository</a>
-  <a href="https://github.com/users/kaysauter/projects/6/views/1" target="_blank" rel="noreferrer">Public roadmap</a>
+  <a href="https://github.com/users/kaysauter/projects/6/views/4" target="_blank" rel="noreferrer">Public roadmap</a>
 </div>
