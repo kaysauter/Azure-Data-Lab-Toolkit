@@ -602,6 +602,18 @@ html.light {
 	font-size: 0.65rem;
 }
 
+/* The eight-column default assumes a full-width row. Inside a half-width
+   two-col column each cell is only ~48px, so longer phrases overflow. This
+   modifier drops to two columns for short requirement lists. */
+.catalog-contract.is-compact {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.catalog-contract.is-compact span {
+	padding: 0.3rem 0.45rem;
+	line-height: 1.3;
+}
+
 .link-group {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));

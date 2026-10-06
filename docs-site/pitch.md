@@ -82,7 +82,7 @@ layout: default
   <span>Report</span>
 </div>
 
-<div class="candidate-note">Reconcile compares the resolved plan against live Azure resources. It needs sign-in, changes nothing, and reports create, reuse, no-change, update, conflict, denied, or unverified. Assessment will add evidence before or after planning when it is useful; it is designed not to be a blocker for every lab.</div>
+<div class="candidate-note">Reconcile compares the resolved plan against live Azure resources. It needs sign-in, changes nothing, and reports create, reuse, no-change, update, conflict, denied, or unverified.</div>
 
 <div class="two-col compact-top">
   <div>
@@ -118,7 +118,7 @@ layout: default
   <span>Software delivery<b class="item-status is-planned">planned</b></span>
 </div>
 
-<div class="candidate-note">Guest execution is the honest gap: nothing runs inside the VM yet, so software installation and database restore are planned, not built. Everything else in this grid is implemented and test-covered.</div>
+<div class="candidate-note">Guest execution is the gap: nothing runs inside the VM yet, so software installation and database restore are planned, not built. Everything else in this grid is implemented and test-covered.</div>
 
 <div class="danger-line">
   The unfinished <a href="https://github.com/kaysauter/azure-sqlvm-toolkit" target="_blank" rel="noreferrer">Azure SQLVM Toolkit</a>
@@ -248,6 +248,24 @@ layout: default
 layout: default
 ---
 
+# The first proof: one complete lab lifecycle
+
+<div class="proof-line">
+  YAML <i>→</i> validated Plan <i>→</i> live WhatIf <i>→</i> approved PowerShell deployment <i>→</i> probes and HTML evidence <i>→</i> ownership-aware teardown <i>→</i> cleanup proof
+</div>
+
+<div class="milestones">
+  <span>1. Decision-complete contracts<b class="item-status is-done">done</b></span>
+  <span>2. Installable Core<b class="item-status is-done">done</b></span>
+  <span>3. GitHub engineering CI<b class="item-status is-done">done</b></span>
+  <span>4. SQL VM plan and secure canary<b class="item-status is-planned">canary unrun</b></span>
+  <span>5. Useful lab and release evidence<b class="item-status is-planned">next</b></span>
+</div>
+
+---
+layout: default
+---
+
 # Assessment adds evidence. Migration remains separate.
 
 <div class="status-chip status-planned">Planned · segment S6 · no assessment command exists yet</div>
@@ -344,7 +362,7 @@ layout: default
 layout: default
 ---
 
-# Fabric needs guidance and honest capability limits
+# Fabric needs guidance and explicit capability limits
 
 <div class="candidate-note">Fabric delivery follows PostgreSQL, Bicep, Terraform, and the general Git/CI adapter segment.</div>
 
@@ -388,8 +406,8 @@ layout: default
 <div class="two-col compact-top">
   <div>
     <h3>Toolkit repository CI</h3>
-    <p><b class="item-status is-done">running</b> PSScriptAnalyzer, Pester with an enforced 80% coverage gate, schema validation, docs and links, and packaging — on three operating systems per pull request. Dependabot and GitHub secret scanning are enabled on the repository.</p>
-    <p><b class="item-status is-planned">planned</b> Dependency review, and Checkov once Bicep or Terraform exists. SBOM and build attestation are implemented but have never run, because there is no release yet. CodeQL does not analyze PowerShell.</p>
+    <p><b class="item-status is-done">running</b> PSScriptAnalyzer, Pester with an enforced 80% coverage gate, schema validation, docs and links, and packaging — on three operating systems per pull request. Dependabot and secret scanning are on.</p>
+    <p><b class="item-status is-planned">planned</b> Dependency review, and Checkov once Bicep or Terraform exists. SBOM and attestation are built but unrun — there is no release yet. CodeQL does not analyze PowerShell.</p>
   </div>
   <div>
     <h3>User-facing pipeline intent</h3>
@@ -433,6 +451,7 @@ layout: default
 
 ---
 layout: default
+class: final-slide
 ---
 
 # Call for projects
@@ -440,42 +459,23 @@ layout: default
 <div class="two-col">
   <div>
     <h3>What fits</h3>
-    <p>Sample databases. SQL and data open-source tooling. Reproducible lab scenarios. Teaching material that needs an environment you can break and throw away.</p>
+    <p>Sample databases. SQL and data open-source tooling. Lab scenarios. Teaching material that needs an environment you can break and throw away.</p>
     <h3>What your project gets</h3>
-    <p>A governed catalog entry, and a lab others reproduce from one YAML file, review before it runs, and tear down with proof.</p>
+    <p>A governed catalog entry, and a lab others reproduce from one YAML file and tear down with proof.</p>
   </div>
   <div>
-    <h3>What it asks of you</h3>
-    <div class="catalog-contract">
-      <span>Pinned version</span><span>Verifiable checksum</span>
-      <span>Redistributable license</span><span>Named owner</span>
+    <h3>What a catalog entry needs from you</h3>
+    <div class="catalog-contract is-compact">
+      <span>A version we can pin</span><span>A checksum we can verify</span>
+      <span>A license that allows redistribution</span><span>A named owner to ask</span>
     </div>
-    <h3>How</h3>
-    <p>Open an issue, or get in touch. Commercial projects contact first.</p>
+    <h3>How to start</h3>
+    <p>Open an issue on the repository, or get in touch. If your project is a commercial one or a product, please contact me first — this project needs financial support to cover its costs.</p>
   </div>
 </div>
 
 <div class="warning-panel">
-  Guest installation is not implemented yet, so nothing is installed inside a VM today. This is an invitation to shape the catalog contract while it is still cheap to change.
-</div>
-
----
-layout: default
-class: final-slide
----
-
-# The first proof: one complete lab lifecycle
-
-<div class="proof-line">
-  YAML <i>→</i> validated Plan <i>→</i> live WhatIf <i>→</i> approved PowerShell deployment <i>→</i> probes and HTML evidence <i>→</i> ownership-aware teardown <i>→</i> cleanup proof
-</div>
-
-<div class="milestones">
-  <span>1. Decision-complete contracts<b class="item-status is-done">done</b></span>
-  <span>2. Installable Core<b class="item-status is-done">done</b></span>
-  <span>3. GitHub engineering CI<b class="item-status is-done">done</b></span>
-  <span>4. SQL VM plan and secure canary<b class="item-status is-planned">canary unrun</b></span>
-  <span>5. Useful lab and release evidence<b class="item-status is-planned">next</b></span>
+  Guest installation is not built yet — nothing is installed inside a VM today. Help shape the catalog contract while it is still cheap to change.
 </div>
 
 <div class="final-links">
