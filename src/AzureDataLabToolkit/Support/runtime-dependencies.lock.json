@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "AzureDataLabRuntimeDependencyLock",
+  "contentDigestAlgorithm": "sha256-rfc8785-file-manifest-v1",
+  "dependencies": [
+    {
+      "name": "Az.Accounts",
+      "version": "5.5.0",
+      "guid": "17a2feff-488b-47f9-8729-e2cec094624c",
+      "author": "Microsoft Corporation",
+      "source": "PSGallery",
+      "packageUri": "https://www.powershellgallery.com/api/v2/package/Az.Accounts/5.5.0",
+      "packageDigest": "sha256:748a0abc2391b80385f25d41d740dc48d098cd2d6365bd70624fa165a4466044",
+      "contentDigest": "sha256:8c15ea7198ce1a90cba4faebc6bafa33a14e81fd8f7459fb35839819a8b8a542",
+      "fileCount": 76
+    },
+    {
+      "name": "Az.Compute",
+      "version": "11.6.0",
+      "guid": "d4cb9989-9ed1-49c2-bacd-0f8daf758671",
+      "author": "Microsoft Corporation",
+      "source": "PSGallery",
+      "packageUri": "https://www.powershellgallery.com/api/v2/package/Az.Compute/11.6.0",
+      "packageDigest": "sha256:2852be822a6ebb62259d9b31ccef943a04452b92bf77ca728fc1e3555636f521",
+      "contentDigest": "sha256:c789e6a43505f395635639faa32076e9d5a0a5cc707bb7b4c7dfee78584dc586",
+      "fileCount": 31
+    },
+    {
+      "name": "Az.KeyVault",
+      "version": "6.5.0",
+      "guid": "cd188042-f215-4657-adfe-c17ae28cf730",
+      "author": "Microsoft Corporation",
+      "source": "PSGallery",
+      "packageUri": "https://www.powershellgallery.com/api/v2/package/Az.KeyVault/6.5.0",
+      "packageDigest": "sha256:df97554f16267f5d44d3beed23f5bafd48e73e6e4e292782fddb6290daa9b581",
+      "contentDigest": "sha256:b69fa84ae9501b27e88cc742c91135fc7421c1a8fe888f00f1a04a40104f6271",
+      "fileCount": 29
+    },
+    {
+      "name": "Az.Monitor",
+      "version": "8.0.0",
+      "guid": "bc723b54-a697-44a2-9c48-d5749b138d1a",
+      "author": "Microsoft Corporation",
+      "source": "PSGallery",
+      "packageUri": "https://www.powershellgallery.com/api/v2/package/Az.Monitor/8.0.0",
+      "packageDigest": "sha256:8fe2942460881f3949253963978b91a6479503bbe9afc3c5f9e876881a02ffbb",
+      "contentDigest": "sha256:62c0e56b567654e58d77a4ae936dddc9c9061211f759fd25388b135101553419",
+      "fileCount": 130
+    },
+    {
+      "name": "Az.Resources",
+      "version": "10.0.0",
+      "guid": "48bb344d-4c24-441e-8ea0-589947784700",
+      "author": "Microsoft Corporation",
+      "source": "PSGallery",
+      "packageUri": "https://www.powershellgallery.com/api/v2/package/Az.Resources/10.0.0",
+      "packageDigest": "sha256:4e13c50796a11ce529a1240ab7edc6d981ce9bb66a88ece22a27e8cf7e7e89b2",
+      "contentDigest": "sha256:81ebd4ee9e96b02db01c6d97ccade71c04f30f5ff3141b78cccb59b0b7170a10",
+      "fileCount": 125
+    },
+    {
+      "name": "powershell-yaml",
+      "version": "0.4.12",
+      "guid": "6a75a662-7f53-425a-9777-ee61284407da",
+      "author": "Gabriel Adrian Samfira Alessandro Pilotti",
+      "source": "PSGallery",
+      "packageUri": "https://www.powershellgallery.com/api/v2/package/powershell-yaml/0.4.12",
+      "packageDigest": "sha256:d4602bc7a4a093766520422d53ca8b09acde162286fae11e2ee6c8edfea07810",
+      "contentDigest": "sha256:fc960d5b2eca2ab63686172bd6c3a186da74311e21a81fc062120288cd75f866",
+      "fileCount": 14
+    }
+  ]
+}

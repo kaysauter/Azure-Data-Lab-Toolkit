@@ -10,7 +10,7 @@ export default defineConfig({
 		starlight({
 			title: 'Azure Data Lab Toolkit',
 			description:
-				'Architecture, roadmap, and community documentation for the planned Azure Data Lab Toolkit.',
+				'Unreleased alpha, architecture, roadmap, and community documentation for Azure Data Lab Toolkit.',
 			components: {
 				ThemeProvider: './src/components/ThemeProvider.astro',
 				ThemeSelect: './src/components/ThemeSelect.astro',
@@ -28,6 +28,7 @@ export default defineConfig({
 					label: 'Start Here',
 					items: [
 						{ label: 'Overview', slug: 'overview' },
+						{ label: 'Try The Alpha', slug: 'getting-started' },
 						{ label: 'Project Status', slug: 'status' },
 						{
 							label: 'Pitch Deck',

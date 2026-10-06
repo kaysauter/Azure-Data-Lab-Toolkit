@@ -14,6 +14,8 @@
 	--deck-warning-bg: #2b281c;
 	--deck-warning-text: #f3dfad;
 	--deck-proof-bg: #15313a;
+	--deck-ok-bg: #163024;
+	--deck-ok-text: #a7e5c3;
 }
 
 html.light {
@@ -32,6 +34,8 @@ html.light {
 	--deck-warning-bg: #fff4ce;
 	--deck-warning-text: #634700;
 	--deck-proof-bg: #d9f5f7;
+	--deck-ok-bg: #e4f6ec;
+	--deck-ok-text: #0f5733;
 }
 
 .slidev-layout {
@@ -120,6 +124,46 @@ html.light {
 	border-color: rgba(255, 123, 130, 0.65);
 	background: var(--deck-danger-bg);
 	color: var(--deck-red);
+}
+
+.status-done {
+	border-color: var(--deck-green);
+	background: var(--deck-ok-bg);
+	color: var(--deck-ok-text);
+}
+
+.status-planned {
+	border-color: var(--deck-amber);
+	background: var(--deck-warning-bg);
+	color: var(--deck-warning-text);
+}
+
+/* Compact per-item marker for grids and ordered lists, so a slide can show
+   done-versus-planned without a legend. Deliberately quieter than a chip. */
+.item-status {
+	display: inline-block;
+	margin-left: 0.4rem;
+	border: 1px solid var(--deck-line);
+	border-radius: 3px;
+	padding: 0.02rem 0.3rem;
+	font-size: 0.6rem;
+	font-weight: 800;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+.item-status.is-done {
+	border-color: var(--deck-green);
+	color: var(--deck-ok-text);
+	background: var(--deck-ok-bg);
+}
+
+.item-status.is-planned {
+	border-color: var(--deck-amber);
+	color: var(--deck-warning-text);
+	background: var(--deck-warning-bg);
 }
 
 .cover-meta {

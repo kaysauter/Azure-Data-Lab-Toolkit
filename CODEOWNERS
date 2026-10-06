@@ -1,0 +1,49 @@
+# Default owner for everything.
+*                                               @kaysauter
+
+# Security-critical paths. Listed explicitly so that once branch protection
+# requires code-owner review, these cannot be changed without it — even if the
+# default rule above is later narrowed.
+
+# The only sanctioned path to Azure: module and command allowlist plus
+# per-command parameter-shape enforcement.
+/src/AzureDataLabToolkit/Private/70-AzureCommand.ps1                @kaysauter
+
+# Secret-free boundary: forbidden field names and secret-shaped detectors.
+/src/AzureDataLabToolkit/Private/22-SensitiveValue.ps1               @kaysauter
+
+# Approval envelope, hash chain, and execution records.
+/src/AzureDataLabToolkit/Private/65-ExecutionEvidenceBinding.ps1     @kaysauter
+/src/AzureDataLabToolkit/Private/66-AuthorizationModel.ps1           @kaysauter
+/src/AzureDataLabToolkit/Private/69-ExecutionRecord.ps1              @kaysauter
+
+# Deterministic ARM compilation and the engine identity digest.
+/src/AzureDataLabToolkit/Private/82-SqlVmArmTemplate.ps1             @kaysauter
+/src/AzureDataLabToolkit/Private/84-NativeWhatIf.ps1                 @kaysauter
+
+# Resource deletion.
+/src/AzureDataLabToolkit/Private/87-TeardownInventory.ps1            @kaysauter
+/src/AzureDataLabToolkit/Private/88-TeardownOperation.ps1            @kaysauter
+
+# Owner-only run store permissions.
+/src/AzureDataLabToolkit/Private/62-LocalRunStore.ps1                @kaysauter
+
+# Module trust: closed-world script lock and the pinned lock digest.
+/src/AzureDataLabToolkit/AzureDataLabToolkit.psm1                    @kaysauter
+/src/AzureDataLabToolkit/Support/                                    @kaysauter
+
+# Dependency bootstrap and its trust root.
+/src/AzureDataLabToolkit/Install-AzureDataLabToolkitDependencies.ps1 @kaysauter
+
+# Fail-closed gates: what the schemas and profiles permit at all.
+/src/AzureDataLabToolkit/Schemas/                                    @kaysauter
+/src/AzureDataLabToolkit/Profiles/                                   @kaysauter
+
+# Accepted architecture.
+/architecture/decisions/                                             @kaysauter
+
+# Build, release provenance, and CI.
+/build.ps1                                                           @kaysauter
+/.github/workflows/                                                  @kaysauter
+/CODEOWNERS                                                          @kaysauter
+/SECURITY.md                                                         @kaysauter

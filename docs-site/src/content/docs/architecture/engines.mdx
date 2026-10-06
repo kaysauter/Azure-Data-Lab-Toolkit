@@ -3,7 +3,7 @@ title: Deployment Engines
 description: PowerShell-first execution with coherent Bicep and Terraform roles.
 ---
 
-<span class="status status-committed">Committed engine roles; implementation backlog</span>
+<span class="status status-current">PowerShell engine current; Bicep and Terraform backlog</span>
 
 A deployment engine translates an approved normalized plan into engine-specific
 artifacts and applies supported actions through core orchestration. Target
@@ -11,7 +11,7 @@ providers describe intent; engines own export and apply syntax.
 
 | Engine | Status | Long-term role |
 | --- | --- | --- |
-| PowerShell | Committed design, first | Export an auditable action package and apply supported actions |
+| PowerShell | **Current** | Compiles an approved plan to ARM, recompiles and byte-compares it before submission, then applies it. Still lives in Core rather than behind the engine contract |
 | Bicep | Backlog, S12 | Export Azure-native templates and apply them through orchestration |
 | Terraform | Backlog, S13 | Export configuration and apply it through orchestration with an explicit state boundary |
 

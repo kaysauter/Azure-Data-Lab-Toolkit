@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/run-event-1.0.json",
+  "title": "Azure Data Lab Toolkit run event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "canonicalization",
+    "runId",
+    "planHash",
+    "intentHash",
+    "sequence",
+    "generation",
+    "previousEventHash",
+    "eventType",
+    "occurredAt",
+    "actor",
+    "data",
+    "eventHash"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "AzureDataLabRunEvent"
+    },
+    "canonicalization": {
+      "const": "rfc8785"
+    },
+    "runId": {
+      "$ref": "#/$defs/uuid"
+    },
+    "planHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "intentHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "previousEventHash": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/hash"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "eventType": {
+      "enum": [
+        "run-created",
+        "status-changed",
+        "preflight-blocked",
+        "resource-observed",
+        "evidence-attached",
+        "authorization-recorded",
+        "operation-started",
+        "operation-resumed",
+        "operation-uncertain",
+        "operation-finished",
+        "teardown-authorization-recorded",
+        "teardown-authorization-refreshed",
+        "teardown-operation-started",
+        "teardown-operation-resumed",
+        "teardown-operation-uncertain",
+        "teardown-operation-finished",
+        "failure-recorded",
+        "cleanup-status-changed",
+        "lock-generation-changed"
+      ]
+    },
+    "occurredAt": {
+      "$ref": "#/$defs/utcTimestamp"
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "interactive-user",
+            "oidc",
+            "managed-identity",
+            "toolkit"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "eventHash": {
+      "$ref": "#/$defs/hash"
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]{1,9})?Z$"
+    }
+  }
+}

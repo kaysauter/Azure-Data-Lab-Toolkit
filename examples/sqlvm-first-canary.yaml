@@ -1,0 +1,82 @@
+schemaVersion: "1.0"
+kind: AzureDataLab
+template: sqlvm-first-canary
+deploymentProfile:
+  id: "sqlvm-first-canary/v1"
+  hash: "sha256:9ad21b4a4938a7e11b3fc74dc8501a336f7db50c5cda968eef266ff360901107"
+metadata:
+  name: "sqlvm-canary"
+  description: "Secure Azure SQL VM deployment canary"
+  purpose: canary
+target:
+  type: sqlVm
+azure:
+  cloud: AzureCloud
+  tenantId: "11111111-1111-4111-8111-111111111111"
+  subscriptionId: "22222222-2222-4222-8222-222222222222"
+  location: "switzerlandnorth"
+  authentication:
+    mode: interactive-user
+    contextScope: process
+  resourceGroup:
+    mode: create
+    name: "rg-adlt-sqlvm-canary"
+engine:
+  type: powershell
+security:
+  vmManagedIdentity: system-assigned
+  secretStore:
+    mode: reuse-key-vault
+    resourceId: "/subscriptions/22222222-2222-4222-8222-222222222222/resourceGroups/rg-adlt-control/providers/Microsoft.KeyVault/vaults/adlt-control-vault"
+    diagnosticDestinationResourceId: "/subscriptions/22222222-2222-4222-8222-222222222222/resourceGroups/rg-monitor/providers/Microsoft.OperationalInsights/workspaces/law-adlt"
+  administrativeAccess:
+    mode: deploy-bastion
+    sku: basic
+  vmAdministratorCredential:
+    source: key-vault-secret
+    secretName: "vm-admin-password"
+    secretVersion: "0123456789abcdef0123456789abcdef"
+    allowShellOutput: false
+  containsSensitiveData: false
+cost:
+  estimateRequested: true
+  maximumRunCost:
+    amountMinorUnits: 5000
+    currency: USD
+  budget:
+    currency: USD
+lifecycle:
+  maximumRuntimeMinutes: 120
+  timeToLiveMinutes: 180
+  expiryBehavior: cleanup-only
+  teardown:
+    mode: preauthorized-canary
+    strategy: exact-resource-ids
+    retainResourceGroup: true
+    freshInventoryRequired: true
+    retainBackupShare: false
+capabilities:
+  backupShare:
+    enabled: false
+    driveLetter: S
+    quotaGiB: 100
+    authentication: managed-identity-smb-oauth
+    networkAccess: private-endpoint
+solutionPacks:
+  sqlVmBackupRestore:
+    enabled: false
+    restoreMode: local-staging
+    replaceExistingDatabase: false
+sqlVm:
+  platform: windows
+  sqlServerVersion: "2022"
+  compute:
+    vmSize: Standard_D4s_v5
+    securityType: trustedLaunch
+    encryptionAtHost: true
+  network:
+    vmPublicIp: false
+  software:
+    catalogIds: []
+  sampleData:
+    catalogIds: []

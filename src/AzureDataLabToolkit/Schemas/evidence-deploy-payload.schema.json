@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/evidence-deploy-payload-1.0.json",
+  "title": "Azure Data Lab Toolkit deployment evidence payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "operationId",
+    "executionRecordHash",
+    "authorizationHash",
+    "scope",
+    "deploymentName",
+    "deploymentId",
+    "correlationId",
+    "provisioningState",
+    "outcome",
+    "failureKind",
+    "templateHash",
+    "parameterFileHash",
+    "executionArtifactDigest"
+  ],
+  "properties": {
+    "operationId": {
+      "$ref": "#/$defs/uuid"
+    },
+    "executionRecordHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "authorizationHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "scope": {
+      "type": "string",
+      "pattern": "^/subscriptions/[0-9a-fA-F-]{36}$"
+    },
+    "deploymentName": {
+      "type": "string",
+      "pattern": "^adlt-deploy-[a-f0-9]{8}-[a-f0-9]{12}$"
+    },
+    "deploymentId": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^/subscriptions/[0-9a-fA-F-]{36}/providers/Microsoft\\.Resources/deployments/adlt-deploy-[a-f0-9]{8}-[a-f0-9]{12}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "correlationId": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "provisioningState": {
+      "type": "string",
+      "enum": [
+        "Succeeded",
+        "Failed",
+        "Canceled"
+      ]
+    },
+    "outcome": {
+      "enum": [
+        "succeeded",
+        "failed"
+      ]
+    },
+    "failureKind": {
+      "oneOf": [
+        {
+          "enum": [
+            "denied",
+            "unauthenticated",
+            "absent",
+            "conflict",
+            "throttled",
+            "unknown"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "templateHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "parameterFileHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "executionArtifactDigest": {
+      "$ref": "#/$defs/hash"
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    }
+  }
+}

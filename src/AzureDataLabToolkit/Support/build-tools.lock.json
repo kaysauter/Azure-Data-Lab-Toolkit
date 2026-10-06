@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "AzureDataLabBuildToolLock",
+  "contentDigestAlgorithm": "sha256-rfc8785-file-manifest-v1",
+  "buildTools": [
+    {
+      "name": "Pester",
+      "version": "5.7.1",
+      "guid": "a699dea5-2c73-4616-a270-1f7abb777e71",
+      "author": "Pester Team",
+      "source": "PSGallery",
+      "packageUri": "https://www.powershellgallery.com/api/v2/package/Pester/5.7.1",
+      "contentDigest": "sha256:6d8c7eb969f919a7f38ee16d7f37833949816e1ba707ca734086dc38913a11c0",
+      "fileCount": 18,
+      "totalSizeBytes": 1142298
+    },
+    {
+      "name": "PSScriptAnalyzer",
+      "version": "1.25.0",
+      "guid": "d6245802-193d-4068-a631-8863a4342a18",
+      "author": "Microsoft Corporation",
+      "source": "PSGallery",
+      "packageUri": "https://www.powershellgallery.com/api/v2/package/PSScriptAnalyzer/1.25.0",
+      "contentDigest": "sha256:e7c863685ced53939cef10829e06361e8251a408448ecc6b42307b508e2fff4e",
+      "fileCount": 49,
+      "totalSizeBytes": 299353655
+    }
+  ]
+}

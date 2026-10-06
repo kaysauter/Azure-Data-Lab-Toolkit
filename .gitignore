@@ -36,7 +36,14 @@ obj/
 out/
 dist/
 coverage/
+/coverage.xml
 TestResults/
+
+# Agent session state
+.omc/
+
+# Local assessments and reviews
+assessments/
 
 # Editors and operating systems
 .DS_Store

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "AzureDataLabSqlVmImageMatrix",
+  "publisher": "MicrosoftSQLServer",
+  "notes": [
+    "Azure maintains one marketplace image per operating-system, SQL version, and edition combination, so the offer fuses the Windows Server version with the SQL Server version and the sku carries the edition. Windows version and SQL version are therefore not independent axes: only the combinations listed here exist.",
+    "Every entry is verified against the live marketplace by Get-AdltSqlVmImageResolution before deployment is authorized, so a wrong offer or sku fails closed at WhatIf rather than mid-deployment.",
+    "Web edition is deliberately absent. Its licence terms restrict it to service providers under the Services Provider Licence Agreement, so it is not a lawful choice for a self-hosted lab."
+  ],
+  "images": [
+    {
+      "platform": "windows",
+      "windowsServerVersion": "2022",
+      "sqlServerVersion": "2022",
+      "sqlEdition": "Developer",
+      "offer": "sql2022-ws2022",
+      "sku": "sqldev-gen2",
+      "sqlImageOffer": "SQL2022-WS2022",
+      "sqlImageSku": "Developer",
+      "licenseCharge": "none",
+      "notes": "Free for development and test only. Not licensed for production use."
+    },
+    {
+      "platform": "windows",
+      "windowsServerVersion": "2022",
+      "sqlServerVersion": "2022",
+      "sqlEdition": "Express",
+      "offer": "sql2022-ws2022",
+      "sku": "express-gen2",
+      "sqlImageOffer": "SQL2022-WS2022",
+      "sqlImageSku": "Express",
+      "licenseCharge": "none",
+      "notes": "Free, with hard engine limits: 10 GB maximum database size, 1410 MB buffer pool, and a capped CPU allocation."
+    },
+    {
+      "platform": "windows",
+      "windowsServerVersion": "2022",
+      "sqlServerVersion": "2022",
+      "sqlEdition": "Standard",
+      "offer": "sql2022-ws2022",
+      "sku": "standard-gen2",
+      "sqlImageOffer": "SQL2022-WS2022",
+      "sqlImageSku": "Standard",
+      "licenseCharge": "per-core",
+      "notes": "Charged per vCore on top of compute under pay-as-you-go licensing."
+    },
+    {
+      "platform": "windows",
+      "windowsServerVersion": "2022",
+      "sqlServerVersion": "2022",
+      "sqlEdition": "Enterprise",
+      "offer": "sql2022-ws2022",
+      "sku": "enterprise-gen2",
+      "sqlImageOffer": "SQL2022-WS2022",
+      "sqlImageSku": "Enterprise",
+      "licenseCharge": "per-core",
+      "notes": "Charged per vCore on top of compute under pay-as-you-go licensing, at a substantially higher rate than Standard."
+    }
+  ]
+}

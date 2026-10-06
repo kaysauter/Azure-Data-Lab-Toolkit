@@ -3,8 +3,10 @@ title: Project Status
 description: What exists now, what comes next, and how status labels are used.
 ---
 
-:::danger[Not yet deployable]
-The repository currently contains architecture, roadmap, and project scaffolding. It does not contain a released PowerShell module or deployable cmdlets.
+:::danger[Unreleased alpha that creates and deletes real Azure resources]
+The repository contains an installable PowerShell alpha. Beyond validating and planning, it authenticates to Azure, compares live resources, estimates live prices, deploys, probes, and tears down a lab.
+
+None of it has been exercised against a live subscription and no release has been published, so nothing here is **Available**. `Start-AzureDataLabDeployment` creates real resources and `Start-AzureDataLabTeardown` deletes them.
 :::
 
 ## Status labels
@@ -25,9 +27,12 @@ No deployment capability is currently marked **Available**.
 | Area | Status | Current scope |
 | --- | --- | --- |
 | Architecture, documentation, pitch, and backlog | **Current** | Repository artifacts that can be read and built |
-| Core and extension boundaries | **Committed design** | Accepted separation of target providers, capability modules, catalog sources, solution packs, deployment engines, and probes |
-| PowerShell module, YAML schema, `-Plan`, and `-WhatIf` | **Backlog** | No installable module or command implementation exists |
-| SQL Server on Azure VM | **Backlog** | First end-to-end implementation and proof point |
+| Core and extension boundaries | **Current and committed design** | Current registries and contracts cover the SQL VM provider, networking, Key Vault, Bastion, Azure Files, catalogs, and one restore solution pack; future extension types remain committed design |
+| PowerShell module and YAML schema | **Current** | Validation, deterministic SQL VM plans with desired resource properties and policy findings, metadata catalogs, support matrix, and JSON, Markdown, and HTML export |
+| Azure sign-in and live resolution | **Current** | `Connect-AzureDataLabAccount` with process-scoped context, no autosave, and secure-string tokens |
+| Azure-aware `-WhatIf` | **Current** | `Test-AzureDataLabWhatIf` reconciles a compiled plan against live state via native ARM WhatIf |
+| Deployment, probes, and teardown | **Current** | Implemented and test-covered; never run against a live subscription and unreleased |
+| SQL Server on Azure VM | **Current** | Fixed secure alpha plan, Azure reconciliation, deployment, probes, and approval-gated cleanup. Guest operations remain preview-first and user-executed |
 | PostgreSQL managed, VM, and container paths | **Backlog** | Three separate pre-Fabric delivery segments |
 | Bicep and Terraform engines | **Backlog** | Scheduled after stable target paths and before Fabric; neither is implemented |
 | General Git and CI/CD adapters | **Backlog** | GitHub reference plus Azure DevOps, GitLab, Gitea, and Forgejo before Fabric |
@@ -36,7 +41,16 @@ No deployment capability is currently marked **Available**.
 
 ## Plan and WhatIf
 
-The committed design separates offline reasoning from live comparison. `-Plan` will validate configuration and explain resolved and derived values without Azure access. `-WhatIf` will require Azure context, compare that resolved plan with existing resources, and report create, reuse, update, replace, conflict, drift, or no-change without mutation. Neither command is implemented today.
+The design separates offline reasoning from live comparison, and both halves
+now exist. `New-AzureDataLabPlan` implements the offline plan contract: it
+explains resolved and derived values, ownership intent, actions, decisions, and
+unverified facts without Azure access. `Test-AzureDataLabWhatIf` implements the
+live half: it requires Azure context and reports create, reuse, update, replace,
+conflict, drift, or no-change without mutation.
+
+Being implemented is not the same as being verified. Neither command has been
+run against a live subscription, so both stay **Current** rather than
+**Available**.
 
 ## Delivery order
 
@@ -66,9 +80,10 @@ resume remain release work for S6.
 ## Required security decisions
 
 The committed design requires a `secretStoreDecision` for every target and
-solution pack and an `administrativeAccessDecision` for every Azure VM. Key
-Vault is considered explicitly for every solution; Azure Bastion with no public
-IP is the default for VMs. These are contracts, not implemented controls today.
+solution pack and an `administrativeAccessDecision` for every Azure VM. The
+plan records these decisions, with Key Vault and Azure Bastion plus no VM public
+IP as defaults, and the deployment engine compiles them into the submitted ARM
+template. They have not yet been verified against a live subscription.
 
 ## First implementation proof
 

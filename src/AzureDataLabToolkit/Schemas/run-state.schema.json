@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kaysauter.github.io/Azure-Data-Lab-Toolkit/schemas/run-state-1.0.json",
+  "title": "Azure Data Lab Toolkit run state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "canonicalization",
+    "runId",
+    "planHash",
+    "intentHash",
+    "mode",
+    "generation",
+    "status",
+    "scope",
+    "resourceLedger",
+    "eventReferences",
+    "evidenceReferences",
+    "createdAt",
+    "updatedAt",
+    "expiresAt",
+    "stateHash"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "AzureDataLabRunState"
+    },
+    "canonicalization": {
+      "const": "rfc8785"
+    },
+    "runId": {
+      "$ref": "#/$defs/uuid"
+    },
+    "planHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "intentHash": {
+      "$ref": "#/$defs/hash"
+    },
+    "mode": {
+      "enum": [
+        "local",
+        "remote"
+      ]
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "status": {
+      "enum": [
+        "planned",
+        "authorizing",
+        "ready",
+        "deploying",
+        "deployment-unknown",
+        "probing",
+        "running",
+        "stopping",
+        "stopped",
+        "resuming",
+        "teardown-pending",
+        "tearing-down",
+        "completed",
+        "failed",
+        "blocked",
+        "cleanup-unknown"
+      ]
+    },
+    "scope": {
+      "$ref": "#/$defs/azureScope"
+    },
+    "resourceLedger": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stableId",
+          "resourceId",
+          "plannedOwnership",
+          "observedOwnership",
+          "status"
+        ],
+        "properties": {
+          "stableId": {
+            "$ref": "#/$defs/stableId"
+          },
+          "resourceId": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/resourceId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "plannedOwnership": {
+            "enum": [
+              "owned",
+              "reused",
+              "external"
+            ]
+          },
+          "observedOwnership": {
+            "enum": [
+              "unverified",
+              "owned",
+              "reused",
+              "external",
+              "unknown"
+            ]
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "present",
+              "stopped",
+              "deleting",
+              "absent",
+              "retained",
+              "failed",
+              "unknown"
+            ]
+          }
+        }
+      }
+    },
+    "eventReferences": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sequence",
+          "eventHash"
+        ],
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "eventHash": {
+            "$ref": "#/$defs/hash"
+          }
+        }
+      }
+    },
+    "evidenceReferences": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stage",
+          "evidenceHash"
+        ],
+        "properties": {
+          "stage": {
+            "$ref": "#/$defs/stage"
+          },
+          "evidenceHash": {
+            "$ref": "#/$defs/hash"
+          }
+        }
+      }
+    },
+    "createdAt": {
+      "$ref": "#/$defs/utcTimestamp"
+    },
+    "updatedAt": {
+      "$ref": "#/$defs/utcTimestamp"
+    },
+    "expiresAt": {
+      "$ref": "#/$defs/utcTimestamp"
+    },
+    "stateHash": {
+      "$ref": "#/$defs/hash"
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]{1,9})?Z$"
+    },
+    "azureScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cloud",
+        "tenantId",
+        "subscriptionId",
+        "resourceGroupName",
+        "location"
+      ],
+      "properties": {
+        "cloud": {
+          "const": "AzureCloud"
+        },
+        "tenantId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "subscriptionId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "resourceGroupName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90,
+          "pattern": "^[^<>%&:\\\\?/#]+[^.\\s]$"
+        },
+        "location": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+$",
+          "minLength": 2,
+          "maxLength": 40
+        }
+      }
+    },
+    "resourceId": {
+      "type": "string",
+      "pattern": "^/subscriptions/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/resourceGroups/[^/]+(?:/providers/[A-Za-z0-9.]+/[A-Za-z0-9]+/[^/]+(?:/[A-Za-z0-9]+/[^/]+)*)?$"
+    },
+    "stableId": {
+      "type": "string",
+      "pattern": "^azure\\.[a-z0-9][a-z0-9.-]+$"
+    },
+    "stage": {
+      "enum": [
+        "validate",
+        "plan",
+        "live-resolution",
+        "what-if",
+        "cost",
+        "authorization",
+        "deploy",
+        "probe",
+        "shutdown",
+        "resume",
+        "teardown-preview",
+        "teardown",
+        "cleanup-proof",
+        "report"
+      ]
+    }
+  }
+}
