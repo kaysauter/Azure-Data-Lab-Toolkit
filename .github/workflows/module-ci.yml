@@ -143,7 +143,7 @@ jobs:
           github.event.action == 'published' &&
           startsWith(github.event.release.tag_name, 'v') &&
           matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: tested-release-package
           path: out/packages/*.zip
@@ -444,7 +444,7 @@ jobs:
           sbom-path: release-evidence/sbom.spdx.json
 
       - name: Upload release package, checksum, and SBOM
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: AzureDataLabToolkit-${{ github.event.release.tag_name }}
           path: release-evidence/*
