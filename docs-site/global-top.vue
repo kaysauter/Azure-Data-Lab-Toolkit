@@ -30,7 +30,7 @@
 	border: 1px solid rgba(125, 211, 252, 0.48);
 	border-radius: 6px;
 	padding: 0.4rem 0.7rem;
-	background: rgba(15, 23, 42, 0.78);
+	background: rgba(38, 50, 55, 0.88);
 	color: #e5edf8;
 	font-size: 0.78rem;
 	font-weight: 700;
@@ -55,7 +55,7 @@
 	max-width: min(22rem, 34vw);
 	overflow: hidden;
 	padding: 0.28rem 0.55rem;
-	background: rgba(15, 23, 42, 0.72);
+	background: rgba(38, 50, 55, 0.85);
 	color: rgba(229, 237, 248, 0.84);
 	font-size: 0.62rem;
 	font-weight: 600;
@@ -108,7 +108,7 @@
 		border: 3px solid rgba(125, 211, 252, 0.62);
 		border-radius: 6px;
 		padding: 1rem 1.25rem;
-		background: rgba(15, 23, 42, 0.94);
+		background: rgba(38, 50, 55, 0.96);
 		color: #e5edf8;
 		font-size: 2.25rem;
 		font-weight: 650;

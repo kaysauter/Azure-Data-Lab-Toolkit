@@ -1,20 +1,25 @@
+/* Backgrounds are deliberately kept above roughly 2.5% relative luminance.
+   macOS applies temporal dithering to near-black fills, which reads as a
+   visible flicker on some external panels (reported on a Dell U2721Q). The
+   original #10191d sat at 0.89% luminance and flickered; these values sit near
+   3% and keep every foreground colour above WCAG AA against the background. */
 :root {
-	--deck-bg: #10191d;
-	--deck-surface: #17262d;
-	--deck-surface-2: #1d2e35;
+	--deck-bg: #263237;
+	--deck-surface: #303e45;
+	--deck-surface-2: #38474f;
 	--deck-text: #f4f8fb;
-	--deck-muted: #aab9c3;
-	--deck-line: #3b4e57;
+	--deck-muted: #b7c4cd;
+	--deck-line: #4a5f6a;
 	--deck-cyan: #65d3e2;
 	--deck-amber: #efbd56;
 	--deck-green: #72d39e;
 	--deck-red: #ff7b82;
-	--deck-danger-bg: #351a20;
+	--deck-danger-bg: #4a2a32;
 	--deck-danger-text: #ffc7ca;
-	--deck-warning-bg: #2b281c;
+	--deck-warning-bg: #3e3827;
 	--deck-warning-text: #f3dfad;
-	--deck-proof-bg: #15313a;
-	--deck-ok-bg: #163024;
+	--deck-proof-bg: #27454f;
+	--deck-ok-bg: #254736;
 	--deck-ok-text: #a7e5c3;
 }
 

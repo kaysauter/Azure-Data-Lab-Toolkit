@@ -218,7 +218,7 @@ layout: default
 
 <div class="input-arrow">Every route resolves to one schema, one provenance record, and one normalized plan.</div>
 
-<div class="candidate-note">A browser page rather than a terminal UI, deliberately: no TUI runtime, no extra dependency, and no interactive terminal session required on a hardened host. The wizard holds no token, accepts no secret, makes no network request, and only writes YAML.</div>
+<div class="candidate-note">The wizard is a local browser page: nothing to install, and no interactive session needed on a hardened host. It holds no token, accepts no secret, makes no network request, and only writes YAML.</div>
 
 <div class="warning-panel">
   Secret generation or display, sensitive data, public access, unverified artifacts, license acceptance, replacement, and deletion remain explicit.
