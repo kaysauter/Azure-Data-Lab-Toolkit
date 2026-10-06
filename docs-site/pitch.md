@@ -82,7 +82,7 @@ layout: default
   <span>Report</span>
 </div>
 
-<div class="candidate-note">Reconcile compares the approved plan against live Azure resources. It needs sign-in, changes nothing, and reports create, reuse, update, replace, conflict, or drift. Assessment adds evidence before or after planning when it is useful; it is not a blocker for every lab.</div>
+<div class="candidate-note">Reconcile compares the resolved plan against live Azure resources. It needs sign-in, changes nothing, and reports create, reuse, update, replace, conflict, or drift. Assessment adds evidence before or after planning when it is useful; it is not a blocker for every lab.</div>
 
 <div class="two-col compact-top">
   <div>
@@ -140,7 +140,7 @@ layout: default
   </div>
   <div class="plain-panel">
     <h3>Azure boundary</h3>
-    <p>Nineteen allowlisted cmdlets, each with an exact parameter clamp. Anything else is refused by the engine.</p>
+    <p>Nineteen allowlisted cmdlets; anything else is refused by the engine. The nine that deploy, delete, or read resources are clamped to an exact parameter set and values.</p>
   </div>
   <div class="plain-panel">
     <h3>Secrets</h3>
@@ -331,7 +331,7 @@ layout: default
     </div>
   </div>
   <div>
-    <h3>Custom and private sources</h3>
+    <h3>Custom and private sources<b class="item-status is-planned">planned</b></h3>
     <p>Users can select local files or URLs, private sources, checksums, authentication references, and sensitivity metadata. Community content is optional, never mandatory.</p>
   </div>
 </div>
