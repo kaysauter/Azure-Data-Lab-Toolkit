@@ -11,12 +11,23 @@ a polished terminal UI to a later out-of-process implementation. The contract
 shipped as `Schemas/tui-selection.schema.json`, with an empty `Tui/` boundary
 directory holding only a placeholder.
 
-A terminal UI is expensive for the value it returns here. Guided configuration
-is a wide, branching form: templates, catalog selections, network and secret
-decisions, policy acknowledgements. That is ordinary form layout in a browser
-and bespoke widget work in a terminal. A terminal UI would also need its own
-rendering, input, and accessibility handling on three platforms, and would still
-have to emit exactly the same neutral selection document.
+The deciding argument is operational, not economic. A terminal UI needs a TUI
+runtime and its dependencies installed wherever guided configuration happens,
+and it needs an interactive terminal session to be usable. Both are things a
+hardened host should not have to provide. The toolkit is aimed at environments
+where adding a rendering library to satisfy a configuration wizard is a change
+that has to be justified, and where interactive sessions on a managed server are
+restricted on purpose. A browser page avoids the question entirely: the operator
+already has a browser on the machine they work from, the page is a local file,
+and nothing new is installed anywhere.
+
+The cost argument points the same way and is worth recording as secondary.
+Guided configuration is a wide, branching form: templates, catalog selections,
+network and secret decisions, policy acknowledgements. That is ordinary form
+layout in a browser and bespoke widget work in a terminal. A terminal UI would
+also need its own rendering, input, and accessibility handling on three
+platforms, and would still have to emit exactly the same neutral selection
+document.
 
 A browser page needs none of that. Every machine that runs the toolkit already
 has a browser, and the page can be served from the local filesystem with no

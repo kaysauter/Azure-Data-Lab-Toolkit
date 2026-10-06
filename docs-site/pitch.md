@@ -21,7 +21,8 @@ class: adlt-cover
 Define a lab once. Review the decisions. Deploy consistently. Prove it works. Remove it cleanly.
 
 <div class="cover-meta">
-  <span>Planning, deployment, and teardown implemented; unreleased and unverified</span>
+  <span>Plan, reconcile, deploy, probe, and tear down — all implemented</span>
+  <span>Never run against live Azure · no published release</span>
   <span>First target: SQL Server on Azure VM</span>
 </div>
 
@@ -74,14 +75,14 @@ layout: default
   <span>Describe</span><i>→</i>
   <span>Validate</span><i>→</i>
   <span>Plan</span><i>→</i>
-  <span>Compare</span><i>→</i>
+  <span>Reconcile</span><i>→</i>
   <span>Approve</span><i>→</i>
   <span>Deploy</span><i>→</i>
   <span>Probe</span><i>→</i>
   <span>Report</span>
 </div>
 
-<div class="candidate-note">Assessment adds evidence before or after planning when it is useful. It is not a blocker for every lab.</div>
+<div class="candidate-note">Reconcile compares the approved plan against live Azure resources. It needs sign-in, changes nothing, and reports create, reuse, update, replace, conflict, or drift. Assessment adds evidence before or after planning when it is useful; it is not a blocker for every lab.</div>
 
 <div class="two-col compact-top">
   <div>
@@ -102,24 +103,58 @@ layout: default
 
 # Start narrow to prove the foundation
 
-<div class="status-chip status-danger">Current: no deployable cmdlets</div>
+<div class="status-chip status-planned">Implemented end to end · never run against live Azure</div>
 
 ## SQL Server on Azure VM is the first implementation
 
 <div class="foundation-grid">
-  <span>Networking</span>
-  <span>Managed identity</span>
-  <span>Key Vault decision</span>
-  <span>Bastion decision</span>
-  <span>Guest configuration</span>
-  <span>Storage and restore</span>
-  <span>Software delivery</span>
-  <span>Probes and teardown</span>
+  <span>Networking<b class="item-status is-done">built</b></span>
+  <span>Managed identity<b class="item-status is-done">built</b></span>
+  <span>Key Vault decision<b class="item-status is-done">built</b></span>
+  <span>Bastion decision<b class="item-status is-done">built</b></span>
+  <span>Probes and teardown<b class="item-status is-done">built</b></span>
+  <span>Storage and restore<b class="item-status is-planned">planned</b></span>
+  <span>Guest configuration<b class="item-status is-planned">planned</b></span>
+  <span>Software delivery<b class="item-status is-planned">planned</b></span>
 </div>
+
+<div class="candidate-note">Guest execution is the honest gap: nothing runs inside the VM yet, so software installation and database restore are planned, not built. Everything else in this grid is implemented and test-covered.</div>
 
 <div class="danger-line">
   The unfinished <a href="https://github.com/kaysauter/azure-sqlvm-toolkit" target="_blank" rel="noreferrer">Azure SQLVM Toolkit</a>
   provides practical lessons for the broader design. No deployable implementation is inherited.
+</div>
+
+---
+layout: default
+---
+
+# What exists today
+
+<div class="status-chip status-done">24 commands · 385 tests · CI green on Linux, Windows, macOS</div>
+
+<div class="four-col">
+  <div class="plain-panel">
+    <h3>Lifecycle</h3>
+    <p>Offline plan, live reconcile, approved deploy, probe, and ownership-aware teardown all run end to end.</p>
+  </div>
+  <div class="plain-panel">
+    <h3>Azure boundary</h3>
+    <p>Nineteen allowlisted cmdlets, each with an exact parameter clamp. Anything else is refused by the engine.</p>
+  </div>
+  <div class="plain-panel">
+    <h3>Secrets</h3>
+    <p>The VM password never enters the process. It is an ARM secureString fed by a pinned Key Vault reference.</p>
+  </div>
+  <div class="plain-panel">
+    <h3>Accountability</h3>
+    <p>Hash-chained plan, authorization, and evidence. Every mutation needs a typed approval phrase.</p>
+  </div>
+</div>
+
+<div class="danger-line">
+  It has never been run against a live Azure subscription, and no release has been published.
+  Everything above is implemented and test-covered, not field-proven.
 </div>
 
 ---
@@ -144,7 +179,7 @@ layout: default
 <div class="compare-grid">
   <section>
     <span class="compare-command">-Plan</span>
-    <h3>What will this definition mean?</h3>
+    <h3>What will this definition mean?<b class="item-status is-done">built</b></h3>
     <ul>
       <li>Offline and deterministic</li>
       <li>No Azure sign-in or mutation</li>
@@ -155,7 +190,7 @@ layout: default
   </section>
   <section>
     <span class="compare-command">-WhatIf</span>
-    <h3>What would happen in this Azure environment?</h3>
+    <h3>What would happen in this Azure environment?<b class="item-status is-done">built</b></h3>
     <ul>
       <li>Azure-authenticated live reconciliation</li>
       <li>No mutation or approval</li>
@@ -176,12 +211,14 @@ layout: default
 
 <div class="input-map">
   <div><span class="input-id">1</span><strong>Templates</strong><small>Curated, reviewable starting points</small></div>
-  <div><span class="input-id">2</span><strong>Browser wizard</strong><small>Optional guided configuration, offline</small></div>
+  <div><span class="input-id">2</span><strong>Browser wizard</strong><small>Optional guided configuration, fully offline</small></div>
   <div><span class="input-id">3</span><strong>YAML</strong><small>Canonical, versioned input</small></div>
   <div><span class="input-id">4</span><strong>PowerShell flags</strong><small>Explicit per-run overrides</small></div>
 </div>
 
 <div class="input-arrow">Every route resolves to one schema, one provenance record, and one normalized plan.</div>
+
+<div class="candidate-note">A browser page rather than a terminal UI, deliberately: no TUI runtime, no extra dependency, and no interactive terminal session required on a hardened host. The wizard holds no token, accepts no secret, makes no network request, and only writes YAML.</div>
 
 <div class="warning-panel">
   Secret generation or display, sensitive data, public access, unverified artifacts, license acceptance, replacement, and deletion remain explicit.
@@ -194,13 +231,13 @@ layout: default
 # A deliberate delivery sequence
 
 <ol class="target-sequence">
-  <li><strong>SQL Server on Azure VM</strong><span>Plan → canary → useful lab → release</span></li>
-  <li><strong>Azure SQL Database and SQL MI</strong><span>Managed SQL paths</span></li>
-  <li><strong>PostgreSQL</strong><span>Azure managed → VM → container</span></li>
-  <li><strong>Bicep and Terraform</strong><span>Independent engine gates</span></li>
-  <li><strong>Git and CI/CD adapters</strong><span>GitHub, Azure DevOps, GitLab, Gitea, Forgejo</span></li>
-  <li><strong>Microsoft Fabric</strong><span>Guidance → items → CI/CD + solution-pack lanes</span></li>
-  <li><strong>Later platforms</strong><span>Databricks, more data targets, SQL Linux, Kubernetes</span></li>
+  <li v-click><strong>SQL Server on Azure VM</strong><b class="item-status is-done">built, unverified live</b><span>Plan → canary → useful lab → release</span></li>
+  <li v-click><strong>Azure SQL Database and SQL MI</strong><b class="item-status is-planned">planned</b><span>Managed SQL paths</span></li>
+  <li v-click><strong>PostgreSQL</strong><b class="item-status is-planned">planned</b><span>Azure managed → VM → container</span></li>
+  <li v-click><strong>Bicep and Terraform</strong><b class="item-status is-planned">planned</b><span>Independent engine gates</span></li>
+  <li v-click><strong>Git and CI/CD adapters</strong><b class="item-status is-planned">planned</b><span>GitHub, Azure DevOps, GitLab, Gitea, Forgejo</span></li>
+  <li v-click><strong>Microsoft Fabric</strong><b class="item-status is-planned">planned</b><span>Guidance → items → CI/CD + solution-pack lanes</span></li>
+  <li v-click><strong>Later platforms</strong><b class="item-status is-planned">planned</b><span>Databricks, more data targets, SQL Linux, Kubernetes</span></li>
 </ol>
 
 <div class="backlog-line">
@@ -299,7 +336,7 @@ layout: default
   </div>
 </div>
 
-<div class="candidate-note">A catalog entry is metadata and policy. Planning never downloads or executes its content.</div>
+<div class="candidate-note">A catalog entry is metadata and policy. Planning never downloads or executes its content. If you maintain something that belongs here, there is an ask near the end of this deck.</div>
 
 ---
 layout: default
@@ -349,7 +386,8 @@ layout: default
 <div class="two-col compact-top">
   <div>
     <h3>Toolkit repository CI</h3>
-    <p>Dependency review, Dependabot, secret scanning, PSScriptAnalyzer, Pester, docs and links, plus Checkov when Bicep or Terraform exists. CodeQL complements this but does not analyze PowerShell.</p>
+    <p><b class="item-status is-done">running</b> PSScriptAnalyzer, Pester with an enforced coverage gate, schemas, docs and links, packaging, Dependabot, secret scanning, plus SBOM and build attestation on release.</p>
+    <p><b class="item-status is-planned">planned</b> Dependency review, and Checkov once Bicep or Terraform exists. CodeQL does not analyze PowerShell.</p>
   </div>
   <div>
     <h3>User-facing pipeline intent</h3>
@@ -393,6 +431,34 @@ layout: default
 
 ---
 layout: default
+---
+
+# Call for projects
+
+<div class="two-col">
+  <div>
+    <h3>What fits</h3>
+    <p>Sample databases. SQL and data open-source tooling. Reproducible lab scenarios. Teaching material that needs an environment you can break and throw away.</p>
+    <h3>What your project gets</h3>
+    <p>A governed catalog entry, and a lab others reproduce from one YAML file, review before it runs, and tear down with proof.</p>
+  </div>
+  <div>
+    <h3>What it asks of you</h3>
+    <div class="catalog-contract">
+      <span>Pinned version</span><span>Verifiable checksum</span>
+      <span>Redistributable license</span><span>Named owner</span>
+    </div>
+    <h3>How</h3>
+    <p>Open an issue, or get in touch. Commercial projects contact first.</p>
+  </div>
+</div>
+
+<div class="warning-panel">
+  Guest installation is not implemented yet, so nothing is installed inside a VM today. This is an invitation to shape the catalog contract while it is still cheap to change.
+</div>
+
+---
+layout: default
 class: final-slide
 ---
 
@@ -403,11 +469,11 @@ class: final-slide
 </div>
 
 <div class="milestones">
-  <span>1. Decision-complete contracts</span>
-  <span>2. Installable offline Core</span>
-  <span>3. GitHub engineering CI</span>
-  <span>4. SQL VM plan and secure canary</span>
-  <span>5. Useful lab and release evidence</span>
+  <span>1. Decision-complete contracts<b class="item-status is-done">done</b></span>
+  <span>2. Installable Core<b class="item-status is-done">done</b></span>
+  <span>3. GitHub engineering CI<b class="item-status is-done">done</b></span>
+  <span>4. SQL VM plan and secure canary<b class="item-status is-planned">plan built, canary unrun</b></span>
+  <span>5. Useful lab and release evidence<b class="item-status is-planned">next</b></span>
 </div>
 
 <div class="final-links">
