@@ -5,7 +5,7 @@
     Author               = 'Kay Sauter'
     CompanyName          = 'Community'
     Copyright            = '(c) 2026 Kay Sauter. All rights reserved.'
-    Description          = 'Offline configuration, validation, and planning foundation for Azure Data Lab Toolkit.'
+    Description          = 'Plans, deploys, probes, and tears down SQL Server on Azure VM labs from versioned YAML. Alpha: it has never run against live Azure.'
     PowerShellVersion    = '7.6'
     CompatiblePSEditions = @('Core')
 
@@ -46,7 +46,7 @@
             LicenseUri   = 'https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/LICENSE'
             ProjectUri   = 'https://github.com/kaysauter/Azure-Data-Lab-Toolkit'
             Prerelease   = 'alpha1'
-            ReleaseNotes = 'Introduces the installable offline configuration and deterministic planning foundation.'
+            ReleaseNotes = 'First alpha prerelease. Nothing in it has run against live Azure. See https://github.com/kaysauter/Azure-Data-Lab-Toolkit/releases/tag/v0.1.0-alpha1.'
         }
     }
 }

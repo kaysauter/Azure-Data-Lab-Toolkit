@@ -53,9 +53,10 @@ Add to [`tests/Unit/ArchitectureContracts.Tests.ps1`](../tests/Unit/Architecture
 - **(a)** Parse every path in `Support/module-scripts.lock.json` and assert each `^function`
   name is defined exactly **once** across the module.
 - **(b)** Assert the lock's `files` order agrees with the numeric filename prefixes within
-  `Private/`. They agree today across all 69 entries — nothing asserts it, which is the actual
-  defect. (The earlier claim that the prefixes are "decorative" is wrong; it was inherited from
-  the first assessment and propagated into contributor docs before being corrected.)
+  `Private/`. They agree today across all 39 `Private/` entries (of 69 in the lock) — nothing
+  asserts it, which is the actual defect. (The earlier claim that the prefixes are "decorative"
+  is wrong; it was inherited from the first assessment and propagated into contributor docs
+  before being corrected.)
 - **(c)** Assert no `Private/[0-7]*.ps1` references a function defined in
   `Private/8[2-9]*.ps1`, seeded with an explicit allowlist of the 14 known violations
   (`12-:195,196,198`; `65-:409,424,483,498,508`; `66-:656,955`; `69-:292,381,492,1017`).
@@ -116,18 +117,18 @@ green — all checked *before* accepting the diff.
 
 | Move | From | To |
 | --- | --- | --- |
-| Approval-phrase derivation | `87-:1356`, `88-:1189`, `86-:441` | `66-AuthorizationModel.ps1` |
-| Mutation leases | `86-:198,240`, `88-:811,848` | `68-RunOrchestration.ps1` |
+| Approval-phrase derivation | `87-:1356`, `88-:1340`, `86-:441` | `66-AuthorizationModel.ps1` |
+| Mutation leases | `86-:198,240`, `88-:962,999` | `68-RunOrchestration.ps1` |
 | Execution-record build/assert | `87-:1379,1507,1545` | `69-ExecutionRecord.ps1` |
 | Run-store appends | `88-:123,248,366` | `62-LocalRunStore.ps1` |
-| Evidence builders | `88-:1209`, `86-:460` | `64-EvidenceModel.ps1` |
+| Evidence builders | `88-:1360`, `86-:460` | `64-EvidenceModel.ps1` |
 
 **Must not break** the authorization chain: `authorizationHash`, `teardownPlanHash`, the
 state-tail binding at `66-:717-732`, and the per-delete etag + fingerprint + proof
-re-verification with approver and lease re-asserted *inside* the deletion loop at `88-:887`.
+re-verification with approver and lease re-asserted *inside* the deletion loop at `88-:1038`.
 
 **Pure moves only.** No signature or payload changes, or every artifact hash shifts.
-`tests/Unit/Authorization.Tests.ps1` (2,537 lines) is the net — run it before and after with
+`tests/Unit/Authorization.Tests.ps1` (about 2,500 lines) is the net — run it before and after with
 identical fixtures.
 
 This step is what makes R6 possible. Without it, R6 would relocate approvals out of Core.
@@ -246,15 +247,13 @@ require a typed approval phrase — and document each phrase's format in the hel
 that demands it, since a user currently has to run the command once to discover it. Add a test
 asserting every exported command has at least one `.EXAMPLE`.
 
-**Fix the three test defects that undermine their own claims.**
+**Fix the two remaining test defects that undermine their own claims.**
 `tests/Unit/AzureRead.Tests.ps1:648` passes `-ModuleName Az.KeyVault`, which is outside the
 `[ValidateSet]`, so its bare `Should -Throw` is satisfied by parameter binding and never reaches
 the allowlist it claims to test — pin the message and use an allowlisted module with a
-non-allowlisted command. `tests/Unit/Module.Tests.ps1:53` asserts session-global state
-(`@(Get-Module -Name 'Az.*').Count`) and fails on any machine with an Az module loaded. And
-`40-Canonical.ps1` is documented as RFC 8785 but emits uppercase `\uXXXX` hex and escapes
-`U+007F`, which the RFC leaves raw — either conform or correct the claim to "RFC 8785-style",
-and add a test pinning the chosen behaviour.
+non-allowlisted command. And `40-Canonical.ps1` is documented as RFC 8785 but emits uppercase
+`\uXXXX` hex and escapes `U+007F`, which the RFC leaves raw — either conform or correct the claim
+to "RFC 8785-style", and add a test pinning the chosen behaviour.
 
 **Make the Azure fakes non-circular.** Every Az object and exception in the suite is hand-built
 and has never been compared against a real one, so passing tests prove self-consistency rather
@@ -286,5 +285,6 @@ pwsh -NoProfile -File ./build.ps1 -Task All    # NOT ./build.ps1
 Then confirm both tripwires. A refactor that moves either has changed behaviour — stop and find
 out why rather than updating the fixture.
 
-Coverage sits roughly 0.1 points above the 80% gate, so any new branch needs its test or the
-build fails with every test passing.
+Coverage measured 80.06% against the 80% gate on 2026-10-12, 6
+commands of headroom, so a new branch without its test can fail the build with every test
+passing.

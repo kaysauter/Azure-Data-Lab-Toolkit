@@ -3,17 +3,154 @@ title: Try The Alpha
 description: Install, validate, plan, and export the current SQL VM alpha, and what happens when you go live.
 ---
 
-:::danger[The commands on this page are offline; the module is not]
-Everything below runs without Azure access and changes nothing. The same module
-also ships `Connect-AzureDataLabAccount`, `Test-AzureDataLabWhatIf`,
+:::danger[Alpha software that creates and deletes real Azure resources]
+1. Never run this against a subscription you care about.
+2. Nothing here has ever been executed against live Azure. Not once.
+3. `Start-AzureDataLabDeployment` creates billable resources. `Start-AzureDataLabTeardown` deletes resources.
+4. The command surface and plan hashes may change without notice between alpha tags.
+
+`Connect-AzureDataLabAccount` repeats these warnings before it signs in.
+
+Known issue in v0.1.0-alpha1: live resolution stops at the toolkit's Azure
+command boundary, so no deployment can be authorized yet. The release notes
+for v0.1.0-alpha1 describe it.
+
+The validate, plan, and export commands on this page run without Azure access
+and change nothing in Azure. The same module also ships
+`Connect-AzureDataLabAccount`, `Test-AzureDataLabWhatIf`,
 `Start-AzureDataLabDeployment`, and `Start-AzureDataLabTeardown`, which sign in,
 create real Azure resources, and delete them.
 
-None of that has been verified against a live subscription and no release has
-been published. Stay on the offline commands unless you accept that risk.
+None of that has been verified against a live subscription, in the repository
+or in any prerelease. Stay on the offline commands unless you accept that risk.
 :::
 
-## Prerequisites
+## Install a release
+
+Releases are published on the
+[GitHub releases page](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/releases),
+not on the PowerShell Gallery. v0.1.0-alpha1 is the first alpha prerelease.
+Each release carries the module package, `AzureDataLabToolkit-<version>.zip`,
+its `.sha256` checksum file, and an SPDX SBOM, `sbom.spdx.json`. The release
+workflow attests the package's build provenance and its SBOM.
+
+You need:
+
+- PowerShell 7.6
+- the [GitHub CLI](https://cli.github.com/), signed in with `gh auth login`;
+  `gh attestation verify` does not run without a session
+
+Run the steps in one PowerShell session; later steps reuse `$zip`, `$modules`,
+and `$moduleRoot`.
+
+1. Download the package and its checksum file from the
+   [v0.1.0-alpha1 release page](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/releases/tag/v0.1.0-alpha1),
+   or with the GitHub CLI. A prerelease never becomes the latest release, so
+   name the tag:
+
+   ```powershell
+   gh release download v0.1.0-alpha1 `
+     --repo kaysauter/Azure-Data-Lab-Toolkit `
+     --pattern 'AzureDataLabToolkit-0.1.0-alpha1.zip*'
+   ```
+
+2. Check the package against its checksum file:
+
+   ```powershell
+   $zip = 'AzureDataLabToolkit-0.1.0-alpha1.zip'
+   $expected = (Get-Content -LiteralPath "$zip.sha256" -Raw).Split(' ')[0]
+   $actual = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+   if ($actual -cne $expected) { throw "Checksum mismatch for $zip." }
+   ```
+
+   In a Linux or macOS shell,
+   `sha256sum -c AzureDataLabToolkit-0.1.0-alpha1.zip.sha256` does the same;
+   use `shasum -a 256 -c` where `sha256sum` is missing.
+
+3. Check that this repository's release workflow built the package:
+
+   ```powershell
+   gh attestation verify $zip --repo kaysauter/Azure-Data-Lab-Toolkit --signer-workflow kaysauter/Azure-Data-Lab-Toolkit/.github/workflows/module-ci.yml
+   ```
+
+   Stop if either check fails. The checksum file is published beside the
+   package, so it only shows that the download is intact; the attestation is
+   what ties the package to a workflow run in this repository.
+
+4. Expand the package into a module directory on `PSModulePath`. The archive
+   root is `AzureDataLabToolkit/0.1.0/`, the layout `Import-Module` looks for.
+   Remove an earlier copy first:
+
+   ```powershell
+   $modules = ($env:PSModulePath -split [System.IO.Path]::PathSeparator)[0]
+   $moduleRoot = Join-Path $modules 'AzureDataLabToolkit/0.1.0'
+   if (Test-Path -LiteralPath $moduleRoot) {
+     Remove-Item -LiteralPath $moduleRoot -Recurse -Force
+   }
+   Expand-Archive -LiteralPath $zip -DestinationPath $modules
+   ```
+
+   Unless you changed `PSModulePath`, its first entry is your user module
+   directory.
+
+5. On Linux and macOS, remove group and other write access:
+
+   ```powershell
+   chmod -R go-w (Join-Path $modules 'AzureDataLabToolkit')
+   ```
+
+   The module refuses to load while its `Support` folder,
+   `module-scripts.lock.json` or `runtime-dependencies.lock.json` in it, a script
+   folder, or a script is writable by group or others, and
+   `Expand-Archive` creates folders according to your umask.
+
+6. Install the locked dependencies with the script that ships in the module:
+
+   ```powershell
+   pwsh -NoProfile -File (Join-Path $moduleRoot 'Install-AzureDataLabToolkitDependencies.ps1') -TrustRepository
+   ```
+
+   It installs `powershell-yaml` 0.4.12 and the five Az modules the module
+   locks, at their locked versions, from the PowerShell Gallery into your user
+   scope. It then imports the module and checks each dependency's content
+   against the lock. `-TrustRepository` trusts the Gallery for these installs
+   only; add `-WhatIf` to list them without installing. The script uses only the
+   PSResourceGet 1.2.0 module bundled with PowerShell, and it stops if your
+   PowerShell bundles a different version or if your PowerShell installation is
+   writable by other users.
+
+7. Import the module by name:
+
+   ```powershell
+   Import-Module AzureDataLabToolkit
+   ```
+
+:::caution[Leave the installed folder as extracted]
+The package carries `build-provenance.json`, which lists every file in it with
+its digest. `Start-AzureDataLabDeployment` and `Resume-AzureDataLabDeployment`
+refuse to authorize or run a deployment when a file was added, changed, or
+removed, and a Finder `.DS_Store` is enough. To repair or upgrade, delete the
+folder and expand the package again.
+:::
+
+The package holds the module only. The examples below are in the repository's
+[`examples` folder at the same tag](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/tree/v0.1.0-alpha1/examples);
+save them to `./examples` before you run the commands.
+
+## Work from a clone
+
+:::caution[Development path: build provenance is not enforced]
+Importing from `src/` is for reading and changing the code. The source copy
+still refuses to load unless every module script matches
+`Support/module-scripts.lock.json`, but it does not require
+`build-provenance.json`. Its other files, such as schemas, catalogs, and
+templates, are not checked against a recorded build, and it identifies itself
+by a digest of the files present rather than by the Git commit a release build
+records. Install a release before you go beyond the offline commands on this
+page.
+:::
+
+You need:
 
 - PowerShell 7.6 or later
 - `powershell-yaml` 0.4.12
@@ -24,11 +161,22 @@ Install-PSResource powershell-yaml -Version 0.4.12 -Repository PSGallery
 Import-Module ./src/AzureDataLabToolkit/AzureDataLabToolkit.psd1
 ```
 
+On Linux and macOS the import fails with a message ending in "writable by
+another user." if the `Support` folder, `module-scripts.lock.json` or
+`runtime-dependencies.lock.json` in it, a script folder, or a script is
+writable by group or others. Everything in a clone made under
+umask `002` is. Run `chmod -R go-w src/AzureDataLabToolkit` from the repository
+root and import again.
+
 ## Validate and plan
 
-The minimal example selects the fixed secure SQL VM alpha profile: Trusted
+The minimal example uses the `sqlvm-secure` template. Its plan includes Trusted
 Launch, Secure Boot, vTPM, encryption at host, a system-assigned managed
-identity, private VM networking, Key Vault, and Azure Bastion Basic.
+identity, private VM networking, a new Key Vault, and Azure Bastion Basic. It is
+a planning example: it is not bound to, and does not match, the
+`sqlvm-first-canary/v1` deployment profile, so
+`Test-AzureDataLabDeploymentConfiguration` reports it ineligible for deployment.
+`examples/sqlvm-first-canary.yaml` is the example bound to that profile.
 
 ```powershell
 Test-AzureDataLabConfiguration ./examples/sqlvm-minimal.yaml
@@ -38,21 +186,31 @@ $plan.approval.blockingFindingIds
 $plan.approval.requiredAcknowledgementIds
 ```
 
-The default plan is intentionally blocked until authenticated WhatIf resolves an
-immutable marketplace image version and an approved secure workflow supplies
-the referenced VM administrator secret.
+The default plan is intentionally blocked by four findings. One asks for an
+estimate admission limit, `-MaximumRunCostMinorUnits`, which is not an Azure
+billing cap; supplying one clears only that finding. Authenticated live
+resolution (`Resolve-AzureDataLabPlan`) is what binds an immutable marketplace
+image version and resolves Key Vault diagnostic settings, but it supports only a
+reused Key Vault. This plan creates a new vault, which also raises
+`policy.credentials.external-secret-required`, and nothing clears that finding,
+so the default plan cannot be authorized for deployment.
+`examples/sqlvm-first-canary.yaml` shows the shape the deployment profile
+accepts: a reused vault with its diagnostic destination and a pinned secret
+version.
 
 An existing customer-managed-key disk encryption set can be selected with
 `-DiskEncryptionSetResourceId`. The plan treats it as reused, wires it into the
 OS and SQL data disks, and requires live verification of region, key, and
-identity compatibility.
+identity compatibility. Deployment with an existing disk encryption set is not
+available in this alpha: the support matrix marks `customer-managed-existing`
+disk encryption `unavailable` for deployment, so treat it as a planning option.
 
 ## Export a readable report
 
 ```powershell
 Export-AzureDataLabPlan $plan -Format Json
-Export-AzureDataLabPlan $plan -Format Markdown -Path ./sqlvm-plan.md
-Export-AzureDataLabPlan $plan -Format Html -Path ./sqlvm-plan.html
+Export-AzureDataLabPlan $plan -Format Markdown -Path (Join-Path $PWD 'sqlvm-plan.md')
+Export-AzureDataLabPlan $plan -Format Html -Path (Join-Path $PWD 'sqlvm-plan.html')
 ```
 
 Files are not overwritten unless `-Force` is explicit. HTML is standalone and
@@ -103,7 +261,11 @@ restored.
 
 ## What comes next
 
-Authenticated `-WhatIf`, cost estimation, PowerShell deployment, guest
-operations, probes, state, and teardown are later delivery segments. See
+Authenticated `-WhatIf` (`Test-AzureDataLabWhatIf`), cost estimation (a stage of
+`Invoke-AzureDataLabPreflight`), PowerShell deployment, probes, local run state,
+and teardown are implemented, and none of them has been run against a live
+subscription. Everything in that list except local run state reaches Azure;
+that is what the warning at the top of this page is about. The toolkit runs no
+guest operations yet, and shutdown is backlog. See
 [Project Status](../status/) and [Testing Strategy](../testing/) for the
 boundary between current code and committed design.

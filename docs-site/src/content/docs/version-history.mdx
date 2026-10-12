@@ -5,6 +5,16 @@ description: Published and unreleased documentation, architecture, module, provi
 
 ## Unreleased
 
+Nothing has changed since 0.1.0-alpha1.
+
+## 0.1.0-alpha1 - 2026-10-12
+
+The first alpha prerelease:
+[tag `v0.1.0-alpha1`](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/tree/v0.1.0-alpha1)
+and its
+[GitHub release](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/releases/tag/v0.1.0-alpha1).
+Nothing in it has been executed against live Azure.
+
 ### Added
 
 - Initial Azure Data Lab Toolkit architecture scaffold.
@@ -22,13 +32,20 @@ description: Published and unreleased documentation, architecture, module, provi
   Linux guest operations, SQL VM solution pack, remote state, PostgreSQL VM and
   container paths, Git/CI intent, Key Vault decisions, and Bastion decisions.
 - Installable PowerShell 7.6 alpha with strict YAML validation, deterministic
-  SQL VM plans, RFC 8785 serialization, SHA-256 plan hashes, and field-level
+  SQL VM plans, RFC 8785-style serialization, SHA-256 plan hashes, and field-level
   provenance.
-- Offline commands for templates, catalogs, support matrices, planning, and
-  verified JSON, Markdown, and HTML export.
+- Offline commands for templates, catalogs, support matrices, planning,
+  verified JSON, Markdown, and HTML export, and a browser-based YAML
+  configuration wizard.
 - Azure sign-in, live resolution, native `-WhatIf` reconciliation, the
   PowerShell deployment engine, post-deployment probes, local run state, and
   approval-gated teardown.
+- The `sqlvm-first-canary/v1` deployment profile, the only profile deployment
+  accepts, with `Test-AzureDataLabDeploymentConfiguration` as an offline
+  eligibility check.
+- `Invoke-AzureDataLabPreflight`, which runs live resolution, native ARM
+  What-If, a retail-price estimate checked against the configured estimate
+  admission limit, and a teardown preview.
 - Ownership-intent, idempotency, approval, teardown, Key Vault, Bastion,
   identity, network, disk-protection, licensing, cost, and sensitivity
   decisions in the normalized plan.
@@ -40,8 +57,14 @@ description: Published and unreleased documentation, architecture, module, provi
 - Manual SQL VM backup-restore solution pack with a pinned dbatools dependency,
   separate rendering and staging actions, and a preview-first restore contract.
 - Structured blockers and plan-hash-bound acknowledgement requirements.
-- Cross-platform module checks plus 76 Pester tests, 87.19% command coverage,
-  and local packaging.
+- Cross-platform module checks and local packaging. Before the tag, the suite
+  passed 423 Pester tests with 1 skipped, at
+  80.06% command coverage, 6 commands above the
+  enforced 80% gate.
+- Release packaging with in-package build provenance, the
+  `Install-AzureDataLabToolkitDependencies.ps1` script for the locked runtime
+  dependencies, and a tag-driven release workflow that attests the package and
+  its SPDX SBOM and publishes them with the package's SHA-256 file.
 - Scope-aware offline, Azure, and guest action contracts with matching
   preconditions and reconciliation sources.
 - A checked minimal-plan hash fixture for cross-platform determinism.
@@ -59,28 +82,33 @@ description: Published and unreleased documentation, architecture, module, provi
   Bastion-first `administrativeAccessDecision` for every Azure VM.
 - Separated repository engineering CI from the user-facing Git and pipeline
   capability.
-- Marked the first S1 slice as current development behavior without claiming
-  S1 completion or live deployment support.
+- Reclassified S1 as implemented in the repository and recorded Azure sign-in,
+  live resolution, `-WhatIf` reconciliation, the PowerShell deployment engine,
+  post-deployment probes, and teardown as implemented and test-covered, without
+  claiming a run against a live subscription or a passed Live or Release gate.
 - Preserved deterministic storage-account hash suffixes when long lab names
   require truncation.
-- Required the build to import its pinned Pester, PSScriptAnalyzer, and
-  powershell-yaml versions explicitly.
+- Required the build to import its pinned Pester and PSScriptAnalyzer versions,
+  and the module its pinned powershell-yaml version, explicitly.
 
 ### Current limitations
 
-- The module is an unreleased alpha and its command contract may change.
+- The module is an alpha prerelease. The command surface and plan hashes may
+  change without notice between alpha tags.
 - Azure authentication, live `-WhatIf`, the PowerShell deployment engine,
   probes, local run state, and the teardown workflow are implemented and
-  test-covered, but unreleased and never run against a live subscription.
+  test-covered, but have never run against a live subscription.
 - `Start-AzureDataLabDeployment` creates real Azure resources and
   `Start-AzureDataLabTeardown` deletes them.
-- Guest execution remains preview-first and user-executed.
-- Selected catalog integrity, marketplace image version, and default external
-  secure input remain unresolved deployment blockers.
+- Guest execution remains a preview-first, user-executed contract; the toolkit
+  runs nothing inside the VM.
+- Selected catalog integrity and the default template's external secure input
+  remain unresolved deployment blockers; the marketplace image version is
+  resolved only by the authenticated preflight.
 - No production security baseline.
 
 The first implementation proof point is SQL Server on Azure VM from YAML through `-Plan`, `-WhatIf`, cost review, guarded deployment, probes, evidence, and confirmed teardown with cleanup proof.
 
-Released entries will link to the matching Git tag and GitHub release. Published releases and release notes will define **Available** behavior; repository implementation and tests define **Current** behavior; accepted architecture defines **Committed design**; the roadmap records **Backlog**, **Exploratory**, and **Deferred** work.
+Released entries link to the matching Git tag and GitHub release. Published releases and release notes define **Available** behavior only once it is verified, and nothing in 0.1.0-alpha1 is; repository implementation and tests define **Current** behavior; accepted architecture defines **Committed design**; the roadmap records **Backlog**, **Exploratory**, and **Deferred** work.
 
 The repository-level log is maintained in [`CHANGELOG.md`](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/CHANGELOG.md).

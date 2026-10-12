@@ -49,8 +49,8 @@ probes them, and tears them down under a typed approval phrase.
 
 It does not install guest software or restore databases; the backup-restore
 solution pack stays preview-first and user-executed. Everything above is
-implemented and test-covered but unreleased and never run against a live
-subscription.
+implemented and test-covered, shipped in the v0.1.0-alpha1 prerelease, and never
+run against a live subscription.
 
 The first fixed SQL VM profile records engine-facing desired properties,
 private networking, Key Vault and Bastion capability contracts, structured

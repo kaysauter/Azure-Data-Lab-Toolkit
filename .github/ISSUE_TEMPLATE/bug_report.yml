@@ -8,7 +8,7 @@ body:
         **Not for security problems.** If this could be exploited, do not file it here —
         see [SECURITY.md](https://github.com/kaysauter/Azure-Data-Lab-Toolkit/blob/main/SECURITY.md).
 
-        **This is an unreleased alpha.** No version has been published and nothing has been
+        **This is an alpha.** v0.1.0-alpha1 is the first prerelease, and nothing has been
         verified against a live Azure subscription. Behaviour documented as absent — guest
         software installation, database restore, Bicep, Terraform — is not a bug.
 
@@ -25,9 +25,9 @@ body:
   - type: input
     id: commit
     attributes:
-      label: Commit SHA
-      description: "`git rev-parse --short HEAD`. There are no releases, so the commit is the only version."
-      placeholder: cbde0ee
+      label: Version or commit
+      description: "The release version if you installed one, for example 0.1.0-alpha1 (build-provenance.json in the module folder records its exact commit), or `git rev-parse --short HEAD` if you work from a clone."
+      placeholder: 0.1.0-alpha1 or cbde0ee
     validations:
       required: true
 

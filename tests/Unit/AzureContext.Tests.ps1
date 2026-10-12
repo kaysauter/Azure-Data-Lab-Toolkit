@@ -7,6 +7,12 @@ BeforeAll {
         $script:RepositoryRoot `
         'examples/sqlvm-minimal.yaml'
     Import-Module $script:ModulePath -Force -ErrorAction Stop
+    # Every sign-in prints the alpha warning. One test asserts it; the others
+    # would only repeat it in the log. Assigned, not mutated, so it stays in
+    # this file's scope.
+    $PSDefaultParameterValues = @{
+        'Connect-AzureDataLabAccount:WarningAction' = 'SilentlyContinue'
+    }
     $script:Plan = New-AzureDataLabPlan $script:ConfigurationPath
     $script:RunId = '33333333-3333-4333-8333-333333333333'
     $script:DefaultTestTokenCache = [pscustomobject]@{}
@@ -63,6 +69,39 @@ Describe 'Process-scoped Azure sign-in' {
             -ErrorAction SilentlyContinue
         InModuleScope AzureDataLabToolkit {
             Clear-AdltAzureDefaultProfileBinding
+        }
+    }
+
+    It 'warns that it is unverified alpha software before any Azure call' {
+        # Signing in is the first step of every Azure-facing path, so this is
+        # where the alpha warnings reach someone who never read the README.
+        Mock Invoke-AdltAzCommand -ModuleName AzureDataLabToolkit {
+            throw 'No Azure command may run in this test.'
+        }
+
+        $failure = $null
+        try {
+            Connect-AzureDataLabAccount `
+                -TenantId '11111111-1111-4111-8111-111111111111' `
+                -SubscriptionId '22222222-2222-4222-8222-222222222222' `
+                -WarningVariable warnings `
+                -WarningAction SilentlyContinue
+        }
+        catch {
+            $failure = $_
+        }
+
+        $failure | Should -Not -BeNullOrEmpty
+        @($warnings).Count | Should -Be 1
+        $message = [string] @($warnings)[0].Message
+        foreach ($sentence in @(
+                'Never run this against a subscription you care about.'
+                'Nothing here has ever been executed against live Azure. Not once.'
+                'Start-AzureDataLabDeployment creates billable resources.'
+                'Start-AzureDataLabTeardown deletes resources.'
+                'The command surface and plan hashes may change without notice between alpha tags.'
+            )) {
+            $message | Should -BeLikeExactly "*$sentence*"
         }
     }
 

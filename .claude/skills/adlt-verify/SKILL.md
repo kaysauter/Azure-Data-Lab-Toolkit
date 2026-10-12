@@ -24,8 +24,8 @@ So if you added, moved, renamed, or deleted a `.ps1` under `src/AzureDataLabTool
    remove the `{ "path": ..., "sha256": ... }` entry. **Position matters**: a file that
    registers something (a contributor, an engine) must be ordered after what it depends on. Put
    a new `Private/NN-*.ps1` in numeric position. The array is authoritative; the numeric
-   prefixes currently agree with it exactly across all 69 entries, but nothing asserts that, so
-   keep both in agreement.
+   prefixes of the 39 `Private/` entries currently agree with it exactly (the lock has 69
+   entries; the other 30 carry no prefix), but nothing asserts that, so keep both in agreement.
 2. Then refresh hashes and the pinned lock digest:
 
 ```bash
@@ -71,19 +71,28 @@ Long-running: start it in the background and poll, rather than blocking.
 `-Task All` runs Clean, Analyze, Test, Package. Narrower tasks: `Analyze`, `Test`, `Build`,
 `Package`, `Clean`.
 
-For a fast loop on specific files, skip `build.ps1`:
+For a fast loop on specific files, dot-source `build.ps1` but skip its tasks:
 
 ```bash
 pwsh -NoProfile -Command '
+. ./build.ps1
+Import-AdltBuildModule -Name Pester
 $c = New-PesterConfiguration
 $c.Run.Path = "tests/Unit/<File>.Tests.ps1"
 $c.Run.PassThru = $true; $c.Output.Verbosity = "None"
 $r = Invoke-Pester -Configuration $c
-"passed=$($r.PassedCount) failed=$($r.FailedCount)"
+"passed=$($r.PassedCount) failed=$($r.FailedCount) result=$($r.Result)"
 $r.Failed | ForEach-Object { "FAILED: $($_.Name)"; "  $($_.ErrorRecord.Exception.Message)" }'
 ```
 
-This skips the lock verification path, so it will not catch a stale lock. Step 2 still matters.
+Dot-sourcing matters: `build.ps1` sets `Set-StrictMode -Version Latest`, and the gate runs every
+test under it. A bare `Invoke-Pester` does not, so a test that reads a missing key by member
+access (`$step.run`) passes locally and fails in CI. Read optional keys with the indexer. Check
+`result` too: a file that fails during discovery leaves `failed=0`.
+
+This skips the analyzer, the coverage gate and packaging. A test file that imports the module
+from `src/` still runs its lock check, so a stale lock fails every test in that file with the
+step 1 symptom.
 
 ## 4. Pass criteria
 
@@ -95,9 +104,12 @@ This skips the lock verification path, so it will not catch a stale lock. Step 2
 | Exported commands | matches `FunctionsToExport` |
 | Exit code | 0 |
 
-**Coverage is the trap.** The gate is 80% and recent runs sit at ~80.1% — roughly a dozen
-commands of headroom. A new `throw` branch without a test can fail the build with every test
-passing. Always report the actual percentage and how much room is left.
+**Coverage is the trap.** The gate is 80%, and the full gate on 2026-10-12 measured
+80.06% — 6 commands of headroom. It counts
+`AzureDataLabToolkit.psm1` and the scripts in `Private/` and `Public/`, not the provider,
+capability or solution-pack scripts or the dependency installer. A new `throw` branch without a
+test can fail the build with every test passing. Always report the actual percentage and how
+much room is left.
 
 ## 5. Hash stability
 
@@ -142,12 +154,12 @@ always the last intended state rather than a stale note.
 ## 5b. Two other tripwires that look like unrelated mass failure
 
 **Deployment profile hash.** Editing anything in `Profiles/*.json` changes that profile's
-hash. Every `examples/*.yaml` and test fixture pins `deploymentProfile.hash`, so one added line
-produces dozens of failures reading
+hash. `examples/sqlvm-first-canary.yaml` pins `deploymentProfile.hash`, and several test files
+load that example, so one added line produces dozens of failures reading
 `Configuration deployment profile hash is stale. Regenerate the YAML with this module version.`
 from `Private/12-DeploymentProfile.ps1`. The binding is working as designed. Treat a profile
-edit as its own deliberate change with the fixture and example regeneration it implies — never
-as a side effect of adding a field elsewhere.
+edit as its own deliberate change with the example regeneration it implies — never as a side
+effect of adding a field elsewhere.
 
 **Golden plan hash.** `tests/Fixtures/sqlvm-minimal.plan.sha256` pins `planHash` as a
 cross-platform determinism guard (`tests/Unit/Plan.Tests.ps1`). Adding a configuration field
@@ -169,8 +181,9 @@ grep -E "^\s+(RuntimeException|InvalidOperationException|Expected)" <log> \
 cd docs-site && npm run check:docs
 ```
 
-Runs slide-source checks, the Astro and Slidev builds, and internal link validation. Required
-by the `docs-checks` workflow for any `docs-site/**` change.
+Runs slide-source checks, the Astro and Slidev builds, and internal link validation. The
+`docs-checks` workflow runs the same build and link check, but not the slide-source check, on
+every pull request that changes `docs-site/`, and its **Docs checks** job is required on `main`.
 
 ## Reporting
 

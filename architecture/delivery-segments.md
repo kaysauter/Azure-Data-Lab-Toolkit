@@ -10,9 +10,9 @@ partial implementation does not make a segment complete.
 > reports, and carries local run-state and evidence contracts. Azure sign-in,
 > live resolution, `-WhatIf` reconciliation, the PowerShell deployment engine,
 > post-deployment probes, and teardown are implemented and test-covered as well.
-> None of it has been exercised against a live subscription and no release has
-> been published, so no segment has passed its Live or Release gate and nothing
-> is production-ready.
+> None of it has been exercised against a live subscription, including in the
+> v0.1.0-alpha1 prerelease, so no segment has passed its Live or Release gate and
+> nothing is production-ready.
 
 ## How To Read The Plan
 
