@@ -140,3 +140,5 @@ dependencies:
 - Microsoft Fabric tenant settings, capacity, and licensing;
 - approved handling rules for real or sensitive test data;
 - redistribution permission for third-party samples and tools.
+
+<!-- probe: verifies that both required checks report success with their checks skipped; this PR is closed unmerged -->
