@@ -17,8 +17,8 @@ explicit blockers.
 Azure authentication, WhatIf reconciliation, the PowerShell deployment engine,
 live resolution, post-deployment probes, the local run-state backend, and
 teardown are **also implemented and test-covered**. They are *Current*, not
-*Available*: nothing here has been exercised against a live subscription, and no
-release has been published. `Start-AzureDataLabDeployment` creates real Azure
+*Available*: nothing here has been exercised against a live subscription,
+including in the v0.1.0-alpha1 prerelease. `Start-AzureDataLabDeployment` creates real Azure
 resources and `Start-AzureDataLabTeardown` deletes them. The project is not
 production ready. The predecessor, Azure SQLVM Toolkit, is also unfinished.
 

@@ -7,8 +7,9 @@ intended to be run by its owner against their own subscription.
 
 Read this before you run anything:
 
-- **No release has been published.** There is no tagged version and no package on PowerShell
-  Gallery. Anything you obtain is a development snapshot from a branch.
+- **This is alpha software.** v0.1.0-alpha1 is the first prerelease, published on GitHub
+  Releases only; there is no package on the PowerShell Gallery. Anything else you obtain is a
+  development snapshot from a branch.
 - **It has never been run against a live Azure subscription.** Not once. Every Azure-facing
   code path is implemented and unit-tested, and none of it is field-proven.
 - `Start-AzureDataLabDeployment` creates billable Azure resources.
@@ -40,10 +41,11 @@ a target that gets missed.
 
 | Version | Supported |
 | --- | --- |
-| none | — |
+| Latest alpha prerelease (0.1.0-alpha1) | Fixes land on the default branch and ship in the next alpha tag |
+| Older tags and untagged snapshots | No |
 
-No version is supported, because none has been released. Security fixes land on the default
-branch. This table will become meaningful at the first tagged release.
+No version is supported for production use, and there are no backports: a fix reaches users
+through the next alpha tag.
 
 ## Scope
 
@@ -53,9 +55,9 @@ In scope, and genuinely interesting:
   reports, or the module's own process memory. The design intends that the VM administrator
   password **cannot** enter the process: it is an ARM `secureString` fed by a Key Vault
   reference with a pinned `secretVersion`. A counterexample is a real finding.
-- Any way to call an Azure cmdlet that is not on the allowlist in
-  `src/AzureDataLabToolkit/Private/70-AzureCommand.ps1`, or to escape its per-command
-  parameter-shape enforcement.
+- Any way to call an Azure command that is not on the allowlist in
+  `src/AzureDataLabToolkit/Private/70-AzureCommand.ps1`, or to escape the parameter-shape
+  checks it applies to nine of those commands.
 - Any way to deploy or delete without a matching typed approval phrase, approver principal, and
   mutation lease — including replaying or forging an execution authorization, or breaking the
   hash chain from `planHash` through to `readinessHash`.

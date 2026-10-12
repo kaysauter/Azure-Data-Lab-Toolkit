@@ -57,8 +57,9 @@ invariants. See the security findings section below.
 error (structured-output retry cap, not an analysis failure) and has been relaunched as three
 adversarial passes that attempt to falsify the invariants rather than confirm them. One finding
 from the test review already bears on this score: `Invoke-AdltAzCommand`, the gate in front of
-every Azure mutation, is itself only ~60% executed, so the *assurance* behind the design is
-weaker than the design. Expect this number to settle at 7–8 rather than rise.
+every Azure mutation, is the least-executed part of `Private/70-AzureCommand.ps1` (~60% for the
+file), so the *assurance* behind the design is weaker than the design. Expect this number to
+settle at 7–8 rather than rise.
 
 Verified: the VM administrator password structurally cannot enter the process
 (ARM `secureString` + Key Vault reference with a pinned `secretVersion`); teardown re-verifies
@@ -70,7 +71,7 @@ allowlist/contract parity — and by the removal of the bundled-PSResourceGet co
 which was justified but is a real reduction in tamper detection.
 
 **Tests — 6.** Independently reviewed and scored 6, matching the initial estimate. What exists
-is unusually disciplined: 224 `BeExactly` assertions, 66 message-pinned `Should -Throw`,
+is unusually disciplined: 224 `BeExactly` assertions, 152 message-pinned `Should -Throw` (of 156),
 tamper-after-rehash mutation-style tests, real resume/idempotency/lease/drift scenarios, and
 injected seams for git and the clock. The gate demonstrably works — it caught a 59-failure
 regression that a 20-test subset had passed.
@@ -104,7 +105,8 @@ Held at 6 by findings that are worse than first assumed, each verified:
   canonicalising per the actual RFC would compute different hashes.
 - Host coupling remains: `tests/Unit/Module.Tests.ps1:53` asserts session-global state
   (`@(Get-Module -Name 'Az.*').Count | Should -Be 0`), which fails on any machine with an Az
-  module already loaded.
+  module already loaded. *Resolved 2026-10-02 in `2888331`:* the test now compares the `Az.*`
+  modules loaded before and after the import, so only a module the import itself adds fails it.
 - No ARM template validation, no recorded-response tier, no multi-process concurrency tests on
   the run store, no property-based or mutation testing. The suite takes 41–45 minutes on CI,
   which rules it out as a development loop.
@@ -141,12 +143,15 @@ three dimensions at once. Every other item in either plan is secondary to it.
 
 ## Target sequence
 
-1. Merge PR #104 — stop the public repository describing an empty `src/`
+1. Merge PR #104 — stop the public repository describing an empty `src/` — *done 2026-10-06
+   (UTC), merged as `756f55e`*
 2. One live canary deploy and teardown, throwaway subscription, spend cap
 3. Allowlist parity test, then clamp the remaining 10 cmdlets
 4. Fault-injection tests on the Azure error paths
-5. Close the four release-gate holes; enable the disabled `main` ruleset
-6. Single-source the version; add a documentation-consistency test
+5. Close the four release-gate holes; enable the disabled `main` ruleset — *done 2026-10-12*,
+   see `release-plan.md` items 3 and 11–14
+6. Single-source the version; add a documentation-consistency test — *the version is done
+   (2026-10-12, `release-plan.md` item 10); no documentation-consistency test exists yet*
 7. Engine contract extraction — **last**, and scoped per `refactoring-plan.md` R0–R8 rather
    than as a naive file move
 
@@ -179,6 +184,19 @@ relationships — mirroring the inventory-time switch at
 `Private/87-TeardownInventory.ps1:1213-1310` — or state precisely which relationships are
 covered. Add a per-relationship test either way; there is none today.
 
+*Resolved 2026-10-02 in `2888331`, which reached `main` with PR #104. Line numbers in B1–B3 are
+as of `5a0b055`.* The gate in `Test-AdltApprovedResourceUnchanged`
+(`Private/88-TeardownOperation.ps1:778-951`), which runs before every `Remove-AzResource`, now
+covers all four relationships and throws for any other. It recomputes the full proof hash for
+`planned-taggable`, `planned-descendant` and `sql-iaas-agent-extension`. For `vm-managed-disk`
+it re-proves only what the disk itself carries: size and storage type must still match the
+compiler contract, and `ManagedBy` must name the planned VM, or be empty once that VM is no
+longer listed. The VM's storage-profile entry for the disk and its `DeleteOption` stay proven
+only as of inventory time, because the VM is deleted before its disks, so the heading above
+still holds for disks. `tests/Unit/TeardownResolution.Tests.ps1` ('Pre-delete proof
+verification for every deletable relationship') has an accepting and a blocking case for each
+relationship, plus a moved and an unsupported relationship.
+
 **B2 — The module manifest bypasses the closed-world script lock.**
 `AzureDataLabToolkit.psd1` is outside every content digest (`module-scripts.lock.json` contains
 zero `.psd1` entries), and `RootModule`, `ScriptsToProcess`, `NestedModules`,
@@ -192,6 +210,12 @@ published claim *"only locked, hash-verified module scripts load"* is demonstrab
 the lock's own machinery says OK. Fix: a ~10-line contract test asserting the manifest declares
 none of those fields and that `RootModule` is exactly `AzureDataLabToolkit.psm1`.
 
+*Resolved 2026-10-02 in `2888331`, as proposed.* `tests/Unit/Module.Tests.ps1` ('declares no
+manifest field that loads code outside the root module') asserts that the manifest names none of
+`ScriptsToProcess`, `NestedModules`, `RequiredAssemblies`, `FormatsToProcess` or
+`TypesToProcess`, and that `RootModule` is exactly `AzureDataLabToolkit.psm1`. The manifest is
+still outside the script lock; this test, not the lock, keeps that surface empty.
+
 **B3 — The single-gate architecture test has an incomplete verb regex.**
 `tests/Unit/Module.Tests.ps1:98` matches
 `^(Connect|Disconnect|Get|New|Set|Remove|Invoke)-Az(?!ureDataLab)`. The invariant holds at this
@@ -199,6 +223,9 @@ commit, but `Update-AzVM`, `Stop-AzVM`, `Start-AzVM`, `Move-AzResource` and
 `Register-AzResourceProvider` would all pass the suite today. One-line fix to
 `^[A-Z][A-Za-z]+-Az(?!ureDataLab)`. This is the test that keeps the headline allowlist claim
 true as pull requests land on a public repository.
+
+*Resolved 2026-10-02 in `2888331`.* The test ('keeps the offline core free of cloud or web
+invocation') now matches `^[A-Z][A-Za-z]+-Az(?!ureDataLab)`, and it passes.
 
 ### Other verified findings
 

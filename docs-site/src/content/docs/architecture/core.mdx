@@ -53,15 +53,18 @@ before a plan is accepted.
 ## Command-line commitments
 
 The alpha exports 24 commands. Offline: `Test-AzureDataLabConfiguration`,
-`New-AzureDataLabPlan`, `Export-AzureDataLabPlan`,
-`Find-AzureDataLabCatalogItem`, `Get-AzureDataLabSupportMatrix`,
-`Get-AzureDataLabTemplate`, `Start-AzureDataLabConfigurationWizard`. Azure-facing:
+`Test-AzureDataLabDeploymentConfiguration`, `New-AzureDataLabPlan`,
+`Export-AzureDataLabPlan`, `Find-AzureDataLabCatalogItem`,
+`Get-AzureDataLabSupportMatrix`, `Get-AzureDataLabTemplate`,
+`Start-AzureDataLabConfigurationWizard`. Azure-facing:
 `Connect-AzureDataLabAccount`, `Test-AzureDataLabAzureContext`,
-`Invoke-AzureDataLabPreflight`, `Test-AzureDataLabWhatIf`,
-`Start-AzureDataLabDeployment`, `Resume-AzureDataLabDeployment`,
-`Resolve-AzureDataLabDeployment`, `Test-AzureDataLabDeployment`,
-`Start-AzureDataLabTeardown`, `Resume-AzureDataLabTeardown`, and
-`Resolve-AzureDataLabTeardown`, plus the run-state and evidence commands.
+`Resolve-AzureDataLabPlan`, `Invoke-AzureDataLabPreflight`,
+`Test-AzureDataLabWhatIf`, `Start-AzureDataLabDeployment`,
+`Resume-AzureDataLabDeployment`, `Resolve-AzureDataLabDeployment`,
+`Test-AzureDataLabDeployment`, `Start-AzureDataLabTeardown`,
+`Resume-AzureDataLabTeardown`, and `Resolve-AzureDataLabTeardown`. Local run
+state and evidence: `New-AzureDataLabRun`, `Get-AzureDataLabRun`,
+`Get-AzureDataLabEvidence`, and `Export-AzureDataLabEvidence`.
 
 The final lifecycle cmdlet grouping remains API-design work, and the verb
 overloading on `Test-` and `Resolve-` is a known wart. The architecture reserves

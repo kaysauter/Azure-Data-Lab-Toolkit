@@ -12,7 +12,7 @@ wakeLock: false
 class: adlt-cover
 ---
 
-<div class="status-chip status-danger">Unreleased alpha and roadmap</div>
+<div class="status-chip status-danger">Alpha and roadmap</div>
 
 # Azure Data Lab Toolkit
 
@@ -22,7 +22,7 @@ Define a lab once. Review the decisions. Deploy consistently. Prove it works. Re
 
 <div class="cover-meta">
   <span>Plan, reconcile, deploy, probe, and tear down — all implemented</span>
-  <span>Never run against live Azure · no published release</span>
+  <span>Never run against live Azure · v0.1.0-alpha1 prerelease</span>
   <span>First target: SQL Server on Azure VM</span>
 </div>
 
@@ -131,16 +131,16 @@ layout: default
 
 # What exists today
 
-<div class="status-chip status-done">24 commands · 386 tests · CI green on Linux, Windows, macOS</div>
+<div class="status-chip status-done">24 commands · 423 passing tests · CI green on Linux, Windows, macOS</div>
 
 <div class="four-col">
   <div class="plain-panel">
     <h3>Lifecycle</h3>
-    <p>Offline plan, live reconcile, approved deploy, probe, and ownership-aware teardown all run end to end.</p>
+    <p>Offline plan, live reconcile, approved deploy, probe, and ownership-aware teardown all run end to end in unit tests.</p>
   </div>
   <div class="plain-panel">
     <h3>Azure boundary</h3>
-    <p>Nineteen allowlisted cmdlets; anything else is refused by the engine. The nine that deploy, delete, or read resources are clamped to an exact parameter set and values.</p>
+    <p>Nineteen allowlisted Azure commands; anything else is refused by the engine. Nine of them, including the only two that deploy or delete Azure resources, are clamped to an exact parameter set and values; the other ten are not yet.</p>
   </div>
   <div class="plain-panel">
     <h3>Secrets</h3>
@@ -153,7 +153,7 @@ layout: default
 </div>
 
 <div class="danger-line">
-  It has never been run against a live Azure subscription, and no release has been published.
+  It has never been run against a live Azure subscription, not even for the v0.1.0-alpha1 prerelease.
   Everything above is implemented and test-covered, not field-proven.
 </div>
 
@@ -406,8 +406,8 @@ layout: default
 <div class="two-col compact-top">
   <div>
     <h3>Toolkit repository CI</h3>
-    <p><b class="item-status is-done">running</b> PSScriptAnalyzer, Pester with an enforced 80% coverage gate, schema validation, docs and links, and packaging — on three operating systems per pull request. Dependabot and secret scanning are on.</p>
-    <p><b class="item-status is-planned">planned</b> Dependency review, and Checkov once Bicep or Terraform exists. SBOM and attestation are built but unrun — there is no release yet. CodeQL does not analyze PowerShell.</p>
+    <p><b class="item-status is-done">running</b> PSScriptAnalyzer, Pester with an enforced 80% coverage gate, schema validation, and packaging on three operating systems, plus docs and links, for every pull request that touches them. Tagged releases are attested, with an SPDX SBOM. Dependabot version updates and secret scanning are on.</p>
+    <p><b class="item-status is-planned">planned</b> Dependency review, and Checkov once Bicep or Terraform exists. CodeQL does not analyze PowerShell.</p>
   </div>
   <div>
     <h3>User-facing pipeline intent</h3>

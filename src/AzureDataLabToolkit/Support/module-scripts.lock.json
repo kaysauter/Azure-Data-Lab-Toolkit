@@ -184,7 +184,7 @@
     },
     {
       "path": "Public/Connect-AzureDataLabAccount.ps1",
-      "sha256": "3ce60382cdc6b89343eed97889d4b976cef5b753efc92d74d921bad2f9d02a27"
+      "sha256": "85ddcc64e8cb2f49d4d5cd32d3281c58fda46e1ae464fb22ea34087c113089ca"
     },
     {
       "path": "Public/Export-AzureDataLabEvidence.ps1",

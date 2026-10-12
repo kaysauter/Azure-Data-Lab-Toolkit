@@ -22,10 +22,28 @@ change contradicts an ADR, the ADR has to change first — propose that in the i
 - `pwsh` on `PATH`
 - Node 22 only if you touch `docs-site/`
 
-Everything else — Pester, PSScriptAnalyzer, `powershell-yaml`, the Az modules — is pinned and
-verified by the build against `src/AzureDataLabToolkit/Support/build-tools.lock.json`. Do not
-install your own versions and expect them to be used; the build stages the locked ones
-deliberately.
+The PowerShell modules the build and the tests need are pinned, and the build downloads none of
+them, so install these exact versions from the PowerShell Gallery yourself:
+
+- Pester 5.7.1 and PSScriptAnalyzer 1.25.0, pinned in
+  `src/AzureDataLabToolkit/Support/build-tools.lock.json`. The build verifies each against that
+  lock and runs a copy it stages under `out/verified-build-tools/`.
+- `powershell-yaml` 0.4.12 and the five Az modules (Az.Accounts 5.5.0, Az.Compute 11.6.0,
+  Az.KeyVault 6.5.0, Az.Monitor 8.0.0, Az.Resources 10.0.0), pinned in
+  `src/AzureDataLabToolkit/Support/runtime-dependencies.lock.json`. The module verifies
+  `powershell-yaml` when it loads and each Az module before importing it, and the unit tests
+  verify all six, so the local gate needs the Az modules too.
+
+```powershell
+Install-PSResource Pester -Version 5.7.1 -Repository PSGallery
+Install-PSResource PSScriptAnalyzer -Version 1.25.0 -Repository PSGallery
+pwsh -NoProfile -File ./src/AzureDataLabToolkit/Install-AzureDataLabToolkitDependencies.ps1 -TrustRepository
+```
+
+The script installs the six runtime modules at their locked versions and checks their content
+against the lock; `-TrustRepository` trusts the PowerShell Gallery for those installs only. Each
+locked module must resolve to exactly one copy of its version with the reviewed content. Other
+installed versions are ignored; an edited copy, or a second copy of the same version, is refused.
 
 ## The local gate
 
@@ -60,17 +78,24 @@ a pull request.
    `The module contains an unexpected or unlocked script` at import — pointing nowhere near the
    real cause.
 
-A fast loop for one file, which skips the lock verification path:
+A fast loop for one file, which skips the analyzer, the coverage gate and packaging:
 
 ```bash
 pwsh -NoProfile -Command '
+. ./build.ps1
+Import-AdltBuildModule -Name Pester
 $c = New-PesterConfiguration
 $c.Run.Path = "tests/Unit/<File>.Tests.ps1"
 $c.Run.PassThru = $true; $c.Output.Verbosity = "None"
 $r = Invoke-Pester -Configuration $c
-"passed=$($r.PassedCount) failed=$($r.FailedCount)"
+"passed=$($r.PassedCount) failed=$($r.FailedCount) result=$($r.Result)"
 $r.Failed | ForEach-Object { "FAILED: $($_.Name)"; "  $($_.ErrorRecord.Exception.Message)" }'
 ```
+
+Dot-sourcing `build.ps1` matters: it sets `Set-StrictMode -Version Latest`, and the gate runs every
+test under it, so a test that reads a missing key by member access passes in a bare
+`Invoke-Pester` and fails in CI. Check `result` as well as `failed`: a file that fails during
+discovery leaves `failed=0`.
 
 A green subset is not a green gate. Run the full gate before you push.
 
@@ -79,9 +104,11 @@ of this.
 
 ## Coverage
 
-The build enforces **80% command coverage** and recent runs sit at about 80.1% — roughly a
-dozen commands of headroom. A new `throw` branch without a test can fail the build with every
-test passing. Report the margin, not just pass or fail.
+The build enforces **80% command coverage**, and the full gate on 2026-10-12 measured
+80.06% — 6 commands of headroom. Coverage counts
+`AzureDataLabToolkit.psm1` and the scripts in `Private/` and `Public/`, not the provider,
+capability or solution-pack scripts or the dependency installer. A new `throw` branch without a
+test can fail the build with every test passing. Report the margin, not just pass or fail.
 
 ## Writing tests
 
@@ -101,9 +128,10 @@ rather than by convention. If your change establishes a boundary, assert it ther
 ## Two tripwires that look like unrelated breakage
 
 - **Deployment profile hash.** Editing anything in `src/AzureDataLabToolkit/Profiles/*.json`
-  changes that profile's hash, and every `examples/*.yaml` and fixture pins it. One added line
-  produces dozens of `Configuration deployment profile hash is stale` failures. That binding is
-  working as designed. Treat a profile edit as its own change with the regeneration it implies.
+  changes that profile's hash, and `examples/sqlvm-first-canary.yaml`, which several test files
+  load, pins it. One added line produces dozens of
+  `Configuration deployment profile hash is stale` failures. That binding is working as
+  designed. Treat a profile edit as its own change with the regeneration it implies.
 - **Golden plan hash.** `tests/Fixtures/sqlvm-minimal.plan.sha256` pins `planHash` as a
   cross-platform determinism guard. Adding a configuration field legitimately changes it —
   update the fixture *and say so in the commit message*. Never update it reflexively to make a
@@ -134,7 +162,7 @@ Branch from `main`. Fill in the pull request template — the checklist is the r
 
 ## Documentation accuracy
 
-The documentation describes an unreleased alpha, and it recently had to be corrected for
+The documentation describes an alpha prerelease, and it recently had to be corrected for
 claiming capabilities did not exist when they did. Both directions of inaccuracy are bugs.
 
 The project's status vocabulary is precise and is defined in

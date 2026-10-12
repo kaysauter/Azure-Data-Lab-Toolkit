@@ -3,10 +3,10 @@ title: Project Status
 description: What exists now, what comes next, and how status labels are used.
 ---
 
-:::danger[Unreleased alpha that creates and deletes real Azure resources]
-The repository contains an installable PowerShell alpha. Beyond validating and planning, it authenticates to Azure, compares live resources, estimates live prices, deploys, probes, and tears down a lab.
+:::danger[Alpha prerelease that creates and deletes real Azure resources]
+The repository contains an installable PowerShell alpha, released as the v0.1.0-alpha1 prerelease. Beyond validating and planning, it authenticates to Azure, compares live resources, estimates live prices, deploys, probes, and tears down a lab.
 
-None of it has been exercised against a live subscription and no release has been published, so nothing here is **Available**. `Start-AzureDataLabDeployment` creates real resources and `Start-AzureDataLabTeardown` deletes them.
+None of it has been exercised against a live subscription, so nothing here is **Available**, and the v0.1.0-alpha1 prerelease does not change that. `Start-AzureDataLabDeployment` creates real resources and `Start-AzureDataLabTeardown` deletes them.
 :::
 
 ## Status labels
@@ -31,7 +31,7 @@ No deployment capability is currently marked **Available**.
 | PowerShell module and YAML schema | **Current** | Validation, deterministic SQL VM plans with desired resource properties and policy findings, metadata catalogs, support matrix, and JSON, Markdown, and HTML export |
 | Azure sign-in and live resolution | **Current** | `Connect-AzureDataLabAccount` with process-scoped context, no autosave, and secure-string tokens |
 | Azure-aware `-WhatIf` | **Current** | `Test-AzureDataLabWhatIf` reconciles a compiled plan against live state via native ARM WhatIf |
-| Deployment, probes, and teardown | **Current** | Implemented and test-covered; never run against a live subscription and unreleased |
+| Deployment, probes, and teardown | **Current** | Implemented and test-covered; never run against a live subscription |
 | SQL Server on Azure VM | **Current** | Fixed secure alpha plan, Azure reconciliation, deployment, probes, and approval-gated cleanup. Guest operations remain preview-first and user-executed |
 | PostgreSQL managed, VM, and container paths | **Backlog** | Three separate pre-Fabric delivery segments |
 | Bicep and Terraform engines | **Backlog** | Scheduled after stable target paths and before Fabric; neither is implemented |

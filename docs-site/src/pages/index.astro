@@ -2,7 +2,7 @@
 const base = '/Azure-Data-Lab-Toolkit';
 const canonical = 'https://kaysauter.github.io/Azure-Data-Lab-Toolkit/';
 const description =
-		'Offline PowerShell planning alpha, architecture, and roadmap for repeatable, security-minded, cost-aware data labs.';
+		'PowerShell alpha, architecture, and roadmap for repeatable, security-minded, cost-aware data labs. It deploys and deletes real Azure resources and has never run against a live subscription.';
 const links = {
 		docs: `${base}/overview/`,
 		gettingStarted: `${base}/getting-started/`,
@@ -454,17 +454,17 @@ const links = {
 			<div class="content">
 				<section class="hero">
 					<div>
-						<p class="kicker">Unreleased alpha and roadmap</p>
+						<p class="kicker">Alpha and roadmap</p>
 						<h1>Azure Data Lab Toolkit</h1>
 						<p class="lede">
 							Define a data lab once, review its security and cost implications, deploy it
 							consistently, prove that it works, and remove it cleanly.
 						</p>
 							<div class="status-warning">
-								<strong>Unreleased alpha. It deploys and deletes real Azure resources.</strong>
+								<strong>Alpha. It deploys and deletes real Azure resources.</strong>
 								Local YAML validation, deterministic SQL VM planning, plan export, Azure
 								sign-in, WhatIf, deployment, probes, and teardown are all current. None has
-								been verified against a live subscription and no release has been published.
+								been verified against a live subscription, in the repository or in any prerelease.
 							</div>
 							<div class="actions">
 								<a class="button primary" href={links.gettingStarted}>Try the alpha</a>
@@ -497,11 +497,14 @@ const links = {
 					</div>
 					<div class="capability-grid">
 							<article class="capability">
-								<span class="status-label">Current offline slice</span>
+								<span class="status-label">Current, never run live</span>
 								<h3>SQL Server on Azure VM</h3>
 								<p>
 									The fixed alpha plan covers desired VM state, networking, Key Vault, Bastion,
-									optional Azure Files, and a manual restore contract. Live execution follows.
+									optional Azure Files, and a manual restore contract. Deployment, probes, and
+									teardown are implemented for one canary profile only, which reuses an existing
+									Key Vault and excludes Azure Files and the restore pack. None has run against
+									a live subscription.
 							</p>
 						</article>
 						<article class="capability">

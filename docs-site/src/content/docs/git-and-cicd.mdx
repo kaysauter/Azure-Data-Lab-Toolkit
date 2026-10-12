@@ -24,6 +24,55 @@ purposes in the roadmap:
 The general adapter segment is scheduled after Bicep and Terraform and before
 Fabric. That schedule is not a code dependency on either engine.
 
+## Repository CI today
+
+<span class="status status-current">Current</span>
+
+Changes reach `main` only through pull requests. The `main` ruleset requires a
+linear history and two checks from GitHub Actions: **Module checks**, the gate
+job of `module-ci.yml`, and **Docs checks**, the gate job of `docs-checks.yml`.
+A required check that never reports would block a pull request, so both
+workflows run on every pull request. Their first job compares the pull request
+with its merge base to decide whether the real checks are needed, and the gate
+job passes only when those checks succeeded, or were skipped because the pull
+request changed nothing they cover.
+
+| Workflow | Runs on | What it does |
+| --- | --- | --- |
+| `module-ci.yml` | Every pull request; pushes to `main` that change `src/`, `tests/`, `examples/`, `build.ps1`, the analyzer settings, `.editorconfig`, `.gitattributes`, or any workflow file; `v*` tags; manual runs | Runs `./build.ps1 -Task All` with PowerShell 7.6 or later on Linux, Windows, and macOS: parser and PSScriptAnalyzer checks, Pester with the 80% command-coverage gate, build, and package. On a pull request, these checks run only when it changes one of those paths. A `v*` tag also verifies, attests, and publishes the release. |
+| `docs-checks.yml` | Every pull request; manual runs | Builds the Astro site and the Slidev deck and checks internal routes and anchors. On a pull request, these checks run only when it changes `docs-site/` or one of the two docs workflows. |
+| `deploy-docs.yml` | Pushes to `main` that change `docs-site/`, `CHANGELOG.md`, or the workflow; manual runs | Builds and link-checks the site, then deploys it to GitHub Pages |
+
+### Releases
+
+Releases are created only by `module-ci.yml`, never by hand, and each step runs
+only after the previous one succeeds:
+
+1. A maintainer merges a commit whose manifest carries the release version and
+   which contains `release-notes/<version>.md` and a `## [<version>]` section in
+   `CHANGELOG.md`, then pushes the tag `v<version>` on that commit.
+2. The three platform checks run on the tagged commit.
+3. **Protected release provenance** runs with a read-only token. It requires
+   that the tag has the form `v<major>.<minor>.<patch>[-<prerelease>]`, that its
+   commit is reachable from `main` and is the commit the platform checks tested,
+   and that it equals `v` plus the manifest version. It requires exactly one
+   tested package, named `AzureDataLabToolkit-<version>.zip`, laid out as
+   `AzureDataLabToolkit/<ModuleVersion>`, and carrying build provenance that
+   records that commit and version. It also requires a non-empty
+   `release-notes/<version>.md` and exactly one `## [<version>]` section in
+   `CHANGELOG.md`. It then writes the package's SHA-256 file and an SPDX 2.3
+   SBOM.
+4. **Publish release** runs no repository code. It attests the package's build
+   provenance and its SBOM, confirms that the tag still points at the verified
+   commit, and creates the GitHub release with `release-notes/<version>.md` as
+   its body and three assets: the zip, its `.sha256` file, and
+   `sbom.spdx.json`. A prerelease is marked as one and never becomes the latest
+   release.
+
+`<version>` is the manifest's `ModuleVersion`, followed by `-<Prerelease>` for a
+prerelease, so v0.1.0-alpha1 is built from `ModuleVersion` 0.1.0 and
+`Prerelease` alpha1.
+
 ## CI stages
 
 | Stage | Required outcome |
@@ -50,6 +99,12 @@ Fabric. That schedule is not a code dependency on either engine.
 | [Checkov](https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html) | Scan supported Bicep, Terraform, GitHub Actions, and related configuration when those files exist |
 | Secret scanning | Detect committed credentials and block supported secret patterns |
 | [Trivy](https://trivy.dev/docs/latest/guide/) | Planned generic scan for repository/filesystem dependencies and container images |
+
+Today PSScriptAnalyzer and Pester run in `module-ci.yml`, secret scanning with
+push protection and private vulnerability reporting are enabled on the
+repository, and Dependabot opens version updates for GitHub Actions and the docs
+site's npm packages. Dependency review, Dependabot security updates, CodeQL, and
+Checkov are not enabled.
 
 Trivy is the selected generic vulnerability scanner, but it remains backlog until a pinned workflow, severity policy, ignore process, database-update policy, and retained report exist. None of these tools proves that a deployment is secure.
 

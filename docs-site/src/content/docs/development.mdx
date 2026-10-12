@@ -4,9 +4,10 @@ description: Repository boundaries, contribution flow, and architecture governan
 ---
 
 :::note[Current state]
-The repository contains the first installable offline module slice. It has no
-Azure authentication, live provider, deployment engine, or production-ready
-behavior.
+The repository contains the PowerShell alpha module, released as the
+v0.1.0-alpha1 prerelease. Beyond offline validation and planning, it signs in to
+Azure, deploys, probes, and tears down a SQL VM lab. None of that has run against
+a live subscription, and nothing in it is production-ready.
 :::
 
 ## Repository boundaries
@@ -14,10 +15,10 @@ behavior.
 | Path | Responsibility |
 | --- | --- |
 | `architecture/` | Committed system design, contracts, decision records, and trust boundaries |
-| `src/` | Current offline PowerShell module, schemas, provider and capability plan contributors, catalogs, templates, and future extension boundaries |
-| `tests/` | Current Pester unit and contract checks plus reserved live deployment and teardown suites |
+| `src/` | Current PowerShell module, schemas, provider and capability plan contributors, deployment and teardown engine, catalogs, templates, and future extension boundaries |
+| `tests/` | Current Pester unit and contract checks; live deployment and teardown suites are later work |
 | `docs-site/` | Current Astro/Starlight documentation and Slidev pitch deck |
-| `.github/workflows/` | Current documentation, Pages, and cross-platform module checks; security, release, and deployment lanes remain staged work |
+| `.github/workflows/` | Current documentation, Pages, cross-platform module checks, and the tag-driven release workflow; security scanning and deployment lanes remain staged work |
 
 ## Contribution sequence
 
@@ -28,6 +29,22 @@ behavior.
 5. Update documentation with an honest status label.
 6. Run security, dependency, vulnerability, build, and link checks.
 7. Use a reviewed pull request; protect live Azure environments.
+
+## Checks and releases
+
+Changes reach `main` only through pull requests. The `main` ruleset requires a
+linear history and two checks, **Module checks** and **Docs checks**. Both
+workflows run on every pull request, and each gate job passes only when its
+checks succeeded or were skipped because the pull request changed nothing they
+cover.
+
+Releases are never created by hand. Pushing a `v<version>` tag on a commit in
+`main` runs the three-platform module checks on that commit. **Protected release
+provenance**, a job with a read-only token, then checks the tag, the tested
+package and its build provenance, the release notes, and the `CHANGELOG.md`
+section, and writes the package's checksum and SBOM. **Publish release** attests
+the package and its SBOM and creates the GitHub release. See
+[Git And CI/CD](../git-and-cicd/#releases) for each check.
 
 ## Compatibility
 

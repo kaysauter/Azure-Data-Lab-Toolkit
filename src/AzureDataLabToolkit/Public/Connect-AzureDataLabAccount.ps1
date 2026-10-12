@@ -20,6 +20,14 @@ function Connect-AzureDataLabAccount {
         [switch] $UseDeviceAuthentication
     )
 
+    Write-Warning (
+        'Azure Data Lab Toolkit is alpha software. Never run this against a ' +
+        'subscription you care about. Nothing here has ever been executed ' +
+        'against live Azure. Not once. Start-AzureDataLabDeployment creates ' +
+        'billable resources. Start-AzureDataLabTeardown deletes resources. ' +
+        'The command surface and plan hashes may change without notice ' +
+        'between alpha tags.'
+    )
     Clear-AdltAzureDefaultProfileBinding
     if (@(Microsoft.PowerShell.Core\Get-Module -Name 'Az.Accounts').Count -gt 0) {
         throw (
