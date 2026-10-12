@@ -1,11 +1,9 @@
 name: Docs checks
 
 on:
+  # No path filter: "Docs checks" is a required check, so this workflow must
+  # report on every pull request. The changes job decides what has to run.
   pull_request:
-    paths:
-      - docs-site/**
-      - .github/workflows/docs-checks.yml
-      - .github/workflows/deploy-docs.yml
   workflow_dispatch:
 
 permissions:
@@ -16,11 +14,58 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect docs changes
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.detect.outputs.relevant }}
+    steps:
+      - name: Checkout
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # The same detection as in module-ci.yml, which explains each choice;
+      # only the pattern differs.
+      - name: Detect changes that need the docs checks
+        id: detect
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LC_ALL: C
+        run: |
+          set -euo pipefail
+          relevant=true
+          if [[ "$EVENT_NAME" == pull_request ]]; then
+            pattern='^(docs-site/.+|\.github/workflows/(docs-checks|deploy-docs)\.yml)$'
+            changed_files="$RUNNER_TEMP/changed-files"
+            git diff --name-only --no-renames -z \
+              "${BASE_SHA:?}...${HEAD_SHA:?}" > "$changed_files"
+            relevant=false
+            echo 'Files changed by this pull request:'
+            while IFS= read -r -d '' path; do
+              printf '  - %q\n' "$path"
+              if [[ "$path" =~ $pattern ]]; then
+                relevant=true
+              fi
+            done < "$changed_files"
+          fi
+          echo "relevant=$relevant" | tee -a "$GITHUB_OUTPUT"
+
   build:
+    name: Build and check docs
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -40,3 +85,31 @@ jobs:
       - name: Check internal routes and anchors
         run: npm run check:links
         working-directory: docs-site
+
+  docs-checks:
+    name: Docs checks
+    # The required check; always() keeps it from ever being skipped, as
+    # explained in module-ci.yml.
+    if: always()
+    needs: [changes, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require passed or deliberately skipped docs checks
+        shell: bash
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          RELEVANT: ${{ needs.changes.outputs.relevant }}
+          CHECKS_RESULT: ${{ needs.build.result }}
+        run: |
+          set -euo pipefail
+          expected=''
+          if [[ "$CHANGES_RESULT" == success && "$RELEVANT" == true ]]; then
+            expected=success
+          elif [[ "$CHANGES_RESULT" == success && "$RELEVANT" == false ]]; then
+            expected=skipped
+          fi
+          if [[ -z "$expected" || "$CHECKS_RESULT" != "$expected" ]]; then
+            echo "::error::Docs checks failed: changes=$CHANGES_RESULT, relevant='$RELEVANT', checks=$CHECKS_RESULT."
+            exit 1
+          fi
+          echo "Docs checks passed: relevant=$RELEVANT, checks=$CHECKS_RESULT."
