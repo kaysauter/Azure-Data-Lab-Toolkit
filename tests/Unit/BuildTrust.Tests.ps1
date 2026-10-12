@@ -445,21 +445,22 @@ Describe 'Locked build-tool trust' {
                 $script:RepositoryRoot `
                 'src/AzureDataLabToolkit/AzureDataLabToolkit.psd1')
         )
+        # Works whether or not the real manifest still has the line.
         $stableText = [regex]::Replace(
             $manifestText,
             '(?m)^[ \t]*Prerelease[ \t]*=.*\r?\n',
             ''
         )
-        $stableText | Should -Not -BeExactly $manifestText
         [System.IO.File]::WriteAllText(
             (Join-Path $moduleRoot 'AzureDataLabToolkit.psd1'),
             $stableText,
             [System.Text.UTF8Encoding]::new($false)
         )
-        $baseVersion = [string] (
-            Import-PowerShellDataFile `
-                -LiteralPath (Join-Path $moduleRoot 'AzureDataLabToolkit.psd1')
-        ).ModuleVersion
+        $stableManifest = Import-PowerShellDataFile `
+            -LiteralPath (Join-Path $moduleRoot 'AzureDataLabToolkit.psd1')
+        $stableManifest.PrivateData.PSData.Contains('Prerelease') |
+            Should -BeFalse
+        $baseVersion = [string] $stableManifest.ModuleVersion
 
         New-AdltBuildProvenance `
             -ModulePath $moduleRoot `
@@ -468,6 +469,40 @@ Describe 'Locked build-tool trust' {
             -ModulePath $moduleRoot `
             -ExpectedModuleVersion $baseVersion).moduleVersion |
             Should -BeExactly $baseVersion
+    }
+
+    It 'fails the gate on a failed container, block or test, not only a test' {
+        # Pester leaves FailedCount at zero when a test file fails during
+        # discovery (its tests never run) or an AfterAll fails (its cleanup
+        # did not), so the gate must judge the run's Result.
+        foreach ($case in @(
+                @{ Result = 'Failed'; Tests = 0; Blocks = 0; Containers = 1 }
+                @{ Result = 'Failed'; Tests = 0; Blocks = 1; Containers = 0 }
+                @{ Result = 'Failed'; Tests = 2; Blocks = 0; Containers = 0 }
+            )) {
+            $run = [pscustomobject]@{
+                Result                = $case.Result
+                FailedCount           = $case.Tests
+                FailedBlocksCount     = $case.Blocks
+                FailedContainersCount = $case.Containers
+            }
+            {
+                Assert-AdltPesterRun -Result $run
+            } | Should -Throw -ExpectedMessage (
+                'Pester run failed: {0} test(s), {1} block(s), {2} container(s).' -f
+                    $case.Tests,
+                    $case.Blocks,
+                    $case.Containers
+            )
+        }
+        {
+            Assert-AdltPesterRun -Result ([pscustomobject]@{
+                    Result                = 'Passed'
+                    FailedCount           = 0
+                    FailedBlocksCount     = 0
+                    FailedContainersCount = 0
+                })
+        } | Should -Not -Throw
     }
 
     It 'records a git source revision from a clean repository' {

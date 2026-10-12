@@ -1298,6 +1298,27 @@ function Invoke-AdltAnalyze {
     }
 }
 
+# FailedCount alone misses two failures, both of which Pester records with
+# FailedCount at zero: a test file that fails during discovery, whose tests
+# then never run (a failed container), and a failing AfterAll, whose tests ran
+# but whose cleanup did not (a failed block). A failing BeforeAll already
+# counts its tests as failed.
+function Assert-AdltPesterRun {
+    param(
+        [Parameter(Mandatory)]
+        [object] $Result
+    )
+
+    if ([string] $Result.Result -cne 'Passed') {
+        throw (
+            'Pester run failed: {0} test(s), {1} block(s), {2} container(s).' -f
+                $Result.FailedCount,
+                $Result.FailedBlocksCount,
+                $Result.FailedContainersCount
+        )
+    }
+}
+
 function Invoke-AdltTest {
     Import-AdltBuildModule -Name Pester
     New-Item -ItemType Directory -Path $testResultsPath -Force | Out-Null
@@ -1319,9 +1340,7 @@ function Invoke-AdltTest {
     $configuration.CodeCoverage.OutputPath = Join-Path $testResultsPath 'coverage.xml'
 
     $result = Invoke-Pester -Configuration $configuration
-    if ($result.FailedCount -gt 0) {
-        throw "$($result.FailedCount) Pester test(s) failed."
-    }
+    Assert-AdltPesterRun -Result $result
     if ($result.CodeCoverage.CoveragePercent -lt $minimumCoveragePercent) {
         throw (
             'Command coverage {0:N2}% is below the required {1:N2}%.' -f
