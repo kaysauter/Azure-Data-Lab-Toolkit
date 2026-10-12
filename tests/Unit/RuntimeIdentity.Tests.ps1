@@ -6,12 +6,22 @@ BeforeAll {
     $script:SourceManifest = Join-Path `
         $script:RepositoryRoot `
         'src/AzureDataLabToolkit/AzureDataLabToolkit.psd1'
+    $sourceManifestData = Import-PowerShellDataFile `
+        -LiteralPath $script:SourceManifest
+    $script:ModuleBaseVersion = [string] $sourceManifestData.ModuleVersion
+    $script:ModuleVersion = $script:ModuleBaseVersion
+    $prerelease = [string] $sourceManifestData.PrivateData.PSData['Prerelease']
+    if (-not [string]::IsNullOrWhiteSpace($prerelease)) {
+        $script:ModuleVersion = '{0}-{1}' -f
+            $script:ModuleBaseVersion,
+            $prerelease
+    }
     $script:BuiltModuleRoot = Join-Path `
         $script:RepositoryRoot `
-        'out/module/AzureDataLabToolkit/0.1.0'
+        "out/module/AzureDataLabToolkit/$script:ModuleBaseVersion"
     $script:PackagePath = Join-Path `
         $script:RepositoryRoot `
-        'out/packages/AzureDataLabToolkit-0.1.0-alpha1.zip'
+        "out/packages/AzureDataLabToolkit-$script:ModuleVersion.zip"
     $script:AuthorizationSchemaPath = Join-Path `
         $script:RepositoryRoot `
         'src/AzureDataLabToolkit/Schemas/execution-authorization.schema.json'
@@ -37,7 +47,7 @@ BeforeAll {
             -LiteralPath $script:PackagePath `
             -DestinationPath $target `
             -Force
-        return Join-Path $target 'AzureDataLabToolkit/0.1.0'
+        return Join-Path $target "AzureDataLabToolkit/$script:ModuleBaseVersion"
     }
 
     function Import-TestModule {
@@ -90,7 +100,7 @@ Describe 'Runtime module build provenance' {
         }
 
         $identity.module.name | Should -BeExactly 'AzureDataLabToolkit'
-        $identity.module.version | Should -BeExactly '0.1.0-alpha1'
+        $identity.module.version | Should -BeExactly $script:ModuleVersion
         $identity.module.digest |
             Should -Match '^sha256:[a-f0-9]{64}$'
         $identity.module.revisionKind |
@@ -217,7 +227,7 @@ Describe 'Runtime module build provenance' {
         } $script:BuiltModuleRoot
 
         $identity.module.name | Should -BeExactly 'AzureDataLabToolkit'
-        $identity.module.version | Should -BeExactly '0.1.0-alpha1'
+        $identity.module.version | Should -BeExactly $script:ModuleVersion
         $identity.module.digest | Should -Match '^sha256:[a-f0-9]{64}$'
         $identity.module.revisionKind |
             Should -BeIn @('git', 'content-derived')
@@ -247,7 +257,7 @@ Describe 'Runtime module build provenance' {
                 pattern = '*metadata is invalid*'
                 mutate  = {
                     param($Candidate)
-                    $Candidate.moduleVersion = '0.1.1'
+                    $Candidate.moduleVersion = "$script:ModuleVersion-other"
                 }
             }
             [ordered]@{
@@ -411,7 +421,7 @@ Describe 'Runtime module build provenance' {
             -LiteralPath $provenancePath `
             -Raw |
             ConvertFrom-Json -AsHashtable
-        $provenance.moduleVersion = '0.1.1'
+        $provenance.moduleVersion = "$script:ModuleVersion-other"
         $provenance |
             ConvertTo-Json -Depth 100 -Compress |
             Set-Content -LiteralPath $provenancePath
@@ -462,13 +472,31 @@ Describe 'Locked runtime dependency provenance' {
             'Az.Resources'
             'powershell-yaml'
         )
+        # Compared with a separate read of the reviewed lock rather than the
+        # module's own lock reader, which the identity is built from.
+        # packageDigest and source are recorded from the lock, never measured
+        # (S2 in architecture/quality-baseline.md), so they must be exactly the
+        # reviewed values; contentDigest is measured and must match them too.
+        $reviewedLock = Get-Content `
+            -LiteralPath (
+                Join-Path `
+                    $script:RepositoryRoot `
+                    'src/AzureDataLabToolkit/Support/runtime-dependencies.lock.json'
+            ) `
+            -Raw |
+            ConvertFrom-Json -AsHashtable
+        $reviewed = @{}
+        foreach ($entry in @($reviewedLock['dependencies'])) {
+            $reviewed[[string] $entry['name']] = $entry
+        }
         foreach ($dependency in @($identity.dependencies)) {
+            $locked = $reviewed[[string] $dependency.name]
             $dependency.guid | Should -Match '^[0-9a-f-]{36}$'
-            $dependency.source | Should -BeExactly 'PSGallery'
+            $dependency.source | Should -BeExactly ([string] $locked['source'])
             $dependency.packageDigest |
-                Should -Match '^sha256:[a-f0-9]{64}$'
+                Should -BeExactly ([string] $locked['packageDigest'])
             $dependency.contentDigest |
-                Should -Match '^sha256:[a-f0-9]{64}$'
+                Should -BeExactly ([string] $locked['contentDigest'])
             $dependency.manifestPathHash |
                 Should -Match '^sha256:[a-f0-9]{64}$'
         }

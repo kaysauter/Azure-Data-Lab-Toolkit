@@ -798,11 +798,19 @@ function Get-AdltInstalledDependencyRecord {
         if ([string]::IsNullOrWhiteSpace($location)) {
             throw "Installed dependency '$name' has no installation path."
         }
+        $location = [System.IO.Path]::GetFullPath($location)
+        # PSResourceGet reports the modules root it installed into, where
+        # PowerShellGet 2 reported the module's version folder. The content
+        # check compares the version folder, so resolve a root to it.
+        $versionFolder = [System.IO.Path]::Combine($location, $name, $version)
+        if ([System.IO.Directory]::Exists($versionFolder)) {
+            $location = $versionFolder
+        }
         $installed[$name] = [pscustomobject]@{
             Name              = $name
             Version           = $version
             Repository        = $Repository
-            InstalledLocation = [System.IO.Path]::GetFullPath($location)
+            InstalledLocation = $location
         }
     }
     return $installed
@@ -896,6 +904,12 @@ function Test-AdltInstalledDependencyContent {
         $dependency = @($Lock.dependencies)[$index]
         $identity = $verified[$index]
         $name = [string] $dependency.name
+        # packageDigest is not compared: nothing measures it and this script
+        # never acts on it, so agreement would say nothing about what was
+        # installed. The clauses below tie this script's lock read, which has
+        # no hash check, to the module's hash-pinned read of the same file;
+        # the installed files themselves are checked against contentDigest
+        # inside Get-AdltVerifiedRuntimeDependency.
         if (
             [string] $identity.name -cne $name -or
             [string] $identity.version -cne
@@ -906,8 +920,6 @@ function Test-AdltInstalledDependencyContent {
                 [string] $dependency.author -or
             [string] $identity.source -cne
                 [string] $dependency.source -or
-            [string] $identity.packageDigest -cne
-                [string] $dependency.packageDigest -or
             [string] $identity.contentDigest -cne
                 [string] $dependency.contentDigest -or
             -not $Installed.Contains($name) -or

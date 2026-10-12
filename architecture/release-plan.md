@@ -41,8 +41,18 @@ as of `cbde0ee`, so there is no longer a reason to wait.
    Set it to `active` and require the `PowerShell module checks` and `Docs checks` status checks
    plus linear history. The release job's `git merge-base --is-ancestor HEAD origin/main` gate
    means exactly as much as `main`'s protection does, which is currently nothing.
+
+   *Done 2026-10-12.* The ruleset also had an empty branch condition, so it targeted nothing;
+   it now targets the default branch and requires a pull request, linear history, and the
+   `Module checks` and `Docs checks` jobs from the GitHub Actions app. Those are gate jobs, not
+   the workflows: both workflows were path-filtered, and a required check that never reports
+   blocks a pull request forever. A tag ruleset restricting names to `v<major>.<minor>.<patch>`
+   was attempted and the API rejected its `tag_name_pattern` rule, so the release workflow's
+   own tag check is the only one.
 4. **Enable GitHub private vulnerability reporting.** [`SECURITY.md`](../SECURITY.md) currently
    routes to email because the feature is off. One toggle, strictly better than email.
+
+   *Done 2026-10-12*, and `SECURITY.md` now routes reports to it.
 
 ## Phase 2 — Make the published claims true
 
@@ -74,8 +84,25 @@ as of `cbde0ee`, so there is no longer a reason to wait.
     `tests/Unit/Module.Tests.ps1:12`. Roughly a dozen test literals can then read from a shared
     helper.
 
-The version currently lives in four production places plus ~8 test files, with the only real
-cross-check firing at release time. A bump is a manual sweep with a silent failure mode.
+    *Done 2026-10-12, by a different route for the psm1.* The manifest is the source of truth;
+    `build.ps1` derives the built-module directory and the package name from it through one
+    helper, and so do the tests that need them. The psm1 keeps its literal as a reviewed
+    constant, so importing the module never depends on parsing the manifest. Generating it at
+    build time was rejected because the version feeds every `planHash`, the engine identity and
+    the extension descriptors: the value the suite runs with must be the value that ships,
+    unlike the script-lock digest the build already rewrites, which reaches no output.
+    `Module.Tests.ps1` holds the psm1 equal to the manifest in the source tree, and
+    `Private/67-RuntimeIdentity.ps1` rejects a packaged module whose provenance version
+    disagrees; the test also checks that the manifest version has the shape the release
+    workflow can tag.
+    The `0.1.0-alpha1` literals left in tests are sample data and say so: a full run with the
+    version bumped to `0.2.0-beta1` failed only the golden plan-hash fixture, which is correct —
+    plans and the engine identity embed the toolkit version, so a bump moves `planHash` and the
+    engine digest by design.
+
+When this was written, the version lived in four production places plus ~8 test files, with
+the only real cross-check firing at release time, and a bump was a manual sweep with a silent
+failure mode. It now lives in the manifest and the psm1, held equal by a test.
 
 ## Phase 4 — Close the four release-gate holes
 
@@ -141,6 +168,12 @@ software that has never run live the documented invariants are the main assuranc
    test that keeps the headline allowlist claim true as pull requests land on a public repo.
 4. **`packageDigest`** is written into the evidence record as verified but is never computed
    from any artifact. Verify it or remove it before shipping an attestation that asserts it.
+
+   *Resolved 2026-10-12 by relabelling, not by verification* — see S2 in
+   [`quality-baseline.md`](quality-baseline.md). The self-comparison is gone and the code,
+   `SECURITY.md` and the baseline all say the field is recorded, not measured. Removing it would
+   change the execution-authorization shape; verifying it needs the package archive, which the
+   installer never has.
 
 ## The alpha gate
 

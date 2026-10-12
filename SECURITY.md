@@ -22,7 +22,10 @@ spend cap.
 
 **Do not open a public issue for a security problem.**
 
-Email **kay@kayondata.com** with:
+Report it privately through GitHub's private vulnerability reporting: open the repository's
+**Security** tab and choose **Report a vulnerability**, or go straight to
+<https://github.com/kaysauter/Azure-Data-Lab-Toolkit/security/advisories/new>. If you cannot
+use GitHub, email **kay@kayondata.com** instead. Either way, include:
 
 - what you found and where (file and line, or a command sequence)
 - what an attacker could achieve
@@ -32,9 +35,6 @@ Email **kay@kayondata.com** with:
 You will get an acknowledgement. This is a single-maintainer project, so no fix timeline is
 promised — you will be told honestly whether and when it will be addressed, rather than given
 a target that gets missed.
-
-If you would prefer GitHub's private vulnerability reporting, say so in your email; it is not
-enabled on this repository yet and asking will get it turned on.
 
 ## Supported versions
 
@@ -78,6 +78,15 @@ Out of scope:
   `-ShowGeneratedPassword` sets `allowShellOutput`, which raises a high-severity
   acknowledge-required finding and nothing consumes. If you find a path that *does* emit a
   credential, that is firmly in scope.
+- `packageDigest` not being verified. Wherever it appears — the runtime dependency lock, the
+  runtime identity, an execution authorization and the runtime-dependency checksums in the
+  release SBOM — it is copied from the lock and records which upstream package archive the lock
+  was reviewed against. The dependency installer's `Install-PSResource` call downloads and
+  unpacks that archive but keeps no copy, and nothing in this module or its release workflow
+  hashes it. The installed-content guarantee is `contentDigest`: the installed files are hashed
+  and compared with it when a locked dependency is verified, immediately before it is imported.
+  A way to make the module load dependency content that does not match its `contentDigest` is
+  firmly in scope.
 - Findings that require an attacker who can already write to the repository, your PowerShell
   installation, or your Azure subscription. Those attackers defeat everything here by simpler
   means.
@@ -85,8 +94,8 @@ Out of scope:
 
 ## What is already enabled
 
-Secret scanning and push protection are on for this repository. Dependabot security updates
-are not yet enabled.
+Private vulnerability reporting, secret scanning and push protection are on for this
+repository. Dependabot security updates are not yet enabled.
 
 ## Credit
 

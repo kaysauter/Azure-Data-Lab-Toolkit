@@ -7,13 +7,50 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# ModuleVersion, plus "-<Prerelease>" when PSData sets one. A stable manifest
+# may omit Prerelease, so the optional keys are read with the indexer: under
+# strict mode, member access to a missing key throws.
+function Get-AdltBuildModuleVersion {
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Manifest
+    )
+
+    $baseVersion = [string] $Manifest['ModuleVersion']
+    $prerelease = ''
+    $privateData = $Manifest['PrivateData']
+    if ($privateData -is [System.Collections.IDictionary]) {
+        $psData = $privateData['PSData']
+        if ($psData -is [System.Collections.IDictionary]) {
+            $prerelease = [string] $psData['Prerelease']
+        }
+    }
+    $version = $baseVersion
+    if (-not [string]::IsNullOrWhiteSpace($prerelease)) {
+        $version = '{0}-{1}' -f $baseVersion, $prerelease
+    }
+    return [pscustomobject]@{
+        BaseVersion = $baseVersion
+        Version     = $version
+    }
+}
+
 $repositoryRoot = $PSScriptRoot
 $sourceModulePath = Join-Path $repositoryRoot 'src/AzureDataLabToolkit'
 $moduleManifestPath = Join-Path $sourceModulePath 'AzureDataLabToolkit.psd1'
 $outputPath = Join-Path $repositoryRoot 'out'
 $testResultsPath = Join-Path $outputPath 'test-results'
-$builtModulePath = Join-Path $outputPath 'module/AzureDataLabToolkit/0.1.0'
-$packagePath = Join-Path $outputPath 'packages/AzureDataLabToolkit-0.1.0-alpha1.zip'
+$sourceModuleVersionInfo = Get-AdltBuildModuleVersion -Manifest (
+    Import-PowerShellDataFile -LiteralPath $moduleManifestPath
+)
+$sourceModuleBaseVersion = $sourceModuleVersionInfo.BaseVersion
+$sourceModuleVersion = $sourceModuleVersionInfo.Version
+$builtModulePath = Join-Path `
+    $outputPath `
+    "module/AzureDataLabToolkit/$sourceModuleBaseVersion"
+$packagePath = Join-Path `
+    $outputPath `
+    "packages/AzureDataLabToolkit-$sourceModuleVersion.zip"
 $analyzerSettingsPath = Join-Path $repositoryRoot 'PSScriptAnalyzerSettings.psd1'
 $buildToolLockPath = Join-Path `
     $sourceModulePath `
@@ -305,12 +342,11 @@ function New-AdltBuildProvenance {
     )
 
     $manifestPath = Join-Path $ModulePath 'AzureDataLabToolkit.psd1'
-    $manifest = Import-PowerShellDataFile -LiteralPath $manifestPath
-    $moduleVersion = [string] $manifest.ModuleVersion
-    $prerelease = [string] $manifest.PrivateData.PSData.Prerelease
-    if (-not [string]::IsNullOrWhiteSpace($prerelease)) {
-        $moduleVersion = '{0}-{1}' -f $moduleVersion, $prerelease
-    }
+    $moduleVersion = (
+        Get-AdltBuildModuleVersion -Manifest (
+            Import-PowerShellDataFile -LiteralPath $manifestPath
+        )
+    ).Version
 
     $files = @(Get-AdltBuildFileManifest -ModulePath $ModulePath)
     $aggregateDigest = Get-AdltBuildSha256Identifier -Value (
@@ -510,14 +546,11 @@ function Test-AdltBuildProvenance {
     $manifestPath = Join-Path `
         $fullModulePath `
         'AzureDataLabToolkit.psd1'
-    $manifest = Import-PowerShellDataFile -LiteralPath $manifestPath
-    $manifestVersion = [string] $manifest.ModuleVersion
-    $manifestPrerelease = [string] $manifest.PrivateData.PSData.Prerelease
-    if (-not [string]::IsNullOrWhiteSpace($manifestPrerelease)) {
-        $manifestVersion = '{0}-{1}' -f
-            $manifestVersion,
-            $manifestPrerelease
-    }
+    $manifestVersion = (
+        Get-AdltBuildModuleVersion -Manifest (
+            Import-PowerShellDataFile -LiteralPath $manifestPath
+        )
+    ).Version
     if ($manifestVersion -cne [string] $provenance.moduleVersion) {
         throw 'Build provenance does not match the packaged manifest version.'
     }
@@ -1299,8 +1332,11 @@ function Invoke-AdltTest {
 }
 
 function Invoke-AdltBuild {
-    if (Test-Path -LiteralPath $builtModulePath) {
-        Remove-Item -LiteralPath $builtModulePath -Recurse -Force
+    # The package zips this whole directory, so a folder left by an earlier
+    # version would ship alongside the current one.
+    $builtModuleRoot = Split-Path -Path $builtModulePath -Parent
+    if (Test-Path -LiteralPath $builtModuleRoot) {
+        Remove-Item -LiteralPath $builtModuleRoot -Recurse -Force
     }
 
     New-Item -ItemType Directory -Path $builtModulePath -Force | Out-Null

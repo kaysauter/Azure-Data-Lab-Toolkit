@@ -214,12 +214,35 @@ missing. **Open question for the owner:** plan reports are *meant* to be shared,
 wrong for their purpose; the inconsistency with evidence export should be resolved deliberately
 rather than by copying the flag.
 
+*Resolved 2026-10-12.* Commit `2888331` added the secret-free gate. The exporter now runs the
+full `Assert-AdltPlanContract`, which adds schema and structure validation and the `intentHash`
+and idempotency-key bindings. The objection recorded in `2888331` — that the full contract
+would reject plans that export fine today — was tested rather than argued: every example
+configuration exports in all three formats directly, as a JSON string read back into objects or
+hashtables, and from a saved file, with identical results before and after the change. The
+contract proves that an exported plan is well-formed and internally consistent, not where it
+came from: none of its hashes is keyed, so anyone who can load the module can rebind an edited
+plan. The 0644 mode stays: the owner confirmed on 2026-10-02 that plan reports are meant to be shared, and the
+comment in the exporter records why.
+
 **S2 — `packageDigest` is a false attestation.** It is compared against itself at
 `Install-AzureDataLabToolkitDependencies.ps1:909-910` and never computed from any artifact, then
 written into the evidence record as a verified value (`Private/67-RuntimeIdentity.ps1:309`).
 `contentDigest` provides the real guarantee. Either verify `packageDigest` against the
 downloaded package or remove it — shipping an evidence record asserting a digest nothing
 checked undercuts the auditability the project is built on.
+
+*Resolved 2026-10-12 by relabelling; real verification deferred.* The self-comparison is
+deleted, because the verified identity copies `packageDigest` from the same lock and so checked
+nothing about what is installed. Where the identity is built
+(`Get-AdltVerifiedRuntimeDependency`), a comment now separates the fields enforced or measured
+against the installed module (`name`, `version`, `guid`, `author`, `contentDigest`) from those
+only recorded from the reviewed lock (`source`, `packageDigest`), and `SECURITY.md` states the
+same limit. The field stays in the runtime identity and the execution authorization, where the
+schema requires it, to keep this change contract-neutral: `planHash` and the engine digest do
+not move. No execution records exist yet, so renaming or removing it later is an ordinary,
+called-out contract change. Verifying it would mean fetching the archive separately (for
+example with `Save-PSResource -AsNupkg`) and hashing it; that is deferred.
 
 **S3 — The secret detectors are narrower than the claim.** Broken five ways: the forbidden-key
 regex is anchored to exactly ten names (`adminPassword`, `apiKey`, `privateKey` and similar all
@@ -240,6 +263,14 @@ records, which can permanently wedge a run and strand live Azure resources.
 **S6 — The `cbde0ee` digest-removal reasoning was sound but one premise was false**, and the
 "recorded as evidence" claim in that comment does not hold — the digest is computed and
 discarded, not recorded. The comment should be corrected.
+
+**S7 — The Markdown plan report interpolates plan values unescaped.** Found 2026-10-12, *open*.
+`ConvertTo-AdltPlanMarkdown` (`Public/Export-AzureDataLabPlan.ps1`) inserts values such as
+`configuration.metadata.name`, policy-finding messages and warnings into Markdown as they are;
+the HTML report encodes every value. Because the plan contract proves consistency rather than
+origin (S1), an independent review reproduced a module-built plan, from crafted configuration,
+whose rendered Markdown hides its policy findings. Plan reports are meant to be shared, so the
+Markdown renderer should treat every value as data.
 
 ### Confirmed intact
 
