@@ -153,6 +153,100 @@ Describe 'Plan report distribution boundary' {
         }
     }
 
+    It 'refuses to render a plan whose intent hash was forged' {
+        InModuleScope AzureDataLabToolkit -Parameters @{
+            ConfigurationPath = $script:MinimalConfigurationPath
+            ExportPath        = Join-Path $TestDrive 'forged-intent.json'
+        } {
+            param($ConfigurationPath, $ExportPath)
+
+            $forged = Copy-AdltValue -InputObject (
+                New-AzureDataLabPlan $ConfigurationPath
+            )
+            $forged.intentHash = "sha256:$('f' * 64)"
+            foreach ($action in @($forged.actions)) {
+                $action.idempotencyKey = 'adlt:v1:{0}:{1}' -f
+                    $forged.intentHash,
+                    $action.id
+            }
+            $forged.planHash = Get-AdltPlanHash -Plan $forged
+
+            # Every action is re-keyed to the forged intent and the hash is
+            # honest, so only the intent reconstruction can tell.
+            { Assert-AdltPlanHash -Plan $forged } | Should -Not -Throw
+
+            foreach ($format in 'Json', 'Markdown', 'Html') {
+                {
+                    Export-AzureDataLabPlan $forged -Format $format
+                } | Should -Throw -ExpectedMessage (
+                    '*Azure Data Lab plan intent hash verification failed.*'
+                )
+            }
+
+            {
+                Export-AzureDataLabPlan `
+                    -Plan $forged `
+                    -Format Json `
+                    -Path $ExportPath
+            } | Should -Throw -ExpectedMessage '*intent hash verification failed*'
+            Test-Path -LiteralPath $ExportPath | Should -BeFalse
+        }
+    }
+
+    It 'refuses to render a plan with any action not bound to its intent' {
+        InModuleScope AzureDataLabToolkit -Parameters @{
+            ConfigurationPath = $script:MinimalConfigurationPath
+        } {
+            param($ConfigurationPath)
+
+            # Every action in turn, not only the first: a contract loop that
+            # stopped early would otherwise pass.
+            $plan = New-AzureDataLabPlan $ConfigurationPath
+            $actionCount = @($plan.actions).Count
+            $actionCount | Should -BeGreaterThan 1
+            for ($index = 0; $index -lt $actionCount; $index++) {
+                $unbound = Copy-AdltValue -InputObject $plan
+                $action = @($unbound.actions)[$index]
+                $action.idempotencyKey = 'adlt:v1:sha256:{0}:{1}' -f
+                    ('f' * 64),
+                    $action.id
+                $unbound.planHash = Get-AdltPlanHash -Plan $unbound
+
+                { Assert-AdltPlanHash -Plan $unbound } | Should -Not -Throw
+                $actionId = [System.Management.Automation.WildcardPattern]::Escape(
+                    [string] $action.id
+                )
+                {
+                    Export-AzureDataLabPlan $unbound -Format Json
+                } | Should -Throw -ExpectedMessage (
+                    "*Action '$actionId' is not bound to the verified plan " +
+                    'intent.*'
+                )
+            }
+        }
+    }
+
+    It 'refuses to render a plan that fails the plan schema' {
+        InModuleScope AzureDataLabToolkit -Parameters @{
+            ConfigurationPath = $script:MinimalConfigurationPath
+        } {
+            param($ConfigurationPath)
+
+            $invalid = Copy-AdltValue -InputObject (
+                New-AzureDataLabPlan $ConfigurationPath
+            )
+            $invalid.unreviewedField = 'not part of the plan contract'
+            $invalid.planHash = Get-AdltPlanHash -Plan $invalid
+
+            { Assert-AdltPlanHash -Plan $invalid } | Should -Not -Throw
+            {
+                Export-AzureDataLabPlan $invalid -Format Json
+            } | Should -Throw -ExpectedMessage (
+                '*Azure Data Lab plan schema validation failed*'
+            )
+        }
+    }
+
     It 'still exports a clean plan to stdout and to a path' {
         $plan = New-AzureDataLabPlan $script:MinimalConfigurationPath
         $exportPath = Join-Path $TestDrive 'clean-plan.json'

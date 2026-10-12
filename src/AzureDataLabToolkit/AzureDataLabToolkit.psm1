@@ -11,7 +11,7 @@ $script:AzureDataLabToolkitMaximumEventLineChars = 2MB
 $script:AzureDataLabToolkitMaximumEvidenceFiles = 1024
 $script:AzureDataLabToolkitMaximumArtifactFiles = 16
 $script:AzureDataLabToolkitScriptLockHash =
-    'sha256:b3b90b0e7ffbb1724bf506701c9474b27fd884c335a1cf080be420563fed9577'
+    'sha256:6678c363208bb982b27dc249e4398f03d74b400f7589d1f2ac6fd1f68023b903'
 $script:AzureDataLabToolkitDependencyLockHash =
     'sha256:004a1cabd0f708547f9d3d839332f73798c43e45d06c19c3a1b7af9f83de7221'
 

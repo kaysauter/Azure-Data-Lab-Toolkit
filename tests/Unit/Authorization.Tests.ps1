@@ -817,6 +817,8 @@ Describe 'Bound execution authorization and preauthorized teardown' {
     BeforeEach {
         Mock Get-AdltRuntimeIdentity -ModuleName AzureDataLabToolkit {
             [ordered]@{
+                # A fixed sample identity. Nothing here compares it with the
+                # loaded module's version, so a version bump leaves it alone.
                 module = [ordered]@{
                     name    = 'AzureDataLabToolkit'
                     version = '0.1.0-alpha1'
@@ -1602,6 +1604,8 @@ Describe 'Ownership-safe SQL VM teardown execution' {
     BeforeEach {
         Mock Get-AdltRuntimeIdentity -ModuleName AzureDataLabToolkit {
             [ordered]@{
+                # A fixed sample identity. Nothing here compares it with the
+                # loaded module's version, so a version bump leaves it alone.
                 module = [ordered]@{
                     name    = 'AzureDataLabToolkit'
                     version = '0.1.0-alpha1'

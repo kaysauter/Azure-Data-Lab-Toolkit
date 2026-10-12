@@ -415,6 +415,70 @@ Describe 'PSResourceGet bootstrap boundary' {
         } | Should -Throw "*Az.Accounts*unexpected source*"
     }
 
+    It 'resolves the installation path to the version folder for <Tool>' -ForEach @(
+        @{ Tool = 'PSResourceGet'; ReportsRoot = $true }
+        @{ Tool = 'PowerShellGet 2'; ReportsRoot = $false }
+    ) {
+        # PSResourceGet reports the modules root it installed into, where
+        # PowerShellGet 2 reported the version folder. The content check
+        # compares the version folder, so both must arrive at it.
+        $lock = Read-AdltDependencyInstallerLock `
+            -Path $script:LockPath `
+            -Repository PSGallery
+        $script:ReportedRoot = Join-Path $TestDrive "installed-$ReportsRoot"
+        $script:ReportsRoot = $ReportsRoot
+        foreach ($dependency in @($lock.dependencies)) {
+            [void] (New-Item `
+                -ItemType Directory `
+                -Force `
+                -Path ([System.IO.Path]::Combine(
+                    $script:ReportedRoot,
+                    [string] $dependency.name,
+                    [string] $dependency.version
+                )))
+        }
+        function Get-TestReportedPSResource {
+            [CmdletBinding()]
+            param(
+                [string] $Name,
+                [string] $Version,
+                [string] $Scope
+            )
+
+            $reported = if ($script:ReportsRoot) {
+                $script:ReportedRoot
+            }
+            else {
+                [System.IO.Path]::Combine($script:ReportedRoot, $Name, $Version)
+            }
+            return [pscustomobject]@{
+                Name              = $Name
+                Version           = $Version
+                Repository        = 'PSGallery'
+                Type              = 'Module'
+                InstalledLocation = $reported
+                Scope             = $Scope
+            }
+        }
+
+        $records = Get-AdltInstalledDependencyRecord `
+            -Lock $lock `
+            -Command (Get-Command Get-TestReportedPSResource) `
+            -Repository PSGallery `
+            -Scope CurrentUser
+
+        foreach ($dependency in @($lock.dependencies)) {
+            $records[[string] $dependency.name].InstalledLocation |
+                Should -BeExactly ([System.IO.Path]::GetFullPath(
+                    [System.IO.Path]::Combine(
+                        $script:ReportedRoot,
+                        [string] $dependency.name,
+                        [string] $dependency.version
+                    )
+                ))
+        }
+    }
+
     It 'contains no repository trust mutation commands' {
         $tokens = $null
         $parseErrors = $null
@@ -655,6 +719,144 @@ Describe 'Post-install content verification' {
                         contentDigest = [string] $entry.contentDigest
                         moduleBase    = Join-Path '/different' $Name
                     }
+                }
+            }
+
+        {
+            Test-AdltInstalledDependencyContent `
+                -Module $verificationModule `
+                -Lock $lock `
+                -Installed $installed
+        } | Should -Throw '*failed reviewed content verification*'
+    }
+
+    It 'does not present the recorded packageDigest as installed-content evidence' {
+        # Both sides of a packageDigest comparison come from the same lock, so
+        # it would verify nothing about what is installed (S2 in
+        # architecture/quality-baseline.md). contentDigest and the install
+        # location are the evidence. If this fails, a check that checks
+        # nothing has been re-added. Delete this test if packageDigest is ever
+        # verified for real (see S2).
+        $lock = Read-AdltDependencyInstallerLock `
+            -Path $script:LockPath `
+            -Repository PSGallery
+        $locations = [ordered]@{}
+        $installed = [ordered]@{}
+        foreach ($dependency in @($lock.dependencies)) {
+            $location = Join-Path $TestDrive $dependency.name
+            $locations[$dependency.name] = $location
+            $installed[$dependency.name] = [pscustomobject]@{
+                InstalledLocation = $location
+            }
+        }
+        $verificationModule = New-Module `
+            -Name DependencyInstallerRecordedDigestDouble `
+            -ArgumentList $lock, $locations `
+            -ScriptBlock {
+                param($LockedDependencies, $ModuleLocations)
+
+                $script:LockedDependencies = $LockedDependencies
+                $script:ModuleLocations = $ModuleLocations
+
+                function Get-AdltRuntimeDependencyLock {
+                    return $script:LockedDependencies
+                }
+
+                function Get-AdltVerifiedRuntimeDependency {
+                    param([string] $Name)
+
+                    $entry = @(
+                        $script:LockedDependencies.dependencies |
+                            Where-Object {
+                                [string] $_.name -ceq $Name
+                            }
+                    )[0]
+                    return [ordered]@{
+                        name          = [string] $entry.name
+                        version       = [string] $entry.version
+                        guid          = (
+                            [string] $entry.guid
+                        ).ToLowerInvariant()
+                        author        = [string] $entry.author
+                        source        = [string] $entry.source
+                        packageDigest = "sha256:$('0' * 64)"
+                        contentDigest = [string] $entry.contentDigest
+                        moduleBase    = [string] $script:ModuleLocations[$Name]
+                    }
+                }
+            }
+
+        $result = @(
+            Test-AdltInstalledDependencyContent `
+                -Module $verificationModule `
+                -Lock $lock `
+                -Installed $installed
+        )
+
+        $result.Count | Should -Be @($lock.dependencies).Count
+        @($result).Verified | Should -Not -Contain $false
+    }
+
+    It 'fails when the verified <Field> disagrees with the lock' -ForEach @(
+        @{ Field = 'name' }
+        @{ Field = 'version' }
+        @{ Field = 'guid' }
+        @{ Field = 'author' }
+        @{ Field = 'source' }
+        @{ Field = 'contentDigest' }
+    ) {
+        # Each remaining clause ties this script's own read of the lock to the
+        # module's hash-pinned read, so any disagreement must stop the report.
+        $lock = Read-AdltDependencyInstallerLock `
+            -Path $script:LockPath `
+            -Repository PSGallery
+        $locations = [ordered]@{}
+        $installed = [ordered]@{}
+        foreach ($dependency in @($lock.dependencies)) {
+            $location = Join-Path $TestDrive $dependency.name
+            $locations[$dependency.name] = $location
+            $installed[$dependency.name] = [pscustomobject]@{
+                InstalledLocation = $location
+            }
+        }
+        $verificationModule = New-Module `
+            -Name "DependencyInstallerAltered$Field" `
+            -ArgumentList $lock, $locations, $Field `
+            -ScriptBlock {
+                param($LockedDependencies, $ModuleLocations, $AlteredField)
+
+                $script:LockedDependencies = $LockedDependencies
+                $script:ModuleLocations = $ModuleLocations
+                $script:AlteredField = $AlteredField
+
+                function Get-AdltRuntimeDependencyLock {
+                    return $script:LockedDependencies
+                }
+
+                function Get-AdltVerifiedRuntimeDependency {
+                    param([string] $Name)
+
+                    $entry = @(
+                        $script:LockedDependencies.dependencies |
+                            Where-Object {
+                                [string] $_.name -ceq $Name
+                            }
+                    )[0]
+                    $identity = [ordered]@{
+                        name          = [string] $entry.name
+                        version       = [string] $entry.version
+                        guid          = (
+                            [string] $entry.guid
+                        ).ToLowerInvariant()
+                        author        = [string] $entry.author
+                        source        = [string] $entry.source
+                        packageDigest = [string] $entry.packageDigest
+                        contentDigest = [string] $entry.contentDigest
+                        moduleBase    = [string] $script:ModuleLocations[$Name]
+                    }
+                    $identity[$script:AlteredField] =
+                        'altered-' + $identity[$script:AlteredField]
+                    return $identity
                 }
             }
 

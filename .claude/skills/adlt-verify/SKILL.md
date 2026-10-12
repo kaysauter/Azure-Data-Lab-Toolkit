@@ -116,7 +116,7 @@ Import-Module ./src/AzureDataLabToolkit/AzureDataLabToolkit.psd1 -Force
 & \$m { (Get-AdltSqlVmArmEngineIdentity).digest }"
 ```
 
-Recorded baselines, verified at commit `5a0b055` on `codex/powershell-foundation`:
+Recorded baselines, last verified on 2026-10-12 at `ecea2b6` on `main`:
 
 | Value | Baseline |
 | --- | --- |
@@ -131,6 +131,13 @@ always the last intended state rather than a stale note.
   execution records, so say so explicitly in the commit message rather than letting it surprise
   someone. `Private/66-AuthorizationModel.ps1` canonical-compares the authorization's engine
   against the compilation's.
+- A **version bump** moves both, because plans and the engine identity embed the toolkit
+  version. Edit `ModuleVersion` and `Prerelease` in the psd1 and `$script:AzureDataLabToolkitVersion`
+  in the psm1 together — `Module.Tests.ps1` fails until they agree — then regenerate
+  `tests/Fixtures/sqlvm-minimal.plan.sha256` and this table in the same commit. For a stable
+  version, set `Prerelease = ''` or delete the line; `build.ps1` and the tests read the key
+  safely under strict mode. Measured on 2026-10-12 with a bump to `0.2.0-beta1`: the golden
+  plan-hash test was the only failure.
 
 ## 5b. Two other tripwires that look like unrelated mass failure
 

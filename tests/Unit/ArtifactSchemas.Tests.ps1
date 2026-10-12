@@ -170,6 +170,9 @@ BeforeAll {
             costEvidenceHash           = $script:HashA
             teardownPlanHash           = $script:HashB
             executionArtifactDigest    = $script:HashD
+            # Sample values for schema validation, like the hashes above: the
+            # version strings here and in engine do not track the module
+            # version.
             module                     = [ordered]@{
                 name    = 'AzureDataLabToolkit'
                 version = '0.1.0-alpha1'

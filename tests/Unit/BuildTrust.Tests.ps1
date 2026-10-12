@@ -11,6 +11,9 @@ BeforeAll {
         '.github/workflows/module-ci.yml'
 
     . $script:BuildScript
+    # Derived by build.ps1 from the source manifest; bound here so the tests
+    # below do not depend on a variable the dot-source happens to leave.
+    $script:SourceModuleVersion = $sourceModuleVersion
 
     function New-TestGitRepositoryPath {
         param(
@@ -393,13 +396,18 @@ Describe 'Locked build-tool trust' {
 
         $identity = Test-AdltBuildProvenance `
             -ModulePath $moduleRoot `
-            -ExpectedModuleVersion '0.1.0-alpha1'
+            -ExpectedModuleVersion $script:SourceModuleVersion
         $identity.sourceRevisionKind |
             Should -BeExactly 'content-derived'
         {
             Test-AdltBuildProvenance `
                 -ModulePath $moduleRoot `
                 -RequireGit
+        } | Should -Throw '*source or version binding is invalid*'
+        {
+            Test-AdltBuildProvenance `
+                -ModulePath $moduleRoot `
+                -ExpectedModuleVersion "$script:SourceModuleVersion-other"
         } | Should -Throw '*source or version binding is invalid*'
 
         [System.IO.File]::WriteAllText(
@@ -410,6 +418,91 @@ Describe 'Locked build-tool trust' {
         {
             Test-AdltBuildProvenance -ModulePath $moduleRoot
         } | Should -Throw '*complete module content*'
+    }
+
+    It 'derives the version of a stable manifest without a Prerelease key' {
+        # Going stable usually means deleting the Prerelease line. Under the
+        # strict mode these tests run in, reading that key by member access
+        # would throw, and build.ps1 would stop loading at all.
+        $stable = Get-AdltBuildModuleVersion -Manifest @{
+            ModuleVersion = '1.2.3'
+            PrivateData   = @{ PSData = @{ Tags = @('x') } }
+        }
+        $stable.BaseVersion | Should -BeExactly '1.2.3'
+        $stable.Version | Should -BeExactly '1.2.3'
+        (Get-AdltBuildModuleVersion -Manifest @{
+                ModuleVersion = '1.2.3'
+            }).Version | Should -BeExactly '1.2.3'
+        (Get-AdltBuildModuleVersion -Manifest @{
+                ModuleVersion = '1.2.3'
+                PrivateData   = @{ PSData = @{ Prerelease = 'beta2' } }
+            }).Version | Should -BeExactly '1.2.3-beta2'
+
+        $moduleRoot = Join-Path $TestDrive 'stable-provenance'
+        [void] (New-Item -ItemType Directory -Path $moduleRoot)
+        $manifestText = [System.IO.File]::ReadAllText(
+            (Join-Path `
+                $script:RepositoryRoot `
+                'src/AzureDataLabToolkit/AzureDataLabToolkit.psd1')
+        )
+        # Works whether or not the real manifest still has the line.
+        $stableText = [regex]::Replace(
+            $manifestText,
+            '(?m)^[ \t]*Prerelease[ \t]*=.*\r?\n',
+            ''
+        )
+        [System.IO.File]::WriteAllText(
+            (Join-Path $moduleRoot 'AzureDataLabToolkit.psd1'),
+            $stableText,
+            [System.Text.UTF8Encoding]::new($false)
+        )
+        $stableManifest = Import-PowerShellDataFile `
+            -LiteralPath (Join-Path $moduleRoot 'AzureDataLabToolkit.psd1')
+        $stableManifest.PrivateData.PSData.Contains('Prerelease') |
+            Should -BeFalse
+        $baseVersion = [string] $stableManifest.ModuleVersion
+
+        New-AdltBuildProvenance `
+            -ModulePath $moduleRoot `
+            -RepositoryPath (Join-Path $TestDrive 'no-repository')
+        (Test-AdltBuildProvenance `
+            -ModulePath $moduleRoot `
+            -ExpectedModuleVersion $baseVersion).moduleVersion |
+            Should -BeExactly $baseVersion
+    }
+
+    It 'fails the gate on a failed container, block or test, not only a test' {
+        # Pester leaves FailedCount at zero when a test file fails during
+        # discovery (its tests never run) or an AfterAll fails (its cleanup
+        # did not), so the gate must judge the run's Result.
+        foreach ($case in @(
+                @{ Result = 'Failed'; Tests = 0; Blocks = 0; Containers = 1 }
+                @{ Result = 'Failed'; Tests = 0; Blocks = 1; Containers = 0 }
+                @{ Result = 'Failed'; Tests = 2; Blocks = 0; Containers = 0 }
+            )) {
+            $run = [pscustomobject]@{
+                Result                = $case.Result
+                FailedCount           = $case.Tests
+                FailedBlocksCount     = $case.Blocks
+                FailedContainersCount = $case.Containers
+            }
+            {
+                Assert-AdltPesterRun -Result $run
+            } | Should -Throw -ExpectedMessage (
+                'Pester run failed: {0} test(s), {1} block(s), {2} container(s).' -f
+                    $case.Tests,
+                    $case.Blocks,
+                    $case.Containers
+            )
+        }
+        {
+            Assert-AdltPesterRun -Result ([pscustomobject]@{
+                    Result                = 'Passed'
+                    FailedCount           = 0
+                    FailedBlocksCount     = 0
+                    FailedContainersCount = 0
+                })
+        } | Should -Not -Throw
     }
 
     It 'records a git source revision from a clean repository' {
@@ -443,7 +536,7 @@ Describe 'Locked build-tool trust' {
 
         $identity = Test-AdltBuildProvenance `
             -ModulePath $moduleRoot `
-            -ExpectedModuleVersion '0.1.0-alpha1' `
+            -ExpectedModuleVersion $script:SourceModuleVersion `
             -RequireGit
         $identity.sourceRevisionKind | Should -BeExactly 'git'
         $identity.sourceRevision | Should -BeExactly $revision

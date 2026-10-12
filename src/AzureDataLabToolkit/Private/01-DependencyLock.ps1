@@ -353,6 +353,12 @@ function Get-AdltVerifiedRuntimeDependency {
         [System.IO.Path]::DirectorySeparatorChar,
         [char] '/'
     )
+    # name, version, guid and author were enforced against the installed
+    # manifest above, and contentDigest is measured from the files on disk.
+    # source and packageDigest are recorded from the reviewed lock and never
+    # measured: no package archive is downloaded or hashed, so packageDigest
+    # names the upstream archive the lock was reviewed against, not what is
+    # installed.
     return [ordered]@{
         name            = [string] $lockEntry.name
         version         = [string] $lockEntry.version

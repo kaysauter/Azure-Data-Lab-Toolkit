@@ -8,7 +8,7 @@
     },
     {
       "path": "Private/01-DependencyLock.ps1",
-      "sha256": "4cc67b07caca1c308bec97d6b83d18ec5bc465e435f891f974b451bd89fb6b72"
+      "sha256": "c62e1c91d759717a571b8331e73169a8c7474d373291f42e5f70458ef1eaed95"
     },
     {
       "path": "Private/05-ExtensionRegistry.ps1",
@@ -192,7 +192,7 @@
     },
     {
       "path": "Public/Export-AzureDataLabPlan.ps1",
-      "sha256": "747b27cd04bc89225799d8e9805e3461ea25e32270372c7d3ef7d3008ca34891"
+      "sha256": "a18bb451270c689b84c561e42caef78a86ad5cec964721112d7e52273749666d"
     },
     {
       "path": "Public/Find-AzureDataLabCatalogItem.ps1",

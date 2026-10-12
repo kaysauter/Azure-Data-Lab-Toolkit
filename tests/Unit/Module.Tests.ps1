@@ -19,8 +19,44 @@ Describe 'AzureDataLabToolkit module contract' {
     It 'has a valid module manifest' {
         $manifest = Test-ModuleManifest $script:ModulePath
         $manifest.Name | Should -Be 'AzureDataLabToolkit'
-        $manifest.Version.ToString() | Should -Be '0.1.0'
         $manifest.PowerShellVersion.ToString() | Should -Be '7.6'
+    }
+
+    It 'declares a version the release workflow can tag' {
+        # Mirrors the tag check in the release-provenance step of
+        # .github/workflows/module-ci.yml, which accepts only
+        # v<major>.<minor>.<patch> with an optional alphanumeric prerelease
+        # and requires the tag to equal this version. Change both together.
+        # Prerelease is read with the indexer because a stable manifest may
+        # omit it, and these tests run under strict mode.
+        $manifest = Import-PowerShellDataFile -LiteralPath $script:ModulePath
+
+        [string] $manifest.ModuleVersion |
+            Should -MatchExactly '^[0-9]+\.[0-9]+\.[0-9]+$'
+        [string] $manifest.PrivateData.PSData['Prerelease'] |
+            Should -MatchExactly '^[0-9A-Za-z]*$'
+    }
+
+    It 'carries the manifest version in the root module' {
+        # The manifest is the source of truth. The root module keeps its own
+        # copy as a reviewed constant, so importing the module never depends on
+        # parsing the manifest, and that copy reaches every plan, the engine
+        # identity and the extension descriptors. This test catches drift in
+        # the source tree; Private/67-RuntimeIdentity.ps1 rejects a packaged
+        # module whose provenance version disagrees with it.
+        $manifest = Import-PowerShellDataFile -LiteralPath $script:ModulePath
+        $expected = [string] $manifest.ModuleVersion
+        $prerelease = [string] $manifest.PrivateData.PSData['Prerelease']
+        if (-not [string]::IsNullOrWhiteSpace($prerelease)) {
+            $expected = '{0}-{1}' -f $expected, $prerelease
+        }
+
+        InModuleScope AzureDataLabToolkit {
+            $script:AzureDataLabToolkitVersion
+        } | Should -BeExactly $expected -Because (
+            'ModuleVersion and Prerelease in the psd1 and ' +
+            '$script:AzureDataLabToolkitVersion in the psm1 change together'
+        )
     }
 
     It 'declares no manifest field that loads code outside the root module' {
